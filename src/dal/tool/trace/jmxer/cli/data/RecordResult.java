@@ -25,6 +25,7 @@ public class RecordResult implements Serializable {
 	public Map<String,String> toolInfo;
 	public Map<String,String> vmInfo;
 	public Map<Long,List<RecordThreadInfo>> recordData;
+	public Map<Long,ResourceUsage> resourceData;
 
 
 	public RecordResult() {}

@@ -20,6 +20,7 @@ import dal.tool.trace.jmxer.cli.data.RecordResult;
 import dal.tool.trace.jmxer.cli.data.RecordSearch;
 import dal.tool.trace.jmxer.cli.data.RecordStackFrame;
 import dal.tool.trace.jmxer.cli.data.RecordThreadInfo;
+import dal.tool.trace.jmxer.cli.data.ResourceUsage;
 import dal.tool.trace.jmxer.cli.data.Tree;
 import dal.tool.trace.jmxer.cli.data.TreeNode;
 import dal.tool.util.DateUtil;
@@ -681,7 +682,19 @@ public class RecordResultViewer {
 			List<RecordThreadInfo> threadInfoList = result.recordData.get(id);
 			if(threadInfoList != null && threadInfoList.size() > 0) {
 				RecordThreadInfo threadInfo = threadInfoList.get(0);
-				sb.append(String.format("      . tid [%-3d]  :  \"%s\"", threadInfo.getThreadId(), threadInfo.getThreadName()) + "\n");
+				ResourceUsage resourceUsage = result.resourceData.get(id);
+				String thrStr = "\"" + (resourceUsage.threadName.length()>38?(resourceUsage.threadName.substring(0,35)+"..."):resourceUsage.threadName) + "\"";
+				long totalCpu = resourceUsage.currCpu - resourceUsage.startCpu;
+				long totalMem = resourceUsage.currMem - resourceUsage.startMem;
+				String cpuStr = "Unknown";
+				String memStr = "Unknown";
+				if(totalCpu > -1) {
+					cpuStr = String.valueOf(totalCpu);
+				}
+				if(totalCpu > -1) {
+					memStr = String.valueOf(totalMem);
+				}
+				sb.append(String.format("      . tid [%5d] : %-40s : CpuTime=%-12s, AllocatedBytes=%s", threadInfo.getThreadId(), thrStr, cpuStr, memStr) + "\n");
 			}
 		}		
 		return sb.toString();

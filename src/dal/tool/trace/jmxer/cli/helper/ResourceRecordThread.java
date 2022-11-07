@@ -7,123 +7,50 @@ import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
 import dal.tool.cli.Logger;
-import dal.tool.util.StringUtil;
+import dal.tool.trace.jmxer.cli.data.ResourceUsage;
 import dal.tool.util.jmx.JMXUtil;
 
-public class ResourceRecordThread implements Runnable {
+public class ResourceRecordThread extends AbstractRecordThread {
 
-	private boolean stop = false;
-	private MBeanServerConnection mbeanConnection = null;
-	private long recordLimitMS = 0L;
-	private long recordIntervalMS = 1000L;
-	private String[] threadIds = null;
-	private String threadIdsString = null;
-	private String[] threadNames = null;
-	private ResourceUsage[] recordData = null;
-	private long startTimeMS = 0L;
-	private long endTimeMS = 0L;
-	private boolean threadCpuTimeEnabled;
-	private boolean threadAllocatedMemoryEnabled;
+	protected ResourceUsage[] recordData;
+	protected boolean threadCpuTimeEnabled;
+	protected boolean threadAllocatedMemoryEnabled;
 
-	private class ResourceUsage {
-		String threadName;
-		long startCpu;
-		long startMem;
-		long currCpu;
-		long currMem;
-		public ResourceUsage(String threadName, long cpu, long mem) {
-			this.threadName = threadName;
-			this.startCpu = cpu;
-			this.startMem = mem;
-		}
-		public void update(long cpu, long mem) {
-			this.currCpu = cpu;
-			this.currMem = mem;
-		}
-	}
-	
 	public ResourceRecordThread(MBeanServerConnection mbeanConnection, String[] threadIds) throws Exception {
-		this.mbeanConnection = mbeanConnection;
-	    this.threadIds = threadIds;
-	    init();
+		super("ResourceRecorder", mbeanConnection, threadIds);
 	}
 
-	private void init() throws Exception {
-		ObjectName objectName = new ObjectName("java.lang:type=Threading");
-		if(threadIds == null || threadIds.length == 1 && "*".equals(threadIds[0])) {
-			long[] ids = JMXUtil.getAllThreadIds(mbeanConnection, true);
-			threadIds = new String[ids.length];
-			for(int i = 0; i < ids.length; i++) {
-				threadIds[i] = String.valueOf(ids[i]);
-			}
-		}
-		threadIdsString = StringUtil.arrayToString(threadIds, ",");
-		threadNames = new String[threadIds.length];
+	protected void afterInit() throws Exception {
 		recordData = new ResourceUsage[threadIds.length];
-		Object resultData = JMXUtil.invokeAttributeOrOperation(mbeanConnection, objectName, "getThreadInfo(long[])", new String[]{threadIdsString});
-		if(resultData == null || ((CompositeData[])resultData).length < 1) {
-			throw new Exception("Could not get thread info.");
-		}
-		CompositeData[] resultDataArr = (CompositeData[])resultData;
-		int idx = 0;
-		for(CompositeData cd : resultDataArr) {
-			if(cd == null) continue;
-			ThreadInfo threadInfo = ThreadInfo.from(cd);
-			threadNames[idx++] = threadInfo.getThreadName();
-		}
 		threadCpuTimeEnabled = (Boolean)JMXUtil.getJMXResult(mbeanConnection, "java.lang:type=Threading", "ThreadCpuTimeEnabled", null);
 		threadAllocatedMemoryEnabled = (Boolean)JMXUtil.getJMXResult(mbeanConnection, "java.lang:type=Threading", "ThreadAllocatedMemoryEnabled", null);
-	}
-
-	public void startRecording(long interval, long limit) {
-	    this.recordIntervalMS = interval;
-		this.recordLimitMS = limit;
-		if(threadCpuTimeEnabled || threadAllocatedMemoryEnabled) {
-			Thread t = new Thread(this, "ResourceRecorder");
-			t.start();
-			if(recordLimitMS > 0) {
-				while(!stop) {
-					try {
-						Thread.sleep(1000L);
-					} catch(InterruptedException e) {				
-					}
-				}
-			}
-		} else {
-			Logger.logln("Neither ThreadCpuTime nor ThreadAllocatedMemory are enabled.");
+		if(!threadCpuTimeEnabled && !threadAllocatedMemoryEnabled) {
+			throw new Exception("Neither ThreadCpuTime nor ThreadAllocatedMemory are enabled.");
+			
 		}
 	}
-	
-	public void stopRecording() {
+
+	protected void beforeStartRecording() {
 		try {
-			endTimeMS = collectData();
+			startTimeMS = collectResourceData();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		this.stop = true;
 	}
 	
-	public void run() {
+	protected void afterStopRecording() {
 		try {
-			startTimeMS = collectData();
+			endTimeMS = collectResourceData();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		while(!stop) {
-			System.out.print(".");
-			long total_elapsed = System.currentTimeMillis() - startTimeMS;
-			if(recordLimitMS > 0 && total_elapsed >= recordLimitMS) {
-				stopRecording(); break;
-			}
-			try {
-				Thread.sleep(recordIntervalMS);
-			} catch(InterruptedException e) {				
-			}
-		}
-		System.out.println();
 	}
-
-	private long collectData() throws Exception {
+	
+	protected long collectData() throws Exception {
+		return System.currentTimeMillis();
+	}
+	
+	private long collectResourceData() throws Exception {
 		ObjectName objectName = new ObjectName("java.lang:type=Threading");
 		long[] threadCpus = null;
 		long[] threadMems = null;
@@ -168,7 +95,9 @@ public class ResourceRecordThread implements Runnable {
 					}
 					CompositeData[] cd = (CompositeData[])resultData;
 					ThreadInfo threadInfo = ThreadInfo.from(cd[0]);
-					newThreadStr = threadInfo.getThreadName();
+					if(threadInfo != null) {
+						newThreadStr = threadInfo.getThreadName();
+					}
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
