@@ -224,8 +224,8 @@ public class JMXControl {
     	Logger.logln("    args> ADDRESS=127.0.0.1:10001 CALL java.lang:type=Threading ThreadContentionMonitoringEnabled true");
     	Logger.logln(" 4) Attach to JVM with ADDRESS with auth. To invoke Operation 'getThreadInfo' with arguments '2,10' in ObjectName 'java.lang:type=Threading'.");
     	Logger.logln("    args> ADDRESS=127.0.0.1:10001 AUTH=myuser/mypass CALL java.lang:type=Threading getThreadInfo 2,10");
-    	Logger.logln(" 5) Attach to JVM with PID and AUTH. To execute script file 'jmx_script.txt' in current directory.");
-    	Logger.logln("    args> PID=12345 AUTH=myuser/mypass @'./jmx_script.txt'");
+    	Logger.logln(" 5) Attach to JVM with PID. To execute script file 'jmx_script.txt' in current directory.");
+    	Logger.logln("    args> PID=12345 @'./jmx_script.txt'");
     	Logger.logln("");
     	Logger.logln("Analyze Mode Example :");
     	Logger.logln(" 1) Load the dump file 'JMXer_Record_Trace.dmp' in current directory and analyze it. To run INTERACTIVE_MODE.");

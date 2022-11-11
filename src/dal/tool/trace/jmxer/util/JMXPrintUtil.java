@@ -27,14 +27,13 @@ import dal.tool.cli.util.PrintUtil;
 import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.PatternUtil;
 import dal.tool.util.PatternUtil.PATTERN_TYPE;
-import dal.tool.util.jmx.JMXHelper;
-import dal.tool.util.jmx.JMXUtil;
-import dal.tool.util.jmx.MBeanNotFoundException;
-import dal.tool.util.jmx.ThreadUtil;
-import dal.tool.util.jmx.MBeanConnector.ConnectType;
 import dal.tool.util.StringUtil;
 import dal.tool.util.TypeUtil;
-
+import dal.tool.util.jmx.JMXHelper;
+import dal.tool.util.jmx.JMXUtil;
+import dal.tool.util.jmx.MBeanConnector.ConnectType;
+import dal.tool.util.jmx.MBeanNotFoundException;
+import dal.tool.util.jmx.ThreadUtil;
 
 /**
  * JMX 호출 결과출력을 위해 필요한 Utility 클래스
@@ -66,15 +65,14 @@ public class JMXPrintUtil {
 	 * @throws Exception 호출 과정에서 발생한 모든 Exception
 	 */
 	public static void callJMX(ConnectType connect_type, String connect_value, String[] authenticate, String object_name, String target_name, String[] target_values, boolean prettyPrint) throws Exception {
-    	JMXConnector connector = JMXHelper.connectToVM(connect_type, connect_value, authenticate);
-    	MBeanServerConnection mbeanConn = connector.getMBeanServerConnection();
+		JMXConnector connector = JMXHelper.connectToVM(connect_type, connect_value, authenticate);
+		MBeanServerConnection mbeanConn = connector.getMBeanServerConnection();
 		callJMX(mbeanConn, object_name, target_name, target_values, true);
 	}
 
-	
-    /**
+	/**
 	 * JVM에 접속하여 JMX를 호출하고, 결과를 출력한다.
-     * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
+	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
 	 * @param object_name MBean ObjectName 문자열
 	 * @param target_name 호출 대상 이름. 가능한 값은 다음과 같다.
 	 * <xmp>
@@ -90,29 +88,29 @@ public class JMXPrintUtil {
 	 *         - target_name이 "?" 또는 "#"인 경우, null이어야 함
 	 * </xmp>
 	 * @param prettyPrint 결과 출력시 newline 및 indentation을 포함하려면 true        
-     * @throws MBeanNotFoundException object_name을 찾을 수 없을 때 발생
+	 * @throws MBeanNotFoundException object_name을 찾을 수 없을 때 발생
 	 * @throws Exception 호출 과정에서 발생한 모든 Exception
-     */
-    public static void callJMX(MBeanServerConnection mbeanConn, String object_name, String target_name, String[] target_values, boolean prettyPrint) throws MBeanNotFoundException,Exception {
-    	if(object_name == null) {
+	 */
+	public static void callJMX(MBeanServerConnection mbeanConn, String object_name, String target_name, String[] target_values, boolean prettyPrint) throws MBeanNotFoundException, Exception {
+		if(object_name == null) {
 			Logger.logln("No ObjectName input.");
-    		return;
-    	}
+			return;
+		}
 
-        ObjectName inputOName = null;
-        if(object_name != null && "?".equals(object_name) == false) {
-    		inputOName = new ObjectName(object_name);
-        }
+		ObjectName inputOName = null;
+		if(object_name != null && "?".equals(object_name) == false) {
+			inputOName = new ObjectName(object_name);
+		}
 
-        Set<ObjectName> queryNames = mbeanConn.queryNames(inputOName, null);
+		Set<ObjectName> queryNames = mbeanConn.queryNames(inputOName, null);
 		if(queryNames.size() == 0) {
 			throw new MBeanNotFoundException("ObjectName '" + inputOName + "' not found");
 		}
 		Iterator<ObjectName> it = queryNames.iterator();
 		while(it.hasNext()) {
 			ObjectName oName = it.next();
-	    	Logger.logln("ObjectName : " + oName);
-	    	Logger.logln("");
+			Logger.logln("ObjectName : " + oName);
+			Logger.logln("");
 			if(target_name == null || "??".equals(target_name)) {
 				// print all info
 				printMBeanInfo(mbeanConn, null, null);
@@ -144,9 +142,8 @@ public class JMXPrintUtil {
 				Logger.logln("----------------------------------------------------------------------------------");
 			}
 		}
-    }
+	}
 
-    
 	/**
 	 * 전체 MBean ObjectName을 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체
@@ -157,28 +154,26 @@ public class JMXPrintUtil {
 		printObjectNames(JMXUtil.getObjectNames(mbeanConn, objectNamePattern), objectNamePattern);
 	}
 
-	
 	/**
 	 * 전달받은 MBean ObjectName을 출력한다.
 	 * @param objectNameList MBean ObjectName 객체 목록
 	 * @param objectNamePattern 출력할 ObjectName 이름 패턴. 안내 메시지에 보여질 패턴이며, null이면 출력하지 않는다.
 	 */
 	public static void printObjectNames(List<ObjectName> objectNameList, String objectNamePattern) {
-    	Logger.logln("");
-    	if(objectNameList.size() < 1) {
-    		Logger.logln("No ObjectName exists" + ((objectNamePattern==null)?"":(" : "+objectNamePattern)));
-    	} else {
-	    	Collections.sort(objectNameList);
-    		Logger.logln("List of MBean ObjectName" + ((objectNamePattern==null)?"":(" : "+objectNamePattern)));
-	    	ObjectName oname;
-	    	for(int i = 0; i < objectNameList.size(); i++) {
-	    		oname = objectNameList.get(i);
-	    		Logger.logln(" - " + oname);
-	    	}
-    	}
+		Logger.logln("");
+		if(objectNameList.size() < 1) {
+			Logger.logln("No ObjectName exists" + ((objectNamePattern == null) ? "" : (" : " + objectNamePattern)));
+		} else {
+			Collections.sort(objectNameList);
+			Logger.logln("List of MBean ObjectName" + ((objectNamePattern == null) ? "" : (" : " + objectNamePattern)));
+			ObjectName oname;
+			for(int i = 0; i < objectNameList.size(); i++) {
+				oname = objectNameList.get(i);
+				Logger.logln(" - " + oname);
+			}
+		}
 	}
 
-	
 	/**
 	 * MBean 상세 정보를 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
@@ -188,10 +183,10 @@ public class JMXPrintUtil {
 	 */
 	public static void printMBeanInfo(MBeanServerConnection mbeanConn, ObjectName oName, String name) throws Exception {
 		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
-		
+
 		if(name == null) {
 			Logger.logln("Description : " + mbeanInfo.getDescription());
-	
+
 			StringBuffer desc = new StringBuffer();
 			Descriptor mbeanDesc = mbeanInfo.getDescriptor();
 			for(String descName : mbeanDesc.getFieldNames()) {
@@ -200,7 +195,7 @@ public class JMXPrintUtil {
 			}
 			Logger.logln("Descriptor : " + desc);
 		}
-		
+
 		if(mbeanInfo.getConstructors().length > 0) {
 			StringBuffer constr = new StringBuffer();
 			for(MBeanConstructorInfo info : mbeanInfo.getConstructors()) {
@@ -212,7 +207,7 @@ public class JMXPrintUtil {
 			}
 			Logger.logln("Constructors : " + constr);
 		}
-		
+
 		if(mbeanInfo.getAttributes().length > 0) {
 			StringBuffer attrs = new StringBuffer();
 			for(MBeanAttributeInfo info : mbeanInfo.getAttributes()) {
@@ -253,7 +248,6 @@ public class JMXPrintUtil {
 		}
 	}
 
-	
 	/**
 	 * MBean Attribute 및 Operation 목록을 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
@@ -265,7 +259,6 @@ public class JMXPrintUtil {
 		printAttributeAndOperationList(JMXUtil.getAttributeAndOperationList(mbeanConn, oName, namePattern), oName.toString(), namePattern);
 	}
 
-	
 	/**
 	 * 주어진 MBean Attribute 및 Operation 목록을 출력한다.
 	 * @param featureList MBeanFeatureInfo 객체 목록 
@@ -273,13 +266,13 @@ public class JMXPrintUtil {
 	 * @param namePattern 출력할 Attribute 또는 Operation 이름 패턴. 안내 메시지에 보여질 패턴이며, null이면 출력하지 않는다. 
 	 */
 	public static void printAttributeAndOperationList(List<MBeanFeatureInfo> featureList, String objectName, String namePattern) {
-    	if(featureList.size() < 1) {
-    		Logger.logln("No Attribute and Operation exists (" + objectName + ")" + ((namePattern==null)?"":(" : "+namePattern)));
-    	} else {
-    		Logger.logln("List of Attribute and Operation (" + objectName + ")" + ((namePattern==null)?"":(" : "+namePattern)));
+		if(featureList.size() < 1) {
+			Logger.logln("No Attribute and Operation exists (" + objectName + ")" + ((namePattern == null) ? "" : (" : " + namePattern)));
+		} else {
+			Logger.logln("List of Attribute and Operation (" + objectName + ")" + ((namePattern == null) ? "" : (" : " + namePattern)));
 			for(Object info : featureList) {
 				if(info instanceof MBeanAttributeInfo) {
-					MBeanAttributeInfo attr = (MBeanAttributeInfo)info;					
+					MBeanAttributeInfo attr = (MBeanAttributeInfo)info;
 					if(namePattern == null || PatternUtil.isMatchPattern(PATTERN_TYPE.STRING, attr.getName(), namePattern)) {
 						Logger.logln(" - Attribute(" + JMXHelper.getPermissionStringSimple(attr) + ") " + attr.getName() + " : type=" + JMXHelper.toTypeString(attr.getType()));
 					}
@@ -290,14 +283,13 @@ public class JMXPrintUtil {
 					MBeanOperationInfo oper = (MBeanOperationInfo)info;
 					if(namePattern == null || PatternUtil.isMatchPattern(PATTERN_TYPE.STRING, oper.getName(), namePattern)) {
 						MBeanParameterInfo[] paramInfos = oper.getSignature();
-					    Logger.logln(" - Operation     " + oper.getName() + " : " + ((paramInfos.length>0)?("argumentType="+JMXHelper.toTypeString(paramInfos)+", "):"") + "returnType=" + JMXHelper.toTypeString(oper.getReturnType()));
+						Logger.logln(" - Operation     " + oper.getName() + " : " + ((paramInfos.length > 0) ? ("argumentType=" + JMXHelper.toTypeString(paramInfos) + ", ") : "") + "returnType=" + JMXHelper.toTypeString(oper.getReturnType()));
 					}
 				}
 			}
-    	}
+		}
 	}
 
-	
 	/**
 	 * MBean Attribute 값을 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
@@ -306,9 +298,9 @@ public class JMXPrintUtil {
 	 * @throws Exception 수행 과정에서 발생한 모든 Exception
 	 */
 	public static void printAttributeValue(MBeanServerConnection mbeanConn, ObjectName oName, String targetName) throws Exception {
-		Map<MBeanAttributeInfo,Object> attrValueMap = JMXUtil.getAttributeValuesWithInfo(mbeanConn, oName, targetName);
+		Map<MBeanAttributeInfo, Object> attrValueMap = JMXUtil.getAttributeValuesWithInfo(mbeanConn, oName, targetName);
 		if(attrValueMap.size() < 1) {
-    		Logger.logln("No Attribute exists (" + oName + ")");
+			Logger.logln("No Attribute exists (" + oName + ")");
 		} else {
 			Logger.logln("Current Value of Attributes (" + oName + ")");
 			Iterator<MBeanAttributeInfo> iter = attrValueMap.keySet().iterator();
@@ -333,33 +325,32 @@ public class JMXPrintUtil {
 					Logger.logln("Attribute Value : " + value);
 					Logger.logln("Permission      : " + perm);
 					return;
-				}				
+				}
 			}
-			
+
 		}
 	}
 
-	
-    /**
-     * Thread의 StackTrace 정보를 출력한다.
+	/**
+	 * Thread의 StackTrace 정보를 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
 	 * @param threadIds stacktrace를 출력할 threadId 문자열 배열. "*"인 경우, 모든 쓰레드의 stacktrace를 출력한다.
 	 * @param maxDepth stacktrace 출력할 엔트리의 최대 개수. 1보다 작으면 전체 엔트리 출력.
-     * @throws Exception 수행 과정에서 발생한 모든 Exception
-     */
-    public static void printStackTrace(MBeanServerConnection mbeanConn, String[] threadIds, int maxDepth) throws Exception {
-    	if(threadIds.length < 1) {
-    		return;
-    	}
-    	Object resultData = null;
-    	boolean allThreads = false;
+	 * @throws Exception 수행 과정에서 발생한 모든 Exception
+	 */
+	public static void printStackTrace(MBeanServerConnection mbeanConn, String[] threadIds, int maxDepth) throws Exception {
+		if(threadIds.length < 1) {
+			return;
+		}
+		Object resultData = null;
+		boolean allThreads = false;
 		if(threadIds.length == 1 && threadIds[0].equals("*")) {
 			allThreads = true;
-			resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "dumpAllThreads", new String[]{"false","false"});
+			resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "dumpAllThreads", new String[] { "false", "false" });
 		} else {
 			String threadIdsString = StringUtil.arrayToString(threadIds, ",");
 			String maxDepthString = (maxDepth < 1) ? String.valueOf(Integer.MAX_VALUE) : String.valueOf(maxDepth);
-    		resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "getThreadInfo(long[],int)", new String[]{threadIdsString,maxDepthString});
+			resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "getThreadInfo(long[],int)", new String[] { threadIdsString, maxDepthString });
 		}
 
 		CompositeData[] resultDataArr = null;
@@ -379,37 +370,36 @@ public class JMXPrintUtil {
 				throw new Exception("Could not get thread info.");
 			}
 		}
-		
+
 		int cnt = 0;
-    	for(CompositeData cd : resultDataArr) {
-    		if(cd == null) {
-    			continue;
-    		}
-    		Logger.logln("");
-    		ThreadInfo threadInfo = ThreadInfo.from(cd);
-    		List<String> dump = ThreadUtil.getThreadDump(threadInfo);
-    		dump.set(0, "@ "+dump.get(0));
-    		for(String line : dump) {
-    			Logger.logln(line);
-    		}
-    		cnt++;
-    	}
-    	if(cnt == 0) {
-    		Logger.logln("Could not get thread info.");
-    	} else {
-    		Logger.logln("");
-    	}
+		for(CompositeData cd : resultDataArr) {
+			if(cd == null) {
+				continue;
+			}
+			Logger.logln("");
+			ThreadInfo threadInfo = ThreadInfo.from(cd);
+			List<String> dump = ThreadUtil.getThreadDump(threadInfo);
+			dump.set(0, "@ " + dump.get(0));
+			for(String line : dump) {
+				Logger.logln(line);
+			}
+			cnt++;
+		}
+		if(cnt == 0) {
+			Logger.logln("Could not get thread info.");
+		} else {
+			Logger.logln("");
+		}
 	}
 
-    
-    /**
-     * Thread의 정보를 출력한다.
+	/**
+	 * Thread의 정보를 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
 	 * @param threadIds 쓰레드 정보를 출력할 threadId 문자열 배열. "*"인 경우, 모든 쓰레드의 정보를 출력한다.
-     * @throws Exception 수행 과정에서 발생한 모든 Exception
-     */
-   public static void printThreadInfo(MBeanServerConnection mbeanConn, String[] threadIds) throws Exception {
-	   	if(threadIds.length < 1) {
+	 * @throws Exception 수행 과정에서 발생한 모든 Exception
+	 */
+	public static void printThreadInfo(MBeanServerConnection mbeanConn, String[] threadIds) throws Exception {
+		if(threadIds.length < 1) {
 			return;
 		}
 		Object resultData = null;
@@ -422,8 +412,8 @@ public class JMXPrintUtil {
 		} else {
 			threadIdsString = StringUtil.arrayToString(threadIds, ",");
 		}
-		resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "getThreadInfo(long[])", new String[]{threadIdsString});
-	
+		resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "getThreadInfo(long[])", new String[] { threadIdsString });
+
 		CompositeData[] resultDataArr = null;
 		if(resultData == null) {
 			throw new Exception("Could not get thread info.");
@@ -433,21 +423,21 @@ public class JMXPrintUtil {
 				throw new Exception("Could not get thread info.");
 			}
 		}
-		
+
 		int cnt = 0;
 		for(CompositeData cd : resultDataArr) {
 			if(cd == null) {
 				continue;
 			}
 			Logger.logln("");
-			ThreadInfo threadInfo = ThreadInfo.from(cd);			
+			ThreadInfo threadInfo = ThreadInfo.from(cd);
 			Logger.logln("Thread id " + threadInfo.getThreadId());
 			Logger.logln(" - Name      : " + threadInfo.getThreadName());
 			Logger.logln(" - State     : " + threadInfo.getThreadState());
 			Logger.logln(" - Suspend   : " + threadInfo.isSuspended());
 			Logger.logln(" - InNative  : " + threadInfo.isInNative());
-			Logger.logln(" - Blocked   : " + threadInfo.getBlockedCount() + " times / " + ((threadInfo.getBlockedTime()<0)?"currently not blocked":("blocked for "+threadInfo.getBlockedTime()+" ms")));
-			Logger.logln(" - Waiting   : " + threadInfo.getWaitedCount() + " times / " + ((threadInfo.getWaitedTime()<0)?"currently not waiting":("wating for "+threadInfo.getWaitedTime()+" ms")));
+			Logger.logln(" - Blocked   : " + threadInfo.getBlockedCount() + " times / " + ((threadInfo.getBlockedTime() < 0) ? "currently not blocked" : ("blocked for " + threadInfo.getBlockedTime() + " ms")));
+			Logger.logln(" - Waiting   : " + threadInfo.getWaitedCount() + " times / " + ((threadInfo.getWaitedTime() < 0) ? "currently not waiting" : ("wating for " + threadInfo.getWaitedTime() + " ms")));
 			Logger.logln(" - Lock      : " + threadInfo.getLockName());
 			Logger.logln(" - LockOwner : " + threadInfo.getLockOwnerName());
 			Logger.logln(" - Locked");
@@ -460,25 +450,30 @@ public class JMXPrintUtil {
 		} else {
 			Logger.logln("");
 		}
-    }
-   
+	}
 
-   /**
-    * 전체 Thread 목록을 출력한다.
-	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
-    * @throws Exception 수행 과정에서 발생한 모든 Exception
-    */
-  public static void printAllThreadList(MBeanServerConnection mbeanConn) throws Exception {
+	/**
+	* Thread 목록을 출력한다.
+	* @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체
+	* @param threadIds 출력할 ThreadID 문자열 배열. null이면 모든 Thread를 가져온다. 
+	* @throws Exception 수행 과정에서 발생한 모든 Exception
+	*/
+	public static void printThreadList(MBeanServerConnection mbeanConn, String[] threadIds) throws Exception {
 		ObjectName objectName = new ObjectName("java.lang:type=Threading");
-		
-		long[] threadIds = JMXUtil.getAllThreadIds(mbeanConn, true);
-		String[] threadIdsStringArr = new String[threadIds.length];
-		for(int i = 0; i < threadIds.length; i++) {
-			threadIdsStringArr[i] = String.valueOf(threadIds[i]);
+
+		String threadIdsString;
+		if(threadIds == null) {
+			long[] tids = JMXUtil.getAllThreadIds(mbeanConn, true);
+			String[] tidStrArr = new String[tids.length];
+			for(int i = 0; i < tids.length; i++) {
+				tidStrArr[i] = String.valueOf(tids[i]);
+			}
+			threadIdsString = StringUtil.arrayToString(tidStrArr, ",");
+		} else {
+			threadIdsString = StringUtil.arrayToString(threadIds, ",");
 		}
-		String threadIdsString = StringUtil.arrayToString(threadIdsStringArr, ",");
-		Object resultData = JMXUtil.invokeAttributeOrOperation(mbeanConn, objectName, "getThreadInfo(long[])", new String[]{threadIdsString});
-		
+		Object resultData = JMXUtil.invokeAttributeOrOperation(mbeanConn, objectName, "getThreadInfo(long[])", new String[] { threadIdsString });
+
 		CompositeData[] resultDataArr = null;
 		if(resultData == null) {
 			throw new Exception("Could not get thread info.");
@@ -488,18 +483,29 @@ public class JMXPrintUtil {
 				throw new Exception("Could not get thread info.");
 			}
 		}
-		
-		Logger.logln("List of Alive Thread");
+
+		int cnt = 0;
+		Logger.logln("List of Thread");
 		for(CompositeData cd : resultDataArr) {
 			if(cd == null) {
 				continue;
 			}
-			ThreadInfo threadInfo = ThreadInfo.from(cd);			
-			Logger.logln(String.format(" - tid [%-3d]  %-13s  :  \"%s\"", threadInfo.getThreadId(), threadInfo.getThreadState(), threadInfo.getThreadName()));
+			ThreadInfo threadInfo = ThreadInfo.from(cd);
+			Logger.logln(String.format(" - tid [%4d]  %-13s  :  \"%s\"", threadInfo.getThreadId(), threadInfo.getThreadState(), threadInfo.getThreadName()));
+			cnt++;
 		}
-		
+
 		Logger.logln("");
-		Logger.logln("Total " + threadIds.length + " thread(s).");
-   }
-  
+		Logger.logln("Total " + cnt + " thread(s).");
+	}
+
+	/**
+	* 전체 Thread 목록을 출력한다.
+	* @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
+	* @throws Exception 수행 과정에서 발생한 모든 Exception
+	*/
+	public static void printAllThreadList(MBeanServerConnection mbeanConn) throws Exception {
+		printThreadList(mbeanConn, null);
+	}
+
 }

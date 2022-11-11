@@ -35,16 +35,18 @@ public class RecordResult implements Serializable {
 		viewer.printResult(viewArgs);			
 	}
 
-	public void saveToFile(File f) {
+	public boolean saveToFile(File f) {
 		try {
 			List<Object> writeData = new ArrayList<Object>();
 			writeData.add(JMXerConstant.DUMP_FILE_VALIDATION_HEADER);
 			writeData.add(this);
 			FileUtil.writeObjectFile(f, writeData);
 			this.dmpFilePath = f.getCanonicalPath();
+			return true;
 		} catch(Exception e) {
 			Logger.logln(Level.ERROR, "Failed to save the record result to the file : " + e.getMessage());
 		}
+		return false;
 	}
 
 	public static RecordResult loadFromFile(File f) {

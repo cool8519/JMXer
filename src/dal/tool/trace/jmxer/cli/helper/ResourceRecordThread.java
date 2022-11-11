@@ -8,6 +8,7 @@ import javax.management.openmbean.CompositeData;
 
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.data.ResourceUsage;
+import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 
 public class ResourceRecordThread extends AbstractRecordThread {
@@ -82,7 +83,7 @@ public class ResourceRecordThread extends AbstractRecordThread {
 		Logger.logln("");
 		for(int i = 0; i < recordData.length; i++) {
 			ResourceUsage usage = recordData[i];
-			String thrStr = "\"" + (usage.threadName.length()>38?(usage.threadName.substring(0,35)+"..."):usage.threadName) + "\"";
+			String thrStr = "\"" + StringUtil.shortenStringWithSuffix(usage.threadName, 38, "...") + "\"";
 			long cpuStr = (usage.currCpu - usage.startCpu) / 1000000;
 			long memStr = (usage.currMem - usage.startMem);
 			if(usage.startCpu > usage.currCpu || usage.startMem > usage.currMem) {

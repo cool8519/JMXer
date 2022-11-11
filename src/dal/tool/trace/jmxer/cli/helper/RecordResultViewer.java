@@ -683,7 +683,7 @@ public class RecordResultViewer {
 			if(threadInfoList != null && threadInfoList.size() > 0) {
 				RecordThreadInfo threadInfo = threadInfoList.get(0);
 				ResourceUsage resourceUsage = result.resourceData.get(id);
-				String thrStr = "\"" + (resourceUsage.threadName.length()>38?(resourceUsage.threadName.substring(0,35)+"..."):resourceUsage.threadName) + "\"";
+				String thrStr = "\"" + StringUtil.shortenStringWithSuffix(resourceUsage.threadName, 38, "...") + "\"";
 				long totalCpu = resourceUsage.currCpu - resourceUsage.startCpu;
 				long totalMem = resourceUsage.currMem - resourceUsage.startMem;
 				String cpuStr = "Unknown";

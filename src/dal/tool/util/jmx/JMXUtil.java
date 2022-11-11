@@ -454,22 +454,28 @@ public class JMXUtil {
 		}
     	return threadIds;
     }
-    
+
     /**
-	 * JVM에 접속하여 모든 Thread ID에 대한 ThreadInfo Map을 가져온다.
-     * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
+	 * JVM에 접속하여 Thread ID에 대한 ThreadInfo Map을 가져온다.
+     * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체
+     * @param threadIds 가져올 ThreadID 문자열 배열. null이면 모든 Thread를 가져온다. 
 	 * @return Thread ID,ThreadInfo 목록
 	 * @throws Exception 호출 과정에서 발생한 모든 Exception
      */
-    public static Map<Long,ThreadInfo> getAllThreadInfo(MBeanServerConnection mbeanConn) throws Exception {
+    public static Map<Long,ThreadInfo> getThreadInfo(MBeanServerConnection mbeanConn, String[] threadIds) throws Exception {
 		ObjectName objectName = new ObjectName("java.lang:type=Threading");	
 		
-		long[] threadIds = JMXUtil.getAllThreadIds(mbeanConn, true);
-		String[] threadIdsStringArr = new String[threadIds.length];
-		for(int i = 0; i < threadIds.length; i++) {
-			threadIdsStringArr[i] = String.valueOf(threadIds[i]);
+		String threadIdsString;
+		if(threadIds == null) {
+			long[] tids = JMXUtil.getAllThreadIds(mbeanConn, true);
+			String[] tidStrArr = new String[tids.length];
+			for(int i = 0; i < tids.length; i++) {
+				tidStrArr[i] = String.valueOf(tids[i]);
+			}
+			threadIdsString = StringUtil.arrayToString(tidStrArr, ",");
+		} else {
+			threadIdsString = StringUtil.arrayToString(threadIds, ",");
 		}
-		String threadIdsString = StringUtil.arrayToString(threadIdsStringArr, ",");
 		Object resultData = JMXUtil.invokeAttributeOrOperation(mbeanConn, objectName, "getThreadInfo(long[])", new String[]{threadIdsString});
 		
 		CompositeData[] resultDataArr = null;
@@ -491,6 +497,16 @@ public class JMXUtil {
 			thrMap.put(threadInfo.getThreadId(), threadInfo);
 		}
 		return thrMap;
+	}
+    
+    /**
+	 * JVM에 접속하여 모든 Thread ID에 대한 ThreadInfo Map을 가져온다.
+     * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
+	 * @return Thread ID,ThreadInfo 목록
+	 * @throws Exception 호출 과정에서 발생한 모든 Exception
+     */
+    public static Map<Long,ThreadInfo> getAllThreadInfo(MBeanServerConnection mbeanConn) throws Exception {
+    	return getThreadInfo(mbeanConn, null);
 	}
 
     /**

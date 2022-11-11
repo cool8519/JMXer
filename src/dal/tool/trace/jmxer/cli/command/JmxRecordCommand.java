@@ -82,7 +82,7 @@ public class JmxRecordCommand extends JmxCommand {
         logln("      Usage) record view thread ThreadList [RangeExpression]");
         logln("        arg 1) ThreadList : {*|ThreadIds|ThreadNames}");
         logln("        arg 2) RangeExpression : {AbsoluteTimeRange|RelativeTimeRange|SampleOrderRange}");
-        logln("   'STACK' means to show the stacktraces of a specific point in time or period.");
+        logln("   'STACK' means to show the stacktraces of a specific point in time.");
         logln("      Usage) record view stack TargetThread PointExpression");
         logln("        arg 1) TargetThread : {ThreadIds|ThreadNames}");
         logln("        arg 2) PointExpression : {AbsoluteTimePoint|RelativeTimePoint|SampleOrderPoint}");
@@ -235,13 +235,15 @@ public class JmxRecordCommand extends JmxCommand {
 				if(lastRecordResult == null) {
 					logln("No record result in memory. Please record a stacktrace or load a dump file.");
 					return;
-				} else if(lastRecordResult.dmpFilePath != null && new File(lastRecordResult.dmpFilePath).exists()) {
-					logln("The record data is already written in the dump file : " + lastRecordResult.dmpFilePath);
-					return;
 				}
 				String path = commandArgs.hasMoreArgument() ? commandArgs.nextArgument().trim() : JMXerConstant.DEFAULT_DUMP_FILE_PATH;
 				String yn = "Y";
-				if(new File(path).exists()) {
+				File dumpfile = new File(path);
+				if(dumpfile.exists() && dumpfile.isDirectory()) {
+					path += File.separator + JMXerConstant.DEFAULT_DUMP_FILE_NAME;
+					dumpfile = new File(path);
+				}
+				if(dumpfile.exists()) {
 					while(true) {
 						yn = IOUtil.readLine("The dump file to be saved already exists. Do you want to overwrite the dump file(Y/N)? ", Logger.Level.RESULT);
 						yn = yn.trim().toUpperCase();
@@ -250,9 +252,10 @@ public class JmxRecordCommand extends JmxCommand {
 						}
 					}
 				}
-				if("Y".equals(yn)) {	
-					lastRecordResult.saveToFile(new File(path));
-					logln("Successfully saved stacktrace data to the dump file : " + new File(path).getAbsolutePath());
+				if("Y".equals(yn)) {
+					if(lastRecordResult.saveToFile(dumpfile)) {
+						logln("Successfully saved stacktrace data to the dump file : " + dumpfile.getAbsolutePath());
+					}
 				}
 			} else if(arg.equalsIgnoreCase("load")) {
 				if(!checkArgument(1, 2)) {
@@ -261,6 +264,10 @@ public class JmxRecordCommand extends JmxCommand {
 				}
 				String path = commandArgs.hasMoreArgument() ? commandArgs.nextArgument().trim() : JMXerConstant.DEFAULT_DUMP_FILE_PATH;
 				File dumpfile = new File(path);
+				if(dumpfile.exists() && dumpfile.isDirectory()) {
+					path += File.separator + JMXerConstant.DEFAULT_DUMP_FILE_NAME;
+					dumpfile = new File(path);
+				}				
 				if(!dumpfile.exists()) {
 					logln("The dump file to load does not exist : " + dumpfile.getAbsolutePath());
 					return;

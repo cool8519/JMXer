@@ -48,7 +48,7 @@ public class JmxThreadCommand extends JmxCommand {
         logln("");
         logln(" Views threads info.");
         logln("");
-        logln(" THR[EAD] [LIST]");
+        logln(" THR[EAD] [LIST] [ThreadList]");
         logln(" THR[EAD] INFO ThreadList");
         logln(" THR[EAD] STACK[TRACE] ThreadList [MaxDepth]");
         logln("");
@@ -71,11 +71,28 @@ public class JmxThreadCommand extends JmxCommand {
 	
 	public void doExecute() throws Exception {
 		String subCmd = StringUtil.stripQuote(commandArgs.getArgument(1), new char[]{'"','\''}, true);
-		if(commandArgs.size() == 0 || (commandArgs.size() == 1 && subCmd.equalsIgnoreCase("list"))) {
-			commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
+		if(commandArgs.size() == 0 || subCmd.equalsIgnoreCase("list")) {
+			commandArgs.setArguments(ListArgumentsHelper.concatSpaceWithQuotes(commandArgs, '"'));
+			if(!checkArgument(0, 2)) return;
 			logln("");
 			try {
-				JMXPrintUtil.printAllThreadList(getMBeanConnection());
+				if(commandArgs.size() < 2 || (commandArgs.size() == 2 && commandArgs.getArgument(2).trim().equals("*"))) {
+					JMXPrintUtil.printAllThreadList(getMBeanConnection());
+				} else {
+					commandArgs.nextArgument();
+					String[] threadIds = null;
+					try {
+						String threadArgs = (commandArgs.size() < 2) ? "*" : commandArgs.nextArgument().trim();
+						threadIds = JmxThreadCommand.getTargetThreads(getMBeanConnection(), threadArgs);
+						if(!threadArgs.equals("*") && threadIds != null && threadIds.length > 0) {
+							logln(Level.DEBUG, "List of Thread ID : Count=" + threadIds.length + ", List=[" + StringUtil.arrayToString(threadIds, ",") + "]");
+						}
+					} catch(Exception e) {
+						logln(Level.ERROR, "Failed to get thread id from the argument : " + e.getMessage());
+						return;
+					}
+					JMXPrintUtil.printThreadList(getMBeanConnection(), threadIds);
+				}				
 			} catch(Exception e) {
 				if(e instanceof IOException) {
 					throw e;
@@ -84,7 +101,6 @@ public class JmxThreadCommand extends JmxCommand {
 			}
 		} else {
 			commandArgs.setArguments(ListArgumentsHelper.concatSpaceWithQuotes(commandArgs, '"'));
-			//commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
 			String arg = commandArgs.nextArgument();
 			if(!checkArgument(2, -1)) return;
 			String[] threadIds = null;

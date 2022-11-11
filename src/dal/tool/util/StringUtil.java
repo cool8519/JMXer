@@ -360,4 +360,41 @@ public class StringUtil {
 		}
 		return trim ? s.trim() : s;
 	}
+	
+	/**
+	 * 문자열을 최대 길이까지 줄이고 앞에 prefix를 붙인다.<br>
+	 * 예) (s,10,"...") : "ABCDEFGHIJKLMN" -> "...HIJKLMN"
+	 * @param str 대상 문자열
+	 * @param maxLength 줄일 문자열의 최대 길이. 대상 문자열이 maxLength보다 작으면 그대로 리턴
+	 * @param prefix 줄인 문자열 앞에 붙일 문자열
+	 * @return 결과 문자열. s가 null이거나 maxLength가 prefix길이보다 작거나 같으면 null 리턴
+	 */
+	public static String shortenStringWithPrefix(String s, int maxLength, String prefix) {
+		if(s == null || maxLength <= prefix.length()) return null;
+		String result = "";
+		if(s.length() <= maxLength) return s;
+		int pLen = (prefix == null) ? 0 : prefix.length();
+		if(pLen > 0) result += prefix;
+		result += s.substring(s.length()-maxLength+pLen);
+		return result;
+	}
+	
+	/**
+	 * 문자열을 최대 길이까지 줄이고 뒤에 suffix를 붙인다.<br>
+	 * 예) (s,10,"...") : "ABCDEFGHIJKLMN" -> "ABCDEFG..."
+	 * @param str 대상 문자열
+	 * @param maxLength 줄일 문자열의 최대 길이. 대상 문자열이 maxLength보다 작으면 그대로 리턴
+	 * @param prefix 줄인 문자열 뒤에 붙일 문자열
+	 * @return 결과 문자열. s가 null이거나 maxLength가 suffix길이보다 작거나 같으면 null 리턴
+	 */
+	public static String shortenStringWithSuffix(String s, int maxLength, String suffix) {
+		if(s == null || maxLength <= suffix.length()) return null;
+		String result = "";
+		if(s.length() <= maxLength) return s;
+		int sLen = (suffix == null) ? 0 : suffix.length();
+		result += s.substring(0, maxLength-sLen);
+		if(sLen > 0) result += suffix;
+		return result;
+	}
+	
 }
