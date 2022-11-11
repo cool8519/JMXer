@@ -10,7 +10,7 @@
 
 ## Getting Started
 아래의 JAVA Archive 파일(jar)을 다운로드 한다.
-* Java Archive File : [JMXer_v1.0.jar](https://github.com/cool8519/JMXer/blob/master/output/JMXer_v1.0.jar)
+* Java Archive File : [JMXer.jar](https://github.com/cool8519/JMXer/blob/master/output/JMXer.jar)
 
 커맨드 창에서 아래와 같이 실행한다. 세부 ARGUMENT들은 Usage를 참고한다.
 ```sh
