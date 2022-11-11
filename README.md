@@ -1,16 +1,13 @@
 ﻿# JMXer
----------------
 일반적인 미들웨어의 경우, 기본적으로 Accesslog를 이용하여 클라이언트 요청 정보를 기록한다. 여기에는 모든 요청에 대한 처리결과가 기록되어 있으므로, 이것을 이용하여 시스템의 성능을 분석할 수 있다. 가령, PeakTime은 언제인지, 최대 몇 TPS를 처리하는지, 응답시간 지연이 얼마나 발생하며 어떤 요청이 주로 지연되는지, 오류비율은 얼마나 되는지 등을 Accesslog를 통해 분석이 가능하다. ALYBA는 Accesslog를 분석하여 시스템의 현황을 점검하고 더 나아가 악성 어플리케이션을 식별하기 위한 목적으로 개발되었다.
 
 
 ## Requirements
----------------
 * OS : Linux, Windows
 * JAVA : JDK 6 이상
 
 
 ## Getting Started
----------------
 아래의 JAVA Archive 파일(jar)을 다운로드 한다.
 * Java Archive File : [JMXer_v1.0.jar](https://github.com/cool8519/JMXer/blob/master/output/JMXer_v1.0.jar)
 
@@ -21,7 +18,6 @@ $ java -jar JMXer.jar [ARGUMENTS]
 
 
 ## How to run
----------------
 아래는 JMXer를 실행하기 위한 Agument 사용법이다.
 옵션은 대소문자를 구분하지 않는다.
 
@@ -55,7 +51,6 @@ JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
 
 
 ## Commands
----------------
 모든 명령어는 대소문자를 구분하지 않는다.
 명령어 중 대괄호(`[]`)안의 문자는 일부 또는 전체 생략이 가능하다. 예를들어 명령어 "Q[UIT]"에 대해서는 `Q`, `QU`, `QUIT`와 같이 입력할 수 있다.
 
@@ -237,11 +232,9 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
 
 
 ## Release Note
---------------
 1.0
  - 최초 릴리즈
 
 
 ## To-do
---------------
 미정
