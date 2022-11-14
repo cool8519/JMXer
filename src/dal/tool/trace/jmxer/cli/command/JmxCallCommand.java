@@ -11,6 +11,7 @@ import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
+import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
 import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.StringUtil;
@@ -79,12 +80,13 @@ public class JmxCallCommand extends JmxCommand {
 			}
 		} else if(commandArgs.size() == 2) {
 			String first = commandArgs.getArgument(1);
+			first = StringUtil.stripQuote(first, new char[]{'"','\''}, true);
 			if((first.indexOf(':') > 0 && first.indexOf('=') > 0) || first.equals("*")) {
-				mbeanObjectName = commandArgs.nextArgument();
+				mbeanObjectName = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
 				callTargetName = commandArgs.nextArgument();
 			} else {
 				if(setMBeanOName == null) {
-					mbeanObjectName = commandArgs.nextArgument();
+					mbeanObjectName = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
 					callTargetName = commandArgs.nextArgument();
 				} else {
 					mbeanObjectName = setMBeanOName;
@@ -92,7 +94,7 @@ public class JmxCallCommand extends JmxCommand {
 				}
 			}			
 		} else if(commandArgs.size() == 3) {
-			mbeanObjectName = commandArgs.nextArgument();			
+			mbeanObjectName = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
 			callTargetName = commandArgs.nextArgument();
 			if(callTargetName.equals("?") || callTargetName.equals("??") || callTargetName.equals("#")) {
 				logln("Too many arguments.");

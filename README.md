@@ -6,7 +6,7 @@
 ## Requirements
 * OS : Linux, Windows
 * JAVA : JDK 6 이상
-
+    > JDK는 Local Process Attach를 위해 필요하므로, Address/Port를 통한 Remote 접속 및 Analyze 모드 실행은 JRE에서 수행 가능하다.
 
 ## Getting Started
 아래의 JAVA Archive 파일(jar)을 다운로드 한다.
@@ -99,6 +99,8 @@ JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
     Ex 1) `JMXer> LS ../*Memory*`<br/>
     Ex 2) `JMXer> LS java.lang:type=Threading/*Count`
 
+![Screenhot](screenshots/command_list.jpg)
+
 ##### 2. JMX 호출
 JMX 호출을 위해서 `CALL`명령어를 사용한다.
 ObjectName은 `OBJECT`명령어를 통해 설정이 되어 있는 경우에 한해 생략이 가능하다.
@@ -112,6 +114,8 @@ JMXer> CALL [{*|ObjectName}] {?|??|#}
 - `??` : Attribute와 Operation의 상세 정보 출력 
 - `#` : 모든 Attribute값 출력
 
+![Screenhot](screenshots/command_call_list.jpg)
+
 ###### 2.2 MBean Attribute 조회/변경
 아래와 같이 MBean내 특정 Attribute 값를 조회하거나 변경한다.
 ```sh
@@ -119,6 +123,8 @@ JMXer> CALL [{*|ObjectName}] AttributeName [{?|AttributeValue}]
 ```
 - `?` : 해당 Attribute의 상세 정보 출력
 - Value : 해당 Attribute 값을 Value로 변경
+
+![Screenhot](screenshots/command_call_attr.jpg)
 
 ###### 2.3 MBean Operation 조회/호출
 아래와 같이 MBean내 특정 Operation의 정보를 조회하거나 호출한다.
@@ -129,6 +135,8 @@ JMXer> CALL [{*|ObjectName}] OperationName [{?|"Argument(,Argument...)"}]
 - Arguments : 해당 Operation을 Arguments(인자값 목록)과 함께 호출
     > 인자값 목록은 쌍따옴표(`""`)로 둘러쌓여야 한다.<br/>
     > 콤마(`,`)로 여러개의 인자를 지정할수 있으며, 인자값이 배열인 경우는 대괄호(`[]`)로 표현한다.
+    
+![Screenhot](screenshots/command_call_oper.jpg)
 
 ##### 3. 쓰레드
 Thread 정보 조회를 위해서 `THREAD`명령어를 사용한다.
@@ -148,12 +156,16 @@ JMXer> THR[EAD] [LIST] [ThreadList]
     > Thread ID와 Name을 혼합하여 아래와 같이 사용할 수 있다.<br/>
     > Ex) `"main",11-20,"Worker-*"`
 
+![Screenhot](screenshots/command_thr_list.jpg)
+
 ###### 3.2 쓰레드 상세정보 조회
 아래와 같이 현재 동작중인 Thread의 상태 정보를 조회한다.
 ```sh
 JMXer> THR[EAD] INFO ThreadList
 ```
 - ThreadList : 특정 Thread ID 또는 Name에 해당하는 정보을 출력한다. *참고) ThreadList 표현식*
+
+![Screenhot](screenshots/command_thr_info.jpg)
 
 ###### 3.3 쓰레드 스택트레이스 조회
 아래와 같이 현재 동작중인 Thread의 StackTrace를 출력한다.
@@ -163,17 +175,21 @@ JMXer> THR[EAD] STACK[TRACE] ThreadList [MaxDepth]
 - ThreadList : 특정 Thread ID 또는 Name에 해당하는 StackTrace을 출력한다. *참고) ThreadList 표현식*
 - MaxDepth : 출력할 최대 Stack 깊이를 지정한다. 지정하지 않으면 전체 Stack을 출력한다.
 
+![Screenhot](screenshots/command_thr_stack.jpg)
+
 ##### 4. 레코딩
 현재 동작중인 Thread의 활동 변화를 샘플링하고 분석하기 위해서 `RECORD`명령어를 사용한다.
 
 ###### 4.1 쓰레드별 리소스 사용량 변화 추적
 일정시간 동안의 Thread별 CPU 및 Memory 사용의 변화량을 확인할 수 있다.
 ```sh
-JMXer> REC[ORD] RES[OURCE] ThreadList <kbd>↵</kbd>
+JMXer> REC[ORD] RES[OURCE] ThreadList ↵
 Sampling Time in milliseconds(0, Until the enter key is pressed):
 ```
 - ThreadList : 수집할 Thread ID 또는 Name을 한정할 수 있다. *참고) ThreadList 표현식*
 - Sampling Time : 모니터링 시간(ms). 0을 입력하면 <kbd>Enter</kbd>를 누를때 까지 모니터링 한다.
+
+![Screenhot](screenshots/command_rec_res.jpg)
 
 ###### 4.2 쓰레드 스택트레이스 샘플링
 일정간격으로 Thread내 Method 호출 변화를 기록한다.
@@ -196,12 +212,16 @@ JMXer> REC[ORD] SAVE [FileName]
 ```
 - FileName : 저장할 dmp 파일의 절대 또는 상대 경로. 지정하지 않으면 현재 디렉토리에 저장되며, 파일명이 주어지지 않으면 기본 파일명인 "JMXer_Record_Trace.dmp"으로 저장된다.
 
+![Screenhot](screenshots/command_rec_stack.jpg)
+
 ###### 4.4 스택트레이스 샘플링 로드
 위에서 저장한 .dmp 파일을 메모리에 로딩한다.
 ```sh
 JMXer> REC[ORD] LOAD [FileName]
 ```
 - FileName : 로딩할 dmp 파일의 절대 또는 상대 경로. 지정하지 않으면 현재 디렉토리에서 로딩하며, 파일명이 주어지지 않으면 기본 파일명인 "JMXer_Record_Trace.dmp"를 로딩한다.
+
+![Screenhot](screenshots/command_rec_load.jpg)
 
 ###### 4.5 스택트레이스 샘플링 분석
 메모리에 로딩된 샘플링 결과를 분석한다. 이를 위해서는 스택트레이스 샘플링 또는 덤프 파일 로드를 먼저 수행해야 한다.
@@ -211,14 +231,19 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
 - ViewType : 분석을 위한 세부 명령어로, 아래와 같이 사용할 수 있다.
     - `INFO` : 저장된 Sampling 결과를 요약하여 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **INFO**
+        ![Screenhot](screenshots/command_rec_view_info.jpg)
     - `METHOD` : Thread들에서 수행된 모든 Method를 호출 결과를 집계하여 점유율 순으로 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **METHOD** *ThreadList [RangeExpression]*
+        ![Screenhot](screenshots/command_rec_view_method.jpg)
     - `THREAD` : Thread별로 Method 호출 결과를 집계하여 트리 형태로 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **THREAD** *ThreadList [RangeExpression]*
+        ![Screenhot](screenshots/command_rec_view_thread.jpg)
     - `STACK` : 특정 시점의 Thread StackTrace를 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **STACK** *TargetThread PointExpression*
+        ![Screenhot](screenshots/command_rec_view_stack.jpg)
     - `SEARCH` : Sampling 결과 내에서 Method 또는 Class 호출 정보를 검색한다.<br/>
         Usage) JMXer> RECORD VIEW **SEARCH** *ThreadList NameExpression*<br/><br/>
+        ![Screenhot](screenshots/command_rec_view_search.jpg)
 
     > ThreadList : 분석할 Thread ID 또는 Name의 목록을 지정한다. 참고) ThreadList 표현식<br/>
     > TargetThread : 분석할 Thread ID(숫자) 또는 Name(문자열,패턴가능)을 지정한다. <br/>
