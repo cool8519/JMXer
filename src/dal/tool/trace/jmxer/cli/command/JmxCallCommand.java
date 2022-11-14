@@ -11,7 +11,6 @@ import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
-import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
 import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.StringUtil;
@@ -60,7 +59,6 @@ public class JmxCallCommand extends JmxCommand {
 
 
 	private boolean parseCallArguments() throws Exception {
-		commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
 		if(commandArgs.size() == 1 && commandArgs.getArgument(1).equalsIgnoreCase("help")) {
 			return true;
 		}
