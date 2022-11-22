@@ -198,7 +198,7 @@ Sampling Time in milliseconds(0, Until the enter key is pressed):
 ###### 4.2 쓰레드 스택트레이스 샘플링
 일정간격으로 Thread내 Method 호출 변화를 기록한다.
 ```sh
-JMXer> REC[ORD] STACK[TRACE] ThreadList <kbd>↵</kbd>
+JMXer> REC[ORD] STACK[TRACE] ThreadList ↵
 Sampling Interval in milliseconds(500):
 Sampling Time in milliseconds(0, Until the enter key is pressed):
 ```
