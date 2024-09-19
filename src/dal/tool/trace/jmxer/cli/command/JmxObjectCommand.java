@@ -1,10 +1,13 @@
 package dal.tool.trace.jmxer.cli.command;
 
+import java.util.List;
+
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxSettings;
 import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
+import dal.tool.util.NumberUtil;
 import dal.tool.util.jmx.JMXUtil;
 
 public class JmxObjectCommand extends JmxCommand {
@@ -32,10 +35,12 @@ public class JmxObjectCommand extends JmxCommand {
         logln("");
         logln(" Enter no argument to show current ObjectName");
         logln(" Enter null value or ObjectName as the argument");
+        logln(" ObjectName can be a string or an index");
         logln("");
         logln(" OBJ[ECT]");
         logln(" OBJ[ECT] {-|NULL}");
         logln(" OBJ[ECT] ObjectName");
+        logln(" OBJ[ECT] #Index");
 	}
 
 	
@@ -57,6 +62,15 @@ public class JmxObjectCommand extends JmxCommand {
         			logln("Unset current ObjectName.");
         		}
         	} else {
+        		if(oName.startsWith("#")) {
+        			if(NumberUtil.isNumber(oName.substring(1))) {
+        				List<String> list = ((JmxCommandExecutor)commandExecutor).getObjectNameList();
+        				oName = list.get(Integer.parseInt(oName.substring(1))-1);
+        			} else {
+        				logln("Index must be a number");
+        				return;
+        			}
+        		}        		
         		if(JMXUtil.existsObjectName(getMBeanConnection(), oName)) {
             		if(settings.setMBeanObjectName(oName)) {
             			logln("Set current ObjectName '" + settings.getMBeanObjectName() + "'");

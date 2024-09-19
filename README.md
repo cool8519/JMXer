@@ -268,7 +268,8 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
 ## Release Note
 1.0
  - 최초 릴리즈
-
+1.1
+ - ObjectName 선택시 Index 지원
 
 ## To-do
 미정

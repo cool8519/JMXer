@@ -46,11 +46,13 @@ public class JmxListCommand extends JmxCommand {
 	public void doExecute() throws Exception {
 		if(!checkArgument(0, 1)) return;
 		commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
+		JmxCommandExecutor executor = (JmxCommandExecutor)commandExecutor;
     	String setOName = getSettings().getMBeanObjectName();
 		try {
 	    	if(commandArgs.size() == 0) {
 	        	if(setOName == null) {
-	        		JMXPrintUtil.printObjectNames(getMBeanConnection(), null);
+	        		executor.refreshObjectNameList(JMXUtil.getObjectNames(getMBeanConnection(), null));
+	        		JMXPrintUtil.printObjectNames(executor.getObjectNameList(), null, null);
 	        	} else {
 					JMXPrintUtil.printAttributeAndOperationList(new ArrayList<MBeanFeatureInfo>(getMBeanInfoList(setOName).values()), setOName, null);
 	        	}
@@ -65,10 +67,12 @@ public class JmxListCommand extends JmxCommand {
 	    		}
 	    		if(targets != null) {
 		    		if(targets.size() == 0) {
-		    			JMXPrintUtil.printObjectNames(getMBeanConnection(), null);
+		        		executor.refreshObjectNameList(JMXUtil.getObjectNames(getMBeanConnection(), null));
+		        		JMXPrintUtil.printObjectNames(executor.getObjectNameList(), null, null);
 		    		} else if(targets.size() == 1) {
 		    			String mbeanNamePattern = (targets.get(0)==null||targets.get(0).equals("*")) ? null : targets.get(0);
-		    			JMXPrintUtil.printObjectNames(getMBeanConnection(), mbeanNamePattern);
+		    			List<ObjectName> oNames = JMXUtil.getObjectNames(getMBeanConnection(), mbeanNamePattern);
+		    			JMXPrintUtil.printObjectNames(executor.getObjectNameList(), oNames, mbeanNamePattern);
 		    		} else if(targets.size() == 2) {
 		    			String mbeanNamePattern = (targets.get(0)==null||targets.get(0).equals("*")) ? null : targets.get(0);
 		    			String namePattern = (targets.get(1)==null||targets.get(1).equals("*")) ? null : targets.get(1);

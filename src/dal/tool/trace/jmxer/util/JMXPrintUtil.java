@@ -2,7 +2,6 @@ package dal.tool.trace.jmxer.util;
 
 import java.lang.management.ThreadInfo;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -164,12 +163,38 @@ public class JMXPrintUtil {
 		if(objectNameList.size() < 1) {
 			Logger.logln("No ObjectName exists" + ((objectNamePattern == null) ? "" : (" : " + objectNamePattern)));
 		} else {
-			Collections.sort(objectNameList);
 			Logger.logln("List of MBean ObjectName" + ((objectNamePattern == null) ? "" : (" : " + objectNamePattern)));
 			ObjectName oname;
 			for(int i = 0; i < objectNameList.size(); i++) {
 				oname = objectNameList.get(i);
 				Logger.logln(" - " + oname);
+			}
+		}
+	}
+	
+	/**
+	 * 전달받은 MBean ObjectName을 Index와 함께 출력한다.
+	 * @param objectNameStringList 정렬된 MBean ObjectName 이름 목록
+	 * @param objectNamePrintList 출력할 ObjectName 객체 목록. null이면 전체 목록을 출력한다.
+	 * @param objectNamePattern 출력할 ObjectName 이름 패턴. 안내 메시지에 보여질 패턴이며, null이면 출력하지 않는다.
+	 */
+	public static void printObjectNames(List<String> objectNameStringList, List<ObjectName> objectNamePrintList, String objectNamePattern) {
+		Logger.logln("");
+		if(objectNamePrintList != null && objectNamePrintList.size() < 1) {
+			Logger.logln("No ObjectName exists" + ((objectNamePattern == null) ? "" : (" : " + objectNamePattern)));
+		} else {
+			Logger.logln("List of MBean ObjectName" + ((objectNamePattern == null) ? "" : (" : " + objectNamePattern)));
+			for(int i = 1; i <= objectNameStringList.size(); i++) {
+				String name = objectNameStringList.get(i-1);
+				if(objectNamePrintList == null) {
+					Logger.logln(String.format(" #%-2d - %s", i, name));
+				} else {
+					for(ObjectName oname : objectNamePrintList) {
+						if(name.equals(oname.toString())) {
+							Logger.logln(String.format(" #%-2d - %s", i, name));
+						}
+					}
+				}
 			}
 		}
 	}

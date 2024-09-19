@@ -3,6 +3,8 @@ package dal.tool.util.jmx;
 import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +48,9 @@ public class JMXUtil {
 	 */
 	public static List<ObjectName> getObjectNames(MBeanServerConnection mbeanConn) throws Exception {
         Set<ObjectName> queryNames = mbeanConn.queryNames(null, null);
-        return new ArrayList<ObjectName>(queryNames);
+        List<ObjectName> ret = new ArrayList<ObjectName>(queryNames);
+        Collections.sort(ret);
+        return ret;
 	}
 
 	
@@ -65,6 +69,7 @@ public class JMXUtil {
         		ret.add(oName);
         	}
         }
+        Collections.sort(ret);
         return ret;
 	}
 
@@ -120,7 +125,14 @@ public class JMXUtil {
      */
     public static List<MBeanAttributeInfo> getAttributeList(MBeanServerConnection mbeanConn, ObjectName oName) throws Exception {
     	MBeanInfo info = mbeanConn.getMBeanInfo(oName);
-    	return Arrays.asList(info.getAttributes());
+    	List<MBeanAttributeInfo> ret = Arrays.asList(info.getAttributes());
+    	Collections.sort(ret, new Comparator<MBeanAttributeInfo>() {
+    		@Override
+    		public int compare(MBeanAttributeInfo o1, MBeanAttributeInfo o2) {
+    			return o1.getName().compareTo(o2.getName());
+    		}
+		});
+    	return ret;
     }
  
     
@@ -133,7 +145,14 @@ public class JMXUtil {
      */
     public static List<MBeanOperationInfo> getOperationList(MBeanServerConnection mbeanConn, ObjectName oName) throws Exception {
     	MBeanInfo info = mbeanConn.getMBeanInfo(oName);
-    	return Arrays.asList(info.getOperations());
+    	List<MBeanOperationInfo> ret = Arrays.asList(info.getOperations());
+    	Collections.sort(ret, new Comparator<MBeanOperationInfo>() {
+    		@Override
+    		public int compare(MBeanOperationInfo o1, MBeanOperationInfo o2) {
+    			return o1.getName().compareTo(o2.getName());
+    		}
+		});    	
+    	return ret;
     }
 
     
@@ -145,10 +164,9 @@ public class JMXUtil {
      * @throws Exception 수행 과정에서 발생한 모든 Exception
      */
     public static List<MBeanFeatureInfo> getAttributeAndOperationList(MBeanServerConnection mbeanConn, ObjectName oName) throws Exception {
-    	MBeanInfo info = mbeanConn.getMBeanInfo(oName);
     	List<MBeanFeatureInfo> result = new ArrayList<MBeanFeatureInfo>();
-    	result.addAll(Arrays.asList(info.getAttributes()));
-    	result.addAll(Arrays.asList(info.getOperations()));
+    	result.addAll(getAttributeList(mbeanConn, oName));
+    	result.addAll(getOperationList(mbeanConn, oName));
     	return result;
     }
  
@@ -237,8 +255,7 @@ public class JMXUtil {
 	 */
 	public static Map<MBeanAttributeInfo,Object> getAttributeValuesWithInfo(MBeanServerConnection mbeanConn, ObjectName oName, String targetName) throws Exception {
 		Map<MBeanAttributeInfo,Object> resultMap = new HashMap<MBeanAttributeInfo,Object>();
-		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
-		for(MBeanAttributeInfo info : mbeanInfo.getAttributes()) {
+		for(MBeanAttributeInfo info : getAttributeList(mbeanConn, oName)) {
 			if(targetName == null || targetName.equals(info.getName())) {
 				if(info.isReadable()) {
 					resultMap.put(info, getAttributeValue(mbeanConn, oName, info.getName()));
@@ -260,8 +277,7 @@ public class JMXUtil {
 	public static Map<String,Object> getAttributeValuesWithName(MBeanServerConnection mbeanConn, ObjectName oName, String[] targetNames) throws Exception {
 		Map<String,Object> resultMap = new HashMap<String,Object>();
 		if(targetNames == null) {
-			MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
-			for(MBeanAttributeInfo info : mbeanInfo.getAttributes()) {
+			for(MBeanAttributeInfo info : getAttributeList(mbeanConn, oName)) {
 				if(info.isReadable()) {
 					resultMap.put(info.getName(), getAttributeValue(mbeanConn, oName, info.getName()));
 				}

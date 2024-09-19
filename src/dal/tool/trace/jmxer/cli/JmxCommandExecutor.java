@@ -4,7 +4,10 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.management.ObjectName;
+
 import dal.tool.cli.CommandExecutor;
+import dal.tool.cli.Logger;
 import dal.tool.cli.command.Command;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.cli.command.InfoCommand;
@@ -15,6 +18,7 @@ import dal.tool.trace.jmxer.cli.command.JmxObjectCommand;
 import dal.tool.trace.jmxer.cli.command.JmxRecordCommand;
 import dal.tool.trace.jmxer.cli.command.JmxSettingCommand;
 import dal.tool.trace.jmxer.cli.command.JmxThreadCommand;
+import dal.tool.util.jmx.JMXUtil;
 import dal.tool.util.jmx.MBeanConnector;
 
 
@@ -25,6 +29,7 @@ import dal.tool.util.jmx.MBeanConnector;
  */
 public class JmxCommandExecutor extends CommandExecutor {
 
+	private static List<String> objectNameList;
 	private static List<CommandMeta> commandMetaList = new ArrayList<CommandMeta>();
 	static {
 		commandMetaList.add(JmxHelpCommand.commandMeta);
@@ -48,6 +53,11 @@ public class JmxCommandExecutor extends CommandExecutor {
 		super();
 		this.settings = new JmxSettings();
 		this.mbeanConnector = mbeanConnector;
+		try {
+			refreshObjectNameList(JMXUtil.getObjectNames(mbeanConnector.getMBeanConnection(), null));
+		} catch(Exception e) {
+			Logger.logln(Logger.Level.ERROR, "Failed to get list of ObjectName.");
+		}
 	}
 	
 
@@ -64,7 +74,22 @@ public class JmxCommandExecutor extends CommandExecutor {
 	public List<CommandMeta> getCommandMetaList() {
 		return commandMetaList;
 	}
-
+	
+	public List<String> getObjectNameList() {
+		return objectNameList;
+	}
+	
+	public void refreshObjectNameList(List<ObjectName> orderedList) {
+		try {
+			List<String> list = new ArrayList<String>();
+			for(ObjectName oName : orderedList) {
+				list.add(oName.toString());
+			}
+			objectNameList = list;
+		} catch(Exception e) {
+			objectNameList = null;
+		}
+	}
 	
 	protected Command getCommand(String commandLine) throws Exception {
         Command command = null;
