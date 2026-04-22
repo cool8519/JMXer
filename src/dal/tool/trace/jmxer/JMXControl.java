@@ -212,6 +212,8 @@ public class JMXControl {
     	Logger.logln("");
     	Logger.logln(" *) There are two modes to run JMXer.");
     	Logger.logln("    - Attach Mode  : To connect to a remote or local JVM to execute JMX commands. All functions including analysis are available.");
+    	Logger.logln("                     * PID/NAME attach requires JDK runtime. (Java 8: tools.jar, Java 9+: jdk.attach)");
+    	Logger.logln("                     * Attach usually requires same OS user permission as target JVM.");
     	Logger.logln("    - Analyze Mode : To only analyze record dump files without JVM connection. Unable to execute JMX commands.");
     	Logger.logln(" *) If 'CommandLine_To_Execute' arguments are omitted, it will run as INTERACTIVE_MODE.");
     	Logger.logln("");

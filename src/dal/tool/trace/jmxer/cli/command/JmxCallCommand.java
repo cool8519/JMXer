@@ -11,7 +11,6 @@ import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
-import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
 import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.StringUtil;

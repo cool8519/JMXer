@@ -68,9 +68,9 @@ public class JMXHelper {
     		}
     	} catch(Throwable t) {
     		if((t instanceof NoClassDefFoundError) && ("com/sun/tools/attach/spi/AttachProvider".equals(t.getMessage()))) {
-    			Logger.logln(Level.ERROR, "Cannot find JDK attach module. Please include $JAVA_HOME/lib/tools.jar in classpath.");
+    			Logger.logln(Level.ERROR, "Cannot find JDK attach classes. Run JMXer on a full JDK runtime (Java 8: tools.jar, Java 9+: jdk.attach module).");
     		} else {
-    			Logger.logln(Level.ERROR, "Failed to get serviceURL : " + t.getMessage());
+    			Logger.logln(Level.ERROR, "Failed to get serviceURL : " + getAttachFailureReason(t));
     		}
     		System.exit(0);
     	}
@@ -105,8 +105,8 @@ public class JMXHelper {
 	            connectorAddr = virtualMachine.getAgentProperties().getProperty("com.sun.management.jmxremote.localConnectorAddress");
         	} else {
         		if(tool_version > 1.8F) {
-	        		// call virtualMachine.startLocalManagementAgent() by reflection
-	        		Method m = virtualMachine.getClass().getMethod("startLocalManagementAgent");
+	        		// Use exported API type for reflection to avoid JPMS access issue on implementation class.
+	        		Method m = VirtualMachine.class.getMethod("startLocalManagementAgent");
 	        		connectorAddr = (String)m.invoke(virtualMachine);
         		} else {
         			throw new Exception("The vm version of the tool is too old. Please use vm version 1.9 or higher.");
@@ -114,6 +114,30 @@ public class JMXHelper {
         	}
         }
         return connectorAddr;
+	}
+
+	private static String getAttachFailureReason(Throwable t) {
+		Throwable root = t;
+		while(root.getCause() != null && root.getCause() != root) {
+			root = root.getCause();
+		}
+		String message = root.getMessage();
+		if(message == null || message.trim().equals("")) {
+			message = root.toString();
+		}
+		if(message.contains("No AttachProvider exists")) {
+			return "No AttachProvider exists. Attach mode requires a full JDK runtime.";
+		}
+		if(message.contains("Not support attach mode in JRE")) {
+			return "Attach mode is not supported in JRE. Please run JMXer with JDK.";
+		}
+		if(message.contains("Failed to attach")) {
+			return message + " (Check PID validity and ensure same OS user permission.)";
+		}
+		if(root instanceof IllegalAccessException || message.contains("does not export sun.tools.attach")) {
+			return "Attach access is blocked by Java module boundaries. Internal sun.tools.attach access is not allowed.";
+		}
+		return message;
 	}
 	
 
