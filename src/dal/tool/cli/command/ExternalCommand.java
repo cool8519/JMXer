@@ -1,12 +1,12 @@
 package dal.tool.cli.command;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Logger.Level;
+import dal.tool.cli.util.ExternalProcessRunner;
+import dal.tool.cli.util.ExternalProcessRunner.Sink;
 
 public class ExternalCommand extends Command {
 
@@ -31,61 +31,48 @@ public class ExternalCommand extends Command {
         logln(" Use the command line with '!' at the command prompt in command line.");
         logln("");
         logln(" {!|EXT[ERNAL]} [command_line]");
+        logln("");
+        logln(" The command line is passed to the system shell as a single line (same as typing it in a shell).");
+        logln(" On Unix, /bin/sh runs the line. On Windows, cmd runs the line.");
 	}
 
 	
 	public void doExecute() throws Exception {
 		List<String> tokens = commandArgs.getArguments();
-        if(File.separator.equals("/")) {
-        	tokens.add(0, "/bin/sh");
-        	tokens.add(1, "-c");
-        } else {
-        	tokens.add(0, "cmd.exe");
-        	tokens.add(1, "/C");
-        }  
-        String[] command = tokens.toArray(new String[] {});
-        try {
+		if (!checkArgument(1, -1)) {
+			return;
+		}
+		String joined = joinTokens(tokens);
+		boolean unix = File.separatorChar == '/';
+		try {
     		logln("");
 	    	logln("############################ Result of External-Process ##########################");
-	        runExternalProcess(command);
-        } catch(Exception e) {
-        	throw e;
+	    	final ExternalCommand self = this;
+	    	Sink sink = new Sink() {
+				@Override
+				public void line(String s) {
+					self.logln(s);
+				}
+				@Override
+				public void logError(String message) {
+					self.logln(Level.ERROR, message);
+				}
+	    	};
+	    	int exit = ExternalProcessRunner.run(joined, unix, sink);
+	    	if (exit != 0) {
+	    		logln(Level.ERROR, "External process exited with code " + exit);
+	    	}
         } finally {
 	    	logln("##################################################################################");
         }
 	}
 
-
-    /**
-     * 외부 명령어를 수행하고 결과를 출력한다.<br/>
-     * 별도의 프로세스가 기동되어 수행된다.
-     * @param command 호출할 명령어와 argument 목록
-     */
-    public void runExternalProcess(String[] command) {
-        BufferedReader isb = null;
-        BufferedReader esb = null;
-        try {
-            String results;
-            Process p = Runtime.getRuntime().exec(command);
-            isb = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            esb = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-
-            while((results=isb.readLine()) != null) {
-                logln(results);
-            }
-            while((results=esb.readLine()) != null) {
-                logln(results);
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-            logln(Level.ERROR, e.getMessage());
-        } finally {
-            if(isb != null)
-                try { isb.close(); } catch(Exception e) {}
-            if(esb != null)
-                try { esb.close(); } catch(Exception e) {}
-        }
-    }
+	private static String joinTokens(List<String> tokens) {
+		if (tokens == null || tokens.isEmpty()) {
+			return "";
+		}
+		return String.join(" ", tokens);
+	}
 
     
 	public final boolean afterExecute() throws Exception {
