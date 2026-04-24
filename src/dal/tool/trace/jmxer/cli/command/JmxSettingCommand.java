@@ -22,12 +22,20 @@ public class JmxSettingCommand extends SettingCommand {
 	public void printHelp() {
 		super.printHelp();
 		if(JMXControl.isAnalyzeMode) {
+	        logln("");
+	        logln(" Following is the list of available record variable.");
+	        logln("     RECORD_VIEW_MODE - record view mode (NO_REQUEST_WAIT, FULL)");
+	        logln("     SHOW_EMPTY_THREAD - show empty thread in record view (ON, OFF)");
 			return;
 		}
         logln("");
         logln(" Following is the list of available JMX variable.");
         logln("     MBEAN_ONAME  - set current MBean ObjectName");
         logln("     PRETTY_PRINT - display mbean object with newline and indentation");
+        logln("");
+        logln(" Following is the list of available record variable.");
+        logln("     RECORD_VIEW_MODE - record view mode (NO_REQUEST_WAIT, FULL)");
+        logln("     SHOW_EMPTY_THREAD - show empty thread in record view (ON, OFF)");
 	}
 
 	
@@ -51,6 +59,10 @@ public class JmxSettingCommand extends SettingCommand {
             	}
             } else if(variable.equalsIgnoreCase("pretty_print")) {
             	settings.setPrettyPrintInResult(value);
+            } else if(variable.equalsIgnoreCase("record_view_mode")) {
+            	settings.setRecordViewMode(value);
+            } else if(variable.equalsIgnoreCase("show_empty_thread")) {
+            	settings.setShowEmptyThreadInRecordView(value);
             } else {
             	super.doExecute();
             }			

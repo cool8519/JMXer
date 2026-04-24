@@ -58,6 +58,7 @@ public class JmxRecordCommand extends JmxCommand {
         logln("     RESOURCE    - record resource usage of threads for a while.");
         logln("     STACKTRACE  - record stacktrace sample of threads for a while.");
         logln("     VIEW        - display the result of the last recorded stacktrace sample data.");
+        logln("                   * follows SET RECORD_VIEW_MODE (default: NO_REQUEST_WAIT)");
         logln("     SAVE        - save the last recorded stacktrace sample data to a file.");
         logln("     LOAD        - load stacktrace sample data from a file.");
         logln("");
@@ -225,7 +226,7 @@ public class JmxRecordCommand extends JmxCommand {
 				while(commandArgs.hasMoreArgument()) {
 					viewArgs.add(commandArgs.nextArgument());
 				}					
-				lastRecordResult.printResult(viewArgs);
+				lastRecordResult.printResult(viewArgs, getSettings().getRecordViewMode(), getSettings().showEmptyThreadInRecordView());
 			} else if(arg.equalsIgnoreCase("save")) {
 				commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
 				if(!checkArgument(1, 2)) {

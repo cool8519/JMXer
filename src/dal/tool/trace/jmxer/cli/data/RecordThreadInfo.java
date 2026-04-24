@@ -19,6 +19,7 @@ public class RecordThreadInfo implements Serializable {
 	public boolean suspended;
 	public String threadState;
 	public StackTraceElement[] stackTrace;
+	public RecordThreadSampleState sampleState;
 	public long recordStartTime;
 	public long recordEndTime;
 
@@ -64,6 +65,10 @@ public class RecordThreadInfo implements Serializable {
 
 	public StackTraceElement[] getStackTrace() {
 		return stackTrace;
+	}
+
+	public RecordThreadSampleState getSampleState() {
+		return sampleState;
 	}
 
 	public boolean isSuspended() {

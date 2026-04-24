@@ -9,6 +9,7 @@ import java.util.Map;
 import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.trace.jmxer.JMXerConstant;
+import dal.tool.trace.jmxer.cli.JmxSettings.RecordViewMode;
 import dal.tool.trace.jmxer.cli.helper.RecordResultViewer;
 import dal.tool.util.FileUtil;
 
@@ -30,8 +31,8 @@ public class RecordResult implements Serializable {
 
 	public RecordResult() {}
 	
-	public void printResult(List<String> viewArgs) {
-		RecordResultViewer viewer = new RecordResultViewer(this);
+	public void printResult(List<String> viewArgs, RecordViewMode mode, boolean showEmptyThread) {
+		RecordResultViewer viewer = new RecordResultViewer(this, mode, showEmptyThread);
 		viewer.printResult(viewArgs);			
 	}
 

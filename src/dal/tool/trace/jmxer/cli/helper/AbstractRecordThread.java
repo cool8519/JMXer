@@ -21,6 +21,7 @@ public abstract class AbstractRecordThread implements Runnable {
 	protected String[] threadNames = null;
 	protected long startTimeMS = 0L;
 	protected long endTimeMS = 0L;
+	protected Thread recordRunnerThread = null;
 
 	public AbstractRecordThread(String recordThreadName, MBeanServerConnection mbeanConnection, String[] threadIds) throws Exception {
 		this.recordThreadName = recordThreadName;
@@ -58,8 +59,8 @@ public abstract class AbstractRecordThread implements Runnable {
 		beforeStartRecording();
 	    this.recordIntervalMS = interval;
 		this.recordLimitMS = limit;
-		Thread t = new Thread(this, recordThreadName);
-		t.start();
+		recordRunnerThread = new Thread(this, recordThreadName);
+		recordRunnerThread.start();
 		if(recordLimitMS > 0) {
 			while(!stop) {
 				try {
@@ -75,6 +76,14 @@ public abstract class AbstractRecordThread implements Runnable {
 		beforeStopRecording();
 		endTimeMS = System.currentTimeMillis();
 		this.stop = true;
+		if(recordRunnerThread != null && recordRunnerThread != Thread.currentThread()) {
+			recordRunnerThread.interrupt();
+			try {
+				recordRunnerThread.join(2000L);
+			} catch(InterruptedException ie) {
+				Thread.currentThread().interrupt();
+			}
+		}
 		afterStopRecording();
 	}
 	

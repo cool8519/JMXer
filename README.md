@@ -236,6 +236,10 @@ JMXer> REC[ORD] LOAD [FileName]
 ```sh
 JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
 ```
+- 분석 모드는 `SET RECORD_VIEW_MODE` 설정값을 따른다.
+    - `NO_REQUEST_WAIT` (기본값): 요청 대기 상태 스택을 분석 모수에서 제외
+    - `FULL`: 모든 스택을 분석 모수에 포함 (기존 방식)
+    - 예시) `JMXer> SET RECORD_VIEW_MODE FULL`
 - ViewType : 분석을 위한 세부 명령어로, 아래와 같이 사용할 수 있다.
     - `INFO` : 저장된 Sampling 결과를 요약하여 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **INFO**
@@ -281,3 +285,4 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - (Bug) 파일명 및 명령어 인자값 전달시 따옴표 처리 방식 통일 및 오류 수정
  - (Bug) 외부 명령어 수행시 인자값 전달 오류 수정
  - 레코드 뷰의 stack 타입이 다수의 ThreadList를 지원하도록 변경
+ - 레코드 뷰에서 요청 대기상태를 제외하는 NO_REQUEST_WAIT 모드 기능 추가

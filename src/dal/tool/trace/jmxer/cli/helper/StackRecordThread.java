@@ -12,6 +12,7 @@ import javax.management.openmbean.CompositeData;
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.data.RecordResult;
 import dal.tool.trace.jmxer.cli.data.RecordThreadInfo;
+import dal.tool.trace.jmxer.cli.data.RecordThreadSampleState;
 import dal.tool.trace.jmxer.cli.data.ResourceUsage;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
@@ -141,7 +142,9 @@ public class StackRecordThread extends AbstractRecordThread {
 		recThrInfo.inNative = thrInfo.isInNative();
 		recThrInfo.suspended = thrInfo.isSuspended();
 		recThrInfo.threadState = thrInfo.getThreadState().name();
-		recThrInfo.stackTrace = thrInfo.getStackTrace();				
+		recThrInfo.stackTrace = thrInfo.getStackTrace();
+		RecordThreadSampleState state = RecordRequestWaitClassifier.classify(recThrInfo.stackTrace);
+		recThrInfo.sampleState = state;
 		return recThrInfo;		
 	}
 	

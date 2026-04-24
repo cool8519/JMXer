@@ -15,11 +15,13 @@ import java.util.TreeSet;
 
 import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
+import dal.tool.trace.jmxer.cli.JmxSettings.RecordViewMode;
 import dal.tool.trace.jmxer.cli.command.JmxThreadCommand;
 import dal.tool.trace.jmxer.cli.data.RecordResult;
 import dal.tool.trace.jmxer.cli.data.RecordSearch;
 import dal.tool.trace.jmxer.cli.data.RecordStackFrame;
 import dal.tool.trace.jmxer.cli.data.RecordThreadInfo;
+import dal.tool.trace.jmxer.cli.data.RecordThreadSampleState;
 import dal.tool.trace.jmxer.cli.data.ResourceUsage;
 import dal.tool.trace.jmxer.cli.data.Tree;
 import dal.tool.trace.jmxer.cli.data.TreeNode;
@@ -30,11 +32,15 @@ import dal.tool.util.StringUtil;
 public class RecordResultViewer {
 
 	RecordResult result;
+	RecordViewMode recordViewMode;
+	boolean showEmptyThread;
 	HashMap<Long,String> threadList = new HashMap<Long,String>();
 	
 	
-	public RecordResultViewer(RecordResult result) {
+	public RecordResultViewer(RecordResult result, RecordViewMode mode, boolean showEmptyThread) {
 		this.result = result;
+		this.recordViewMode = (mode == null) ? RecordViewMode.NO_REQUEST_WAIT : mode;
+		this.showEmptyThread = showEmptyThread;
 		extractThreadList();
 	}
 
@@ -56,6 +62,37 @@ public class RecordResultViewer {
     		return false;
     	}
 		return true;
+	}
+
+	private boolean includeSample(RecordThreadInfo recThrInfo) {
+		if(recordViewMode == RecordViewMode.FULL) {
+			return true;
+		}
+		RecordThreadSampleState state = recThrInfo.getSampleState();
+		if(state == null) {
+			return true;
+		}
+		return state != RecordThreadSampleState.WAITING_REQUEST;
+	}
+
+	private List<RecordThreadInfo> filterSamples(List<RecordThreadInfo> recThrInfoList) {
+		List<RecordThreadInfo> filtered = new ArrayList<RecordThreadInfo>();
+		for(RecordThreadInfo recThrInfo : recThrInfoList) {
+			if(includeSample(recThrInfo)) {
+				filtered.add(recThrInfo);
+			}
+		}
+		return filtered;
+	}
+
+	private long getSampleTime(List<RecordThreadInfo> recThrInfoList, int idx, long realTime) {
+		for(int i = idx + 1; i < recThrInfoList.size(); i++) {
+			RecordThreadInfo next = recThrInfoList.get(i);
+			if(includeSample(next)) {
+				return next.recordStartTime - recThrInfoList.get(idx).recordStartTime;
+			}
+		}
+		return realTime;
 	}
 
 	private Long[] getThreadIdsWithPattern(String pattern) {
@@ -254,7 +291,7 @@ public class RecordResultViewer {
 			StringBuilder sb = new StringBuilder();
 			boolean firstThread = true;
 			for(Long tid : targetThreads) {
-				List<RecordThreadInfo> recThrInfoList = result.recordData.get(tid);
+				List<RecordThreadInfo> recThrInfoList = filterSamples(result.recordData.get(tid));
 				String str = resolveStackStringForPoint(recThrInfoList, expStr);
 				if(str == null) {
 					continue;
@@ -288,7 +325,7 @@ public class RecordResultViewer {
 				}
 				Map<Long,List<RecordSearch>> foundSearchMap = new HashMap<Long,List<RecordSearch>>();
 				for(Long tid : targetThreads) {
-					List<RecordThreadInfo> recThrInfoList = result.recordData.get(tid);
+					List<RecordThreadInfo> recThrInfoList = filterSamples(result.recordData.get(tid));
 					List<RecordSearch> recSearchList = new ArrayList<RecordSearch>();
 					for(int i = 0; i < recThrInfoList.size(); i++) {
 						RecordThreadInfo recThrInfo = recThrInfoList.get(i);
@@ -381,10 +418,33 @@ public class RecordResultViewer {
 	private String getPercentString(double d) {
 		return NumberUtil.numberToString(d*100, "0.###'%'"); 
 	}
+
+	private int getIncludedSampleCount() {
+		int count = 0;
+		for(List<RecordThreadInfo> recThrInfoList : result.recordData.values()) {
+			for(RecordThreadInfo recThrInfo : recThrInfoList) {
+				if(includeSample(recThrInfo)) {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	private int getTotalSampleCount() {
+		int count = 0;
+		for(List<RecordThreadInfo> recThrInfoList : result.recordData.values()) {
+			count += recThrInfoList.size();
+		}
+		return count;
+	}
 	
 	private int getTotalCount(List<RecordThreadInfo> recThrInfoList, long from, long to) {
 		int totalCount = 0;
 		for(RecordThreadInfo recThrInfo : recThrInfoList) {
+			if(!includeSample(recThrInfo)) {
+				continue;
+			}
 			if(from <= recThrInfo.recordStartTime && to >= recThrInfo.recordEndTime) {
 				totalCount++;
 			}
@@ -393,23 +453,17 @@ public class RecordResultViewer {
 	}
 	
 	private long getTotalRecordTime(List<RecordThreadInfo> recThrInfoList, long from, long to) {
-		long totalRecordTime = 0;
-		for(int i = recThrInfoList.size()-1; i >= 0; i--) {
-			RecordThreadInfo recThrInfo = recThrInfoList.get(i);
-			if(to >= recThrInfo.recordEndTime) {
-				if(i+1 < recThrInfoList.size()) {
-					totalRecordTime += recThrInfoList.get(i+1).recordStartTime;
-				} else {
-					totalRecordTime += recThrInfo.recordEndTime;
-				}
-				break;
+		long totalRecordTime = 0L;
+		for(int idx = 0; idx < recThrInfoList.size(); idx++) {
+			RecordThreadInfo recThrInfo = recThrInfoList.get(idx);
+			if(!includeSample(recThrInfo)) {
+				continue;
 			}
-		}
-		for(RecordThreadInfo recThrInfo : recThrInfoList) {
-			if(from <= recThrInfo.recordStartTime) {
-				totalRecordTime -= recThrInfo.recordStartTime;
-				break;
+			if((from > -1 && from > recThrInfo.recordStartTime) || (to > -1 && to < recThrInfo.recordEndTime)) {
+				continue;
 			}
+			long realTime = recThrInfo.recordEndTime-recThrInfo.recordStartTime;
+			totalRecordTime += getSampleTime(recThrInfoList, idx, realTime);
 		}
 		return totalRecordTime;
 	}
@@ -425,11 +479,14 @@ public class RecordResultViewer {
 			List<RecordThreadInfo> recThrInfoList = recThrInfoListMap.get(tid);
 			for(int idx = 0; idx < recThrInfoList.size(); idx++) {
 				RecordThreadInfo recThrInfo = recThrInfoList.get(idx);
+				if(!includeSample(recThrInfo)) {
+					continue;
+				}
 				if((from > -1 && from > recThrInfo.recordStartTime) || (to > -1 && to < recThrInfo.recordEndTime)) {
 					continue;
 				}				
 				long realTime = recThrInfo.recordEndTime-recThrInfo.recordStartTime;
-				long sampleTime = (idx+1 < recThrInfoList.size()) ? (recThrInfoList.get(idx+1).recordStartTime-recThrInfo.recordStartTime) : realTime;
+				long sampleTime = getSampleTime(recThrInfoList, idx, realTime);
 				for(int i = recThrInfo.stackTrace.length-1; i >= 0; i--) {
 					StackTraceElement el = recThrInfo.stackTrace[i];
 					String key = el.getClassName() + "." + el.getMethodName() + "()"; 
@@ -522,17 +579,20 @@ public class RecordResultViewer {
 			totalCount = getTotalCount(recThrInfoList, from, to);
 			totalRecordTime = getTotalRecordTime(recThrInfoList, from, to);
 		} else {
-			totalCount = recThrInfoList.size();
-			totalRecordTime = recThrInfoList.get(recThrInfoList.size()-1).recordEndTime - recThrInfoList.get(0).recordStartTime;
+			totalCount = getTotalCount(recThrInfoList, Long.MIN_VALUE, Long.MAX_VALUE);
+			totalRecordTime = getTotalRecordTime(recThrInfoList, Long.MIN_VALUE, Long.MAX_VALUE);
 		}
 		Tree<RecordStackFrame> tree = new Tree<RecordStackFrame>(new RecordStackFrame(null));
 		for(int idx = 0; idx < recThrInfoList.size(); idx++) {
 			RecordThreadInfo recThrInfo = recThrInfoList.get(idx);
+			if(!includeSample(recThrInfo)) {
+				continue;
+			}
 			if((from > -1 && from > recThrInfo.recordStartTime) || (to > -1 && to < recThrInfo.recordEndTime)) {
 				continue;
 			}				
 			long realTime = recThrInfo.recordEndTime-recThrInfo.recordStartTime;
-			long sampleTime = (idx+1 < recThrInfoList.size()) ? (recThrInfoList.get(idx+1).recordStartTime-recThrInfo.recordStartTime) : realTime;
+			long sampleTime = getSampleTime(recThrInfoList, idx, realTime);
 			tree.toRoot();
 			for(int i = recThrInfo.stackTrace.length-1; i >= 0; i--) {
 				StackTraceElement el = recThrInfo.stackTrace[i];
@@ -562,24 +622,32 @@ public class RecordResultViewer {
 		if(recordResultTreeMap == null || recordResultTreeMap.size() < 1) {
 			return "No thread data.";
 		}
-		sb.append("Aggregation of the record results for " + recordResultTreeMap.size() + " thread(s).\n\n");
+		int shownThreadCount = 0;
 		Iterator<Long> iter = recordResultTreeMap.keySet().iterator();
 		while(iter.hasNext()) {
 			Long tid = iter.next();
-			List<RecordThreadInfo> recThrInfoList = result.recordData.get(tid);
+			List<RecordThreadInfo> recThrInfoList = filterSamples(result.recordData.get(tid));
 			Tree<RecordStackFrame> tree = recordResultTreeMap.get(tid);
-			sb.append("  @ \"" + recThrInfoList.get(0).getThreadName() + "\"" + " Id=" + tid + "\n");
-			if(tree.getRoot().getChild() != null) {
+			boolean hasData = tree.getRoot().getChild() != null;
+			if(!showEmptyThread && !hasData) {
+				continue;
+			}
+			shownThreadCount++;
+			String threadName = (recThrInfoList.size() > 0) ? recThrInfoList.get(0).getThreadName() : threadList.get(tid);
+			sb.append("  @ \"" + threadName + "\"" + " Id=" + tid + "\n");
+			if(hasData) {
 				sb.append("    " + tree.getRoot().getChild().getData().toThreadHeaderString() + "\n");
 				appendThreadBranchString(sb, tree.getRoot().getChild(), new ArrayList<Boolean>(), true, true);
 			} else {
 				sb.append("    No stacktrace data.\n");
 			}
-			if(iter.hasNext()) {
-				sb.append("\n");
-			}
+			sb.append("\n");
 		}
-		return sb.toString();
+		if(shownThreadCount < 1) {
+			return "No thread data.";
+		}
+		sb.insert(0, "Aggregation of the record results for " + shownThreadCount + " thread(s).\n\n");
+		return sb.toString().trim();
 	}
 	
 	private void appendThreadBranchString(StringBuilder sb, TreeNode<RecordStackFrame> branchRoot, List<Boolean> ancestorsHasNext, boolean isLastBranch, boolean rootBranch) {
@@ -653,7 +721,7 @@ public class RecordResultViewer {
 		Iterator<Long> iter = foundSearchMap.keySet().iterator();
 		while(iter.hasNext()) {
 			Long tid = iter.next();
-			List<RecordThreadInfo> recThrInfoList = result.recordData.get(tid);
+			List<RecordThreadInfo> recThrInfoList = filterSamples(result.recordData.get(tid));
 			List<RecordSearch> searchList = foundSearchMap.get(tid);
 			sb.append("  @ \"" + recThrInfoList.get(0).getThreadName() + "\"" + " Id=" + tid + "\n");
 			for(RecordSearch recSearch : searchList) {
@@ -716,6 +784,12 @@ public class RecordResultViewer {
 		sb.append("  - Record Duration : " + (result.endTime-result.startTime) + "ms\n");
 		sb.append("  - Record Interval : " + result.recordIntervalMS + "ms\n");
 		sb.append("  - Sample Count    : " + result.sampleCount + "\n");
+		sb.append("  - View Mode       : " + recordViewMode.name() + "\n");
+		if(recordViewMode == RecordViewMode.NO_REQUEST_WAIT) {
+			sb.append("  - View Stacktrace : " + getIncludedSampleCount() + " / " + getTotalSampleCount() + "\n");
+		} else {
+			sb.append("  - View Stacktrace : " + getTotalSampleCount() + "\n");
+		}
 		sb.append("  - Dump File Path  : " + (result.dmpFilePath==null?"N/A(in-memory)":result.dmpFilePath) + "\n");
 		sb.append("  - Tool VM\n");
 		sb.append("      . Version : " + result.toolInfo.get("version") + "\n");
