@@ -75,26 +75,26 @@ public class JmxCallCommand extends JmxCommand {
 				return false;
 			} else {
 				mbeanObjectName = setMBeanOName;
-				callTargetName = commandArgs.nextArgument();
+				callTargetName = StringUtil.stripOuterFilenameQuotes(commandArgs.nextArgument());
 			}
 		} else if(commandArgs.size() == 2) {
 			String first = commandArgs.getArgument(1);
 			first = StringUtil.stripQuote(first, new char[]{'"','\''}, true);
 			if((first.indexOf(':') > 0 && first.indexOf('=') > 0) || first.equals("*")) {
 				mbeanObjectName = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
-				callTargetName = commandArgs.nextArgument();
+				callTargetName = StringUtil.stripOuterFilenameQuotes(commandArgs.nextArgument());
 			} else {
 				if(setMBeanOName == null) {
 					mbeanObjectName = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
-					callTargetName = commandArgs.nextArgument();
+					callTargetName = StringUtil.stripOuterFilenameQuotes(commandArgs.nextArgument());
 				} else {
 					mbeanObjectName = setMBeanOName;
-					callTargetName = commandArgs.nextArgument();
+					callTargetName = StringUtil.stripOuterFilenameQuotes(commandArgs.nextArgument());
 				}
 			}			
 		} else if(commandArgs.size() == 3) {
 			mbeanObjectName = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
-			callTargetName = commandArgs.nextArgument();
+			callTargetName = StringUtil.stripOuterFilenameQuotes(commandArgs.nextArgument());
 			if(callTargetName.equals("?") || callTargetName.equals("??") || callTargetName.equals("#")) {
 				logln("Too many arguments.");
 				return false;

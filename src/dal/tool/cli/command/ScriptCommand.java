@@ -9,6 +9,7 @@ import java.util.List;
 
 import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Logger.Level;
+import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 
 public class ScriptCommand extends Command {
 
@@ -41,6 +42,7 @@ public class ScriptCommand extends Command {
 
 	public void doExecute() throws Exception {
 		if(!checkArgument(1, -1)) return;
+		commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
 		List<String> scriptNames = commandArgs.getArguments();
     	List<String> visitedScript; 
         for(String fname : scriptNames) {

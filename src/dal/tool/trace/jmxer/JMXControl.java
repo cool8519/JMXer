@@ -2,6 +2,7 @@ package dal.tool.trace.jmxer;
 
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
+import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.MBeanConnector;
 import dal.tool.util.jmx.MBeanConnector.ConnectType;
 
@@ -96,13 +97,10 @@ public class JMXControl {
     		if(isAnalyzeMode) {
         		Logger.logln("Running as ANALYZE mode.\n");
         		if(target[1] != null) {
-        			if(target[1].trim().equals("")) {
+        			String dumpFilePath = StringUtil.stripOuterFilenameQuotes(target[1]);
+        			if(dumpFilePath == null || dumpFilePath.trim().isEmpty()) {
         				Logger.logln(Logger.Level.ERROR, "No dump file was specified.");
         				System.exit(-1);
-        			}
-        			String dumpFilePath = target[1];
-        			if(dumpFilePath.length() >= 2 && (dumpFilePath.startsWith("\"") && dumpFilePath.endsWith("\""))) {
-        				dumpFilePath = dumpFilePath.substring(1, dumpFilePath.length()-1);
         			}
         			commandLine = "RECORD LOAD \"" + dumpFilePath + "\"; " + commandLine;
         		}

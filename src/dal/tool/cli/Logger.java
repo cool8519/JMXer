@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
+import dal.tool.util.StringUtil;
+
 
 /**
  * 화면/파일 로깅을 담당하는 클래스
@@ -102,6 +104,9 @@ public class Logger extends Object {
         try {
             if(spoolName != null) {
                 setSpoolOff();
+            }
+            if(fname != null) {
+            	fname = StringUtil.stripOuterFilenameQuotes(fname);
             }
             spoolName = fname;
             f = new File(spoolName);

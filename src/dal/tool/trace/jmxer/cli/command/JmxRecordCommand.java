@@ -236,7 +236,7 @@ public class JmxRecordCommand extends JmxCommand {
 					logln("No record result in memory. Please record a stacktrace or load a dump file.");
 					return;
 				}
-				String path = commandArgs.hasMoreArgument() ? commandArgs.nextArgument().trim() : JMXerConstant.DEFAULT_DUMP_FILE_PATH;
+				String path = commandArgs.hasMoreArgument() ? commandArgs.nextArgument() : JMXerConstant.DEFAULT_DUMP_FILE_PATH;
 				String yn = "Y";
 				File dumpfile = new File(path);
 				if(dumpfile.exists() && dumpfile.isDirectory()) {
@@ -258,11 +258,12 @@ public class JmxRecordCommand extends JmxCommand {
 					}
 				}
 			} else if(arg.equalsIgnoreCase("load")) {
+				commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
 				if(!checkArgument(1, 2)) {
 			        logln("  Usage) REC[ORD] LOAD [FileName]");					
 					return;
 				}
-				String path = commandArgs.hasMoreArgument() ? commandArgs.nextArgument().trim() : JMXerConstant.DEFAULT_DUMP_FILE_PATH;
+				String path = commandArgs.hasMoreArgument() ? commandArgs.nextArgument() : JMXerConstant.DEFAULT_DUMP_FILE_PATH;
 				File dumpfile = new File(path);
 				if(dumpfile.exists() && dumpfile.isDirectory()) {
 					path += File.separator + JMXerConstant.DEFAULT_DUMP_FILE_NAME;

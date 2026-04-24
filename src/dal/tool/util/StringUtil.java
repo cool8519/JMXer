@@ -360,6 +360,17 @@ public class StringUtil {
 		}
 		return trim ? s.trim() : s;
 	}
+
+	/**
+	 * 파일 경로용: 앞뒤가 같은 {@code "} 또는 {@code '} 한 쌍이면 그 두 문자만 제거한다.<br/>
+	 * {@link #stripQuote(String, char[], boolean)} 의 {@code trim==true}와 달리, 따옴표를 벗기기 전에
+	 * 전체 문자열을 trim 하지 않으므로 셸이 따옴표만 제거한 뒤 남은 선행/후행 공백도 파일명의 일부로 유지된다.
+	 * @param s 원본(또는 JVM 인자에서 온 값)
+	 * @return 바깥 따옴표를 제거한 문자열. {@code s}가 null이면 null
+	 */
+	public static String stripOuterFilenameQuotes(String s) {
+		return stripQuote(s, new char[]{'"','\''}, false);
+	}
 	
 	/**
 	 * 문자열을 최대 길이까지 줄이고 앞에 prefix를 붙인다.<br>
