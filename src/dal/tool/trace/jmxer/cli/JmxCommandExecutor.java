@@ -53,10 +53,12 @@ public class JmxCommandExecutor extends CommandExecutor {
 		super();
 		this.settings = new JmxSettings();
 		this.mbeanConnector = mbeanConnector;
-		try {
-			refreshObjectNameList(JMXUtil.getObjectNames(mbeanConnector.getMBeanConnection(), null));
-		} catch(Exception e) {
-			Logger.logln(Logger.Level.ERROR, "Failed to get list of ObjectName.");
+		if(mbeanConnector != null) {
+			try {
+				refreshObjectNameList(JMXUtil.getObjectNames(mbeanConnector.getMBeanConnection(), null));
+			} catch(Exception e) {
+				Logger.logln(Logger.Level.ERROR, "Failed to get list of ObjectName.");
+			}
 		}
 	}
 	

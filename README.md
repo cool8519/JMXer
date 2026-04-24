@@ -247,7 +247,7 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
         Usage) JMXer> RECORD VIEW **THREAD** *ThreadList [RangeExpression]*
         ![Screenhot](screenshots/command_rec_view_thread.jpg)
     - `STACK` : 특정 시점의 Thread StackTrace를 보여준다.<br/>
-        Usage) JMXer> RECORD VIEW **STACK** *TargetThread PointExpression*
+        Usage) JMXer> RECORD VIEW **STACK** *ThreadList PointExpression*
         ![Screenhot](screenshots/command_rec_view_stack.jpg)
     - `SEARCH` : Sampling 결과 내에서 Method 또는 Class 호출 정보를 검색한다.<br/>
         Usage) JMXer> RECORD VIEW **SEARCH** *ThreadList NameExpression*<br/><br/>
@@ -280,3 +280,4 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - (Bug) JAVA 9+에서 Attach시 모듈 시스템 접근 제약 오류 수정
  - (Bug) 파일명 및 명령어 인자값 전달시 따옴표 처리 방식 통일 및 오류 수정
  - (Bug) 외부 명령어 수행시 인자값 전달 오류 수정
+ - 레코드 뷰의 stack 타입이 다수의 ThreadList를 지원하도록 변경

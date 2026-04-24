@@ -71,28 +71,6 @@ public class RecordResultViewer {
 		}
 	}
 	
-	private Long getThreadIdWithPattern(String pattern) {
-		Long targetThread = -1L;
-		try {
-			Long[] targetThreads = JmxThreadCommand.getTargetThreadIds(threadList, pattern);
-			if(targetThread == null || targetThreads.length == 0) {
-	    		Logger.logln("No target thread specified.");
-	    		return null;
-			} else {
-				targetThread = targetThreads[0];
-				Logger.logln(Level.DEBUG, "Thread ID : " + targetThread);
-				if(targetThreads.length > 1) {
-		    		Logger.logln(targetThreads.length + " threads are specified. Only one thread could be printed for stacktrace.");
-		    		return null;
-				}
-			}
-			return targetThread;
-		} catch(Exception e) {
-			Logger.logln(Level.ERROR, "Failed to get thread id from the argument : " + e.getMessage());
-			return null;
-		}				
-	}
-			
 	public void printResult(List<String> viewArgs) {
 		String type = StringUtil.stripQuote(viewArgs.get(0), new char[]{'"','\''}, true);
 		if(type.equalsIgnoreCase("info")) {
@@ -243,78 +221,56 @@ public class RecordResultViewer {
 			Logger.logln(getThreadString(threadResultTreeMap));
 		} else if(type.equalsIgnoreCase("stack")) {
 			if(!checkArgument(viewArgs, 3, 3)) {
-				Logger.logln("  Usage) REC[ORD] VIEW STACK TargetThread PointExpression");
+				Logger.logln("  Usage) REC[ORD] VIEW STACK ThreadList PointExpression");
 				return;
 			}
-			Long targetThread = getThreadIdWithPattern(viewArgs.get(1));
-			if(targetThread == null) return;
-			List<RecordThreadInfo> recThrInfoList = result.recordData.get(targetThread);
-			if(viewArgs.size() == 3) {
-				// with point expression
-				String expStr = StringUtil.stripQuote(viewArgs.get(2), new char[]{'"','\''}, true);
-				String str = null;
-				if(expStr.endsWith("ms") && NumberUtil.isNumber(expStr.substring(0, expStr.length()-2))) {
-					// record view stack 1 1500ms
-					int ms = Integer.parseInt(expStr.substring(0, expStr.length()-2));
-					long startTime = result.startTime;
-					long endTime = result.endTime;
-					long targetTime = startTime + ms;
-					if(targetTime < startTime || targetTime > endTime) {
-						Logger.logln("The relative time(" + expStr + ") is out of range. It must be 0 to " + (endTime-startTime) + "ms");
-						return;
-					}					
-					for(int i = recThrInfoList.size()-1; i >= 0; i--) {
-						RecordThreadInfo recThrInfo = recThrInfoList.get(i);
-						if(targetTime < recThrInfo.recordStartTime) {
-							continue;
-						} else {
-							if(targetTime >= recThrInfo.recordStartTime && targetTime <= recThrInfo.recordEndTime) {
-								str = getStackString(new RecordThreadInfo[]{recThrInfo});
-							} else {
-								str = getStackString(new RecordThreadInfo[]{recThrInfo, recThrInfoList.get(i+1)});
-							}
-							break;
-						}
-					}					
-				} else if(NumberUtil.isNumber(expStr)) {
-					// record view stack 1 13
-					int order = Integer.parseInt(expStr);
-					int total = recThrInfoList.size();
-					if(order < 1 || order > total) {
-						Logger.logln("The order(" + order + ") is out of range. It must be 1 to " + total);
-						return;
-					}
-					RecordThreadInfo recThrInfo = recThrInfoList.get(order-1);
-					str = getStackString(new RecordThreadInfo[]{recThrInfo});					
-				} else {
-					Date dt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, expStr);
-					if(dt != null) {
-						// record view stack 1 2022.10.28/12:35:01
-						String startTimeStr = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(result.startTime));
-						String endTimeStr = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(result.endTime));
-						long startTime = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, startTimeStr).getTime();
-						long endTime = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, endTimeStr).getTime() + 999;
-						long targetTime = dt.getTime();
-						long rangeTime_from = targetTime ;
-						long rangeTime_to = targetTime + 999;
-						if(rangeTime_from < startTime || rangeTime_from > endTime || rangeTime_to < startTime || rangeTime_to > endTime) {
-							Logger.logln("The absolute time(" + expStr + ") is out of range. It must be " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(startTime)) + " to " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(endTime)));
-							return;
-						}
-						List<RecordThreadInfo> matchList = new ArrayList<RecordThreadInfo>();
-						for(RecordThreadInfo recThrInfo : recThrInfoList) {
-							if(recThrInfo.recordStartTime >= rangeTime_from && recThrInfo.recordEndTime <= rangeTime_to) {
-								matchList.add(recThrInfo);
-							}
-						}
-						str = getStackString(matchList.toArray(new RecordThreadInfo[]{}));
-					} else {
-						Logger.logln("Invalid argument for PointExpression. See the help of record command.");
-						return;
-					}
+			Long[] targetThreads = getThreadIdsWithPattern(viewArgs.get(1));
+			if(targetThreads == null) return;
+			String expStr = StringUtil.stripQuote(viewArgs.get(2), new char[]{'"','\''}, true);
+			if(expStr.endsWith("ms") && expStr.length() > 2 && NumberUtil.isNumber(expStr.substring(0, expStr.length()-2))) {
+				int ms = Integer.parseInt(expStr.substring(0, expStr.length()-2));
+				long targetTime = result.startTime + ms;
+				if(targetTime < result.startTime || targetTime > result.endTime) {
+					Logger.logln("The relative time(" + expStr + ") is out of range. It must be 0 to " + (result.endTime-result.startTime) + "ms");
+					return;
 				}
-				Logger.logln(str);
-			}			
+			} else if(!NumberUtil.isNumber(expStr)) {
+				Date dt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, expStr);
+				if(dt == null) {
+					Logger.logln("Invalid argument for PointExpression. See the help of record command.");
+					return;
+				}
+				String startTimeStr = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(result.startTime));
+				String endTimeStr = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(result.endTime));
+				long startTime = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, startTimeStr).getTime();
+				long endTime = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, endTimeStr).getTime() + 999;
+				long rangeTime_from = dt.getTime();
+				long rangeTime_to = rangeTime_from + 999;
+				if(rangeTime_from < startTime || rangeTime_from > endTime || rangeTime_to < startTime || rangeTime_to > endTime) {
+					Logger.logln("The absolute time(" + expStr + ") is out of range. It must be " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(startTime)) + " to " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(endTime)));
+					return;
+				}
+			}
+			StringBuilder sb = new StringBuilder();
+			boolean firstThread = true;
+			for(Long tid : targetThreads) {
+				List<RecordThreadInfo> recThrInfoList = result.recordData.get(tid);
+				String str = resolveStackStringForPoint(recThrInfoList, expStr);
+				if(str == null) {
+					continue;
+				}
+				if(firstThread) {
+					firstThread = false;
+				} else {
+					sb.append("\n\n");
+				}
+				sb.append(str);
+			}
+			if(firstThread) {
+				Logger.logln("No stack output for the selected thread(s) at the given point.");
+				return;
+			}
+			Logger.logln(sb.toString());
 		} else if(type.equalsIgnoreCase("search")) {
 			if(!checkArgument(viewArgs, 3, 3)) {
 				Logger.logln("  Usage) REC[ORD] VIEW SEARCH ThreadList NameExpression");
@@ -366,6 +322,59 @@ public class RecordResultViewer {
 		} else {
 			Logger.logln("Invalid argument for ViewType. Available ViewTypes are 'INFO','METHOD','THREAD','STACK' and 'SEARCH'.");
 		}
+	}
+
+	/**
+	 * Stack dump for one thread at {@code expStr}. Global range for relative ms / absolute time must be validated by the caller.
+	 * @return text to print, or {@code null} if this thread has no data or the point cannot be resolved (errors logged).
+	 */
+	private String resolveStackStringForPoint(List<RecordThreadInfo> recThrInfoList, String expStr) {
+		if(recThrInfoList == null || recThrInfoList.isEmpty()) {
+			Logger.logln("No stacktrace samples for this thread.");
+			return null;
+		}
+		String str = null;
+		if(expStr.endsWith("ms") && expStr.length() > 2 && NumberUtil.isNumber(expStr.substring(0, expStr.length()-2))) {
+			int ms = Integer.parseInt(expStr.substring(0, expStr.length()-2));
+			long targetTime = result.startTime + ms;
+			for(int i = recThrInfoList.size()-1; i >= 0; i--) {
+				RecordThreadInfo recThrInfo = recThrInfoList.get(i);
+				if(targetTime < recThrInfo.recordStartTime) {
+					continue;
+				}
+				if(targetTime >= recThrInfo.recordStartTime && targetTime <= recThrInfo.recordEndTime) {
+					str = getStackString(new RecordThreadInfo[]{recThrInfo});
+				} else {
+					str = getStackString(new RecordThreadInfo[]{recThrInfo, recThrInfoList.get(i+1)});
+				}
+				break;
+			}
+			if(str == null) {
+				Logger.logln("Could not resolve stack at relative time " + expStr + " for thread id " + recThrInfoList.get(0).getThreadId() + ".");
+				return null;
+			}
+		} else if(NumberUtil.isNumber(expStr)) {
+			int order = Integer.parseInt(expStr);
+			int total = recThrInfoList.size();
+			if(order < 1 || order > total) {
+				Logger.logln("The order(" + order + ") is out of range for thread id " + recThrInfoList.get(0).getThreadId() + ". It must be 1 to " + total);
+				return null;
+			}
+			RecordThreadInfo recThrInfo = recThrInfoList.get(order-1);
+			str = getStackString(new RecordThreadInfo[]{recThrInfo});
+		} else {
+			Date dt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, expStr);
+			long rangeTime_from = dt.getTime();
+			long rangeTime_to = rangeTime_from + 999;
+			List<RecordThreadInfo> matchList = new ArrayList<RecordThreadInfo>();
+			for(RecordThreadInfo recThrInfo : recThrInfoList) {
+				if(recThrInfo.recordStartTime >= rangeTime_from && recThrInfo.recordEndTime <= rangeTime_to) {
+					matchList.add(recThrInfo);
+				}
+			}
+			str = getStackString(matchList.toArray(new RecordThreadInfo[]{}));
+		}
+		return str;
 	}
 
 	

@@ -32,8 +32,8 @@ public class JmxRecordCommand extends JmxCommand {
 	
 	public boolean beforeExecute() throws Exception {
 		if(JMXControl.isAnalyzeMode && commandArgs.size() > 0) {
-			String arg = commandArgs.getArguments().get(0);
-			if(!arg.equalsIgnoreCase("info") && !arg.equalsIgnoreCase("view") && !arg.equalsIgnoreCase("load") && !arg.equalsIgnoreCase("save")) {
+			String arg = StringUtil.stripQuote(commandArgs.getArguments().get(0), new char[]{'"','\''}, true);
+			if(IOUtil.isIncludeEquals(arg, "res", "ource") || IOUtil.isIncludeEquals(arg, "stack", "trace")) {
 				logln("JMX commands are not allowed in analyze mode.");
 				return false;
 			}
@@ -83,8 +83,8 @@ public class JmxRecordCommand extends JmxCommand {
         logln("        arg 1) ThreadList : {*|ThreadIds|ThreadNames}");
         logln("        arg 2) RangeExpression : {AbsoluteTimeRange|RelativeTimeRange|SampleOrderRange}");
         logln("   'STACK' means to show the stacktraces of a specific point in time.");
-        logln("      Usage) record view stack TargetThread PointExpression");
-        logln("        arg 1) TargetThread : {ThreadIds|ThreadNames}");
+        logln("      Usage) record view stack ThreadList PointExpression");
+        logln("        arg 1) ThreadList : {*|ThreadIds|ThreadNames}");
         logln("        arg 2) PointExpression : {AbsoluteTimePoint|RelativeTimePoint|SampleOrderPoint}");
         logln("   'SEARCH' means to find method or class call information within the record result.");
         logln("      Usage) record view search ThreadList NameExpression");
