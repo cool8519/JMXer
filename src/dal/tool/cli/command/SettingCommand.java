@@ -27,6 +27,7 @@ public class SettingCommand extends Command {
         logln(" SET [variable] [value]");
         logln("");
         logln(" Following is the list of available common variable.");
+        logln("     LOGLEVEL - minimum log level (RESULT, ERROR, WARNING, INFO, DEBUG)");
         logln("     TIMING - number of seconds waiting for executing command");
         logln("     TIME   - display current time in the prompt");
 	}

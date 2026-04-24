@@ -2,6 +2,7 @@ package dal.tool.trace.jmxer.cli;
 
 import dal.tool.cli.Logger;
 import dal.tool.cli.Settings;
+import dal.tool.trace.jmxer.JMXControl;
 
 public class JmxSettings extends Settings {
 
@@ -41,6 +42,9 @@ public class JmxSettings extends Settings {
 	
 	public void printSettings() {
 		super.printSettings();
+		if(JMXControl.isAnalyzeMode) {
+			return;
+		}
 		Logger.logln(" JMX");
 		Logger.logln("   - MBEAN_ONAME\t" + ((setOName==null)?"":setOName));
 		Logger.logln("   - PRETTY_PRINT\t" + ((prettyPrint)?"ON":"OFF"));

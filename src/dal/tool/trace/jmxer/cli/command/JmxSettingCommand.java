@@ -38,6 +38,11 @@ public class JmxSettingCommand extends SettingCommand {
 		} else if(commandArgs.size() == 2) {
 			String variable = commandArgs.getArgument(1);
 			String value = commandArgs.getArgument(2);
+			if(JMXControl.isAnalyzeMode
+					&& (variable.equalsIgnoreCase("mbean_oname") || variable.equalsIgnoreCase("pretty_print"))) {
+				logln("JMX settings are not available in analyze mode.");
+				return;
+			}
             if(variable.equalsIgnoreCase("mbean_oname")) {
             	if(value.equals("")) {
             		settings.setMBeanObjectName(null);
