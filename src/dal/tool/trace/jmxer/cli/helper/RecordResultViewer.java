@@ -561,8 +561,8 @@ public class RecordResultViewer {
 			Tree<RecordStackFrame> tree = recordResultTreeMap.get(tid);
 			sb.append("  @ \"" + recThrInfoList.get(0).getThreadName() + "\"" + " Id=" + tid + "\n");
 			if(tree.getRoot().getChild() != null) {
-				sb.append("    " + tree.getRoot().getChild().getData().toThreadString(-1, tree.getMaxDepth()) + "\n");
-				appendStackFrameString(sb, tree.getRoot(), -1, tree.getMaxDepth());
+				sb.append("    " + tree.getRoot().getChild().getData().toThreadHeaderString() + "\n");
+				appendThreadBranchString(sb, tree.getRoot().getChild(), new ArrayList<Boolean>(), true, true);
 			} else {
 				sb.append("    No stacktrace data.\n");
 			}
@@ -573,12 +573,57 @@ public class RecordResultViewer {
 		return sb.toString();
 	}
 	
-	private void appendStackFrameString(StringBuilder sb, TreeNode<RecordStackFrame> treeNode, int depth, int maxDepth) {
-		if(treeNode == null) return;
-		if(treeNode.getData().stackTraceElement != null) {
-			sb.append("    " + treeNode.getData().toThreadString(treeNode.getDepth(), maxDepth) + "\n");
+	private void appendThreadBranchString(StringBuilder sb, TreeNode<RecordStackFrame> branchRoot, List<Boolean> ancestorsHasNext, boolean isLastBranch, boolean rootBranch) {
+		if(branchRoot == null) return;
+		if(rootBranch) {
+			sb.append("    " + branchRoot.getData().toThreadBranchString() + "\n");
+		} else {
+			appendThreadTreeLine(sb, ancestorsHasNext, isLastBranch, branchRoot.getData().toThreadBranchString());
 		}
-		List<TreeNode<RecordStackFrame>> childList = treeNode.getChilds();
+		List<Boolean> pathAncestors = new ArrayList<Boolean>(ancestorsHasNext);
+		if(!rootBranch) {
+			pathAncestors.add(!isLastBranch);
+		}
+		List<TreeNode<RecordStackFrame>> pathNodes = new ArrayList<TreeNode<RecordStackFrame>>();
+		TreeNode<RecordStackFrame> branchPoint = branchRoot;
+		while(branchPoint != null) {
+			pathNodes.add(branchPoint);
+			List<TreeNode<RecordStackFrame>> childList = getSortedChildList(branchPoint);
+			if(childList.size() == 1) {
+				branchPoint = childList.get(0);
+			} else {
+				break;
+			}
+		}
+		for(int i = 0; i < pathNodes.size(); i++) {
+			TreeNode<RecordStackFrame> pathNode = pathNodes.get(i);
+			boolean isLastPath = (i == pathNodes.size()-1);
+			appendThreadTreeLine(sb, pathAncestors, isLastPath, pathNode.getData().toThreadPathString());
+		}
+		List<TreeNode<RecordStackFrame>> branchChildren = getSortedChildList(pathNodes.get(pathNodes.size()-1));
+		if(branchChildren.size() > 1) {
+			List<Boolean> childAncestors = new ArrayList<Boolean>(pathAncestors);
+			childAncestors.add(false);
+			for(int i = 0; i < branchChildren.size(); i++) {
+				TreeNode<RecordStackFrame> child = branchChildren.get(i);
+				boolean isLastChildBranch = (i == branchChildren.size()-1);
+				appendThreadBranchString(sb, child, childAncestors, isLastChildBranch, false);
+			}
+		}
+	}
+
+	private void appendThreadTreeLine(StringBuilder sb, List<Boolean> ancestorsHasNext, boolean last, String content) {
+		sb.append("    ");
+		for(Boolean hasNext : ancestorsHasNext) {
+			sb.append(Boolean.TRUE.equals(hasNext) ? "│   " : "    ");
+		}
+		sb.append(last ? "└── " : "├── ");
+		sb.append(content);
+		sb.append("\n");
+	}
+
+	private List<TreeNode<RecordStackFrame>> getSortedChildList(TreeNode<RecordStackFrame> node) {
+		List<TreeNode<RecordStackFrame>> childList = node.getChilds();
 		Collections.sort(childList, new Comparator<TreeNode<RecordStackFrame>>() {
 			@Override
 			public int compare(TreeNode<RecordStackFrame> o1, TreeNode<RecordStackFrame> o2) {
@@ -587,10 +632,8 @@ public class RecordResultViewer {
 				return (x > y) ? -1 : ((x == y) ? 0 : 1);
 			}
 		});
-		for(TreeNode<RecordStackFrame> child : childList) {
-			appendStackFrameString(sb, child, depth+1, maxDepth);
-		}
-	}	
+		return childList;
+	}
 	
 	private String getSearchString(Map<Long,List<RecordSearch>> foundSearchMap) {
 		StringBuilder sb = new StringBuilder();

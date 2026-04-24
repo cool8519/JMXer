@@ -67,20 +67,21 @@ public class RecordStackFrame {
 		}
 	}
 
-	public String toThreadString(int depth, int maxDepth) {
-		String pctCountStr = NumberUtil.numberToString((double)hitCount/totalCount*100, "0.000'%'"); 
-		String indent = StringUtil.getRepeatString("  ", depth);
+	public String toThreadHeaderString() {
 		int countDigit = String.valueOf(totalCount).length();
 		int timeDigit = String.valueOf(totalRecordTime).length();
-		int depthDigit = String.valueOf(maxDepth).length();
-		if(depth < 0) {
-			// title
-			return String.format("[%8s](%"+(2*countDigit+1)+"s)(%"+(2*timeDigit+1)+"s) [%s]%"+depthDigit+"s%s", "Ratio", "Count", "Time_ms", "Depth", " ", "Class/Method");
-		} else {
-			// data
-			String stackNameStr = stackTraceElement.toString();
-			return String.format("[%8s](%"+countDigit+"d/%d)(%"+timeDigit+"d/%d) [%"+depthDigit+"d]%s   %s", pctCountStr, hitCount, totalCount, sampleRecordTime, totalRecordTime, depth, indent, stackNameStr);
-		}
+		return String.format("[%8s](%"+(2*countDigit+1)+"s)(%"+(2*timeDigit+1)+"s)", "Ratio", "Count", "Time_ms");
+	}
+
+	public String toThreadBranchString() {
+		String pctCountStr = NumberUtil.numberToString((double)hitCount/totalCount*100, "0.000'%'"); 
+		int countDigit = String.valueOf(totalCount).length();
+		int timeDigit = String.valueOf(totalRecordTime).length();
+		return String.format("[%8s](%"+countDigit+"d/%d)(%"+timeDigit+"d/%d)", pctCountStr, hitCount, totalCount, sampleRecordTime, totalRecordTime);
+	}
+
+	public String toThreadPathString() {
+		return (stackTraceElement == null) ? "" : stackTraceElement.toString();
 	}
 	
 }
