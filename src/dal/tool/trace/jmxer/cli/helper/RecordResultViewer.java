@@ -31,6 +31,21 @@ import dal.tool.util.StringUtil;
 
 public class RecordResultViewer {
 
+	/** THREAD 뷰에서 스레드당 1개 이상의 분리된 트리(구간)를 담는다. */
+	private static final class ThreadViewSegment {
+		final Tree<RecordStackFrame> tree;
+		/** NO_REQUEST_WAIT일 때만 stacktrace time 계산에 사용; FULL이면 비어 있음 */
+		final List<RecordThreadInfo> viewSamples;
+
+		ThreadViewSegment(Tree<RecordStackFrame> tree, List<RecordThreadInfo> viewSamples) {
+			this.tree = tree;
+			this.viewSamples = viewSamples;
+		}
+	}
+
+	/** THREAD 뷰 stacktrace time 구간 표기(절대시간, 24시간). */
+	private static final String STACK_TRACE_ABS_TIME_FORMAT = "yyyy.MM.dd/HH:mm:ss.SSS";
+
 	RecordResult result;
 	RecordViewMode recordViewMode;
 	boolean showEmptyThread;
@@ -75,6 +90,91 @@ public class RecordResultViewer {
 		return state != RecordThreadSampleState.WAITING_REQUEST;
 	}
 
+	private boolean isWaitingRequestSample(RecordThreadInfo recThrInfo) {
+		return recThrInfo.getSampleState() == RecordThreadSampleState.WAITING_REQUEST;
+	}
+
+	/**
+	 * {@link #makeThreadResultTree}와 동일: 뷰에 포함되는 샘플(모드 필터 + 시간 구간).
+	 */
+	private boolean isSampleInThreadView(RecordThreadInfo recThrInfo, long from, long to) {
+		if(!includeSample(recThrInfo)) {
+			return false;
+		}
+		if((from > -1L && from > recThrInfo.recordStartTime) || (to > -1L && to < recThrInfo.recordEndTime)) {
+			return false;
+		}
+		return true;
+	}
+
+	private boolean isThreadViewMergeOption(String token) {
+		return "--merge".equalsIgnoreCase(token) || "-m".equalsIgnoreCase(token);
+	}
+
+	private boolean isThreadViewSplitOption(String token) {
+		return "--split".equalsIgnoreCase(token) || "-s".equalsIgnoreCase(token);
+	}
+
+	/**
+	 * NO_REQUEST_WAIT에서 요청 대기 샘플 사이를 기준으로, THREAD 뷰에 넣을 연속 샘플 구간을 나눈다.
+	 * (시간 구간 필터는 {@link #isSampleInThreadView}에 포함.)
+	 */
+	private List<List<RecordThreadInfo>> splitIntoNonWaitViewSegments(List<RecordThreadInfo> fullList, long from, long to) {
+		List<List<RecordThreadInfo>> segments = new ArrayList<List<RecordThreadInfo>>();
+		if(fullList == null || fullList.isEmpty()) {
+			return segments;
+		}
+		List<RecordThreadInfo> current = null;
+		for(RecordThreadInfo r : fullList) {
+			if(isSampleInThreadView(r, from, to)) {
+				if(current == null) {
+					current = new ArrayList<RecordThreadInfo>();
+				}
+				current.add(r);
+			} else if(isWaitingRequestSample(r)) {
+				if(current != null) {
+					segments.add(current);
+					current = null;
+				}
+			}
+		}
+		if(current != null) {
+			segments.add(current);
+		}
+		return segments;
+	}
+
+	private String formatAbsoluteStackTraceTimeRange(long startMs, long endMs) {
+		return DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(startMs)) + " ~ "
+				+ DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(endMs));
+	}
+
+	private String formatAbsoluteStackTraceTimeSingle(long timeMs) {
+		return DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(timeMs));
+	}
+
+	/**
+	 * Time_ms와 동일한 기준(샘플 가중 시간 합계)으로 구간 시각을 계산한다.
+	 * NOTE: recordStart~recordEnd 실제 구간과 다를 수 있으며, THREAD 뷰의 Time_ms와 일치시키기 위한 값이다.
+	 */
+	private String formatSegmentStackTraceTime(List<RecordThreadInfo> viewSamples) {
+		if(viewSamples == null || viewSamples.isEmpty()) {
+			return "";
+		}
+		long segStartMs = viewSamples.get(0).recordStartTime;
+		long weightedDuration = 0L;
+		for(int i = 0; i < viewSamples.size(); i++) {
+			RecordThreadInfo recThrInfo = viewSamples.get(i);
+			long realTime = recThrInfo.recordEndTime - recThrInfo.recordStartTime;
+			weightedDuration += getSampleTime(viewSamples, i, realTime);
+		}
+		if(weightedDuration <= 0L) {
+			return formatAbsoluteStackTraceTimeSingle(segStartMs);
+		}
+		long segEndMs = segStartMs + weightedDuration;
+		return formatAbsoluteStackTraceTimeRange(segStartMs, segEndMs);
+	}
+
 	private List<RecordThreadInfo> filterSamples(List<RecordThreadInfo> recThrInfoList) {
 		List<RecordThreadInfo> filtered = new ArrayList<RecordThreadInfo>();
 		for(RecordThreadInfo recThrInfo : recThrInfoList) {
@@ -89,8 +189,15 @@ public class RecordResultViewer {
 		for(int i = idx + 1; i < recThrInfoList.size(); i++) {
 			RecordThreadInfo next = recThrInfoList.get(i);
 			if(includeSample(next)) {
-				return next.recordStartTime - recThrInfoList.get(idx).recordStartTime;
+				long sampleTime = next.recordStartTime - recThrInfoList.get(idx).recordStartTime;
+				if(sampleTime > 0L) {
+					return sampleTime;
+				}
+				break;
 			}
+		}
+		if(result.recordIntervalMS > 0L) {
+			return result.recordIntervalMS;
 		}
 		return realTime;
 	}
@@ -186,22 +293,38 @@ public class RecordResultViewer {
 			methodResultMap = makeMethodResultMap(result.recordData, Arrays.asList(targetThreads), from, to);
 			Logger.logln(getMethodString(methodResultMap));
 		} else if(type.equalsIgnoreCase("thread")) {
-			if(!checkArgument(viewArgs, 2, 3)) {
-				Logger.logln("  Usage) REC[ORD] VIEW THREAD ThreadList [RangeExpression]");
+			if(!checkArgument(viewArgs, 2, 4)) {
+				Logger.logln("  Usage) REC[ORD] VIEW THREAD ThreadList [RangeExpression] [--merge|--split]");
 				return;
 			}
 			Long[] targetThreads = getThreadIdsWithPattern(viewArgs.get(1));
 			if(targetThreads == null) return;
-			Map<Long,Tree<RecordStackFrame>> threadResultTreeMap = new HashMap<Long,Tree<RecordStackFrame>>();
+			boolean mergeThreads = false;
+			String rangeExpression = null;
+			for(int i = 2; i < viewArgs.size(); i++) {
+				String optOrRange = StringUtil.stripQuote(viewArgs.get(i), new char[]{'"','\''}, true);
+				if(isThreadViewMergeOption(optOrRange)) {
+					mergeThreads = true;
+				} else if(isThreadViewSplitOption(optOrRange)) {
+					mergeThreads = false;
+				} else if(rangeExpression == null) {
+					rangeExpression = optOrRange;
+				} else {
+					Logger.logln("Invalid argument for THREAD view: " + optOrRange);
+					Logger.logln("  Usage) REC[ORD] VIEW THREAD ThreadList [RangeExpression] [--merge|--split]");
+					return;
+				}
+			}
+			Map<Long,List<ThreadViewSegment>> threadViewByTid = new HashMap<Long,List<ThreadViewSegment>>();
 			long from, to;
-			if(viewArgs.size() == 2) {
+			if(rangeExpression == null) {
 				// without range expression
 				// record view thread 1,"pool-*"
 				from = -1L;
 				to = -1L;
 			} else {
 				// with range expression
-				String expStr = StringUtil.stripQuote(viewArgs.get(2), new char[]{'"','\''}, true);
+				String expStr = rangeExpression;
 				String[] range = expStr.split("~");
 				if(range.length != 2) {
 					Logger.logln("Invalid argument for RangeExpression. See the help of record command.");
@@ -252,10 +375,38 @@ public class RecordResultViewer {
 					}
 				}
 			}
-			for(Long tid : targetThreads) {
-				threadResultTreeMap.put(tid, makeThreadResultTree(result.recordData.get(tid), from, to));
+			if(mergeThreads) {
+				List<RecordThreadInfo> mergedViewSamples = new ArrayList<RecordThreadInfo>();
+				for(Long tid : targetThreads) {
+					List<RecordThreadInfo> fullList = result.recordData.get(tid);
+					if(recordViewMode == RecordViewMode.NO_REQUEST_WAIT) {
+						for(List<RecordThreadInfo> viewSeg : splitIntoNonWaitViewSegments(fullList, from, to)) {
+							mergedViewSamples.addAll(viewSeg);
+						}
+					} else if(fullList != null) {
+						mergedViewSamples.addAll(fullList);
+					}
+				}
+				Tree<RecordStackFrame> mergedTree = makeMergedThreadResultTree(result.recordData, Arrays.asList(targetThreads), from, to);
+				List<ThreadViewSegment> mergedSegments = new ArrayList<ThreadViewSegment>();
+				mergedSegments.add(new ThreadViewSegment(mergedTree, mergedViewSamples));
+				threadViewByTid.put(-1L, mergedSegments);
+				threadList.put(-1L, "Merged Threads(" + targetThreads.length + ")");
+			} else {
+				for(Long tid : targetThreads) {
+					List<RecordThreadInfo> fullList = result.recordData.get(tid);
+					List<ThreadViewSegment> segments = new ArrayList<ThreadViewSegment>();
+					if(recordViewMode == RecordViewMode.NO_REQUEST_WAIT) {
+						for(List<RecordThreadInfo> viewSeg : splitIntoNonWaitViewSegments(fullList, from, to)) {
+							segments.add(new ThreadViewSegment(makeThreadResultTree(viewSeg, from, to), viewSeg));
+						}
+					} else {
+						segments.add(new ThreadViewSegment(makeThreadResultTree(fullList, from, to), Collections.<RecordThreadInfo>emptyList()));
+					}
+					threadViewByTid.put(tid, segments);
+				}
 			}
-			Logger.logln(getThreadString(threadResultTreeMap));
+			Logger.logln(getThreadString(threadViewByTid));
 		} else if(type.equalsIgnoreCase("stack")) {
 			if(!checkArgument(viewArgs, 3, 3)) {
 				Logger.logln("  Usage) REC[ORD] VIEW STACK ThreadList PointExpression");
@@ -545,11 +696,12 @@ public class RecordResultViewer {
 			Map<Integer,RecordStackFrame> stackFrameMap = entry.getValue();
 			RecordStackFrame rootStackFrame = stackFrameMap.get(Integer.MIN_VALUE);
 			if(first) {
-				sb.append("    " + rootStackFrame.toMethodString(null, true) + "\n");
+				sb.append("    " + rootStackFrame.toMethodHeaderString() + "\n");
 				first = false;
 			}
-			sb.append("    " + rootStackFrame.toMethodString(key, true) + "\n");
+			sb.append("    " + rootStackFrame.toMethodRootString(key) + "\n");
 			if(stackFrameMap.size() > 2) {
+				sb.append("      line stats\n");
 				List<Map.Entry<Integer,RecordStackFrame>> subEntryList = new LinkedList<Map.Entry<Integer,RecordStackFrame>>(stackFrameMap.entrySet());
 				Collections.sort(subEntryList, new Comparator<Map.Entry<Integer,RecordStackFrame>>() {
 					@Override
@@ -565,11 +717,11 @@ public class RecordResultViewer {
 					Integer line = subEntry.getKey();
 					if(line == Integer.MIN_VALUE) continue;					
 					RecordStackFrame stackFrame = subEntry.getValue();
-					sb.append("    " + stackFrame.toMethodString(key, false) + "\n");
+					sb.append("    " + stackFrame.toMethodLineString() + "\n");
 				}
 			}
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	private Tree<RecordStackFrame> makeThreadResultTree(List<RecordThreadInfo> recThrInfoList, long from, long to) {
@@ -617,29 +769,168 @@ public class RecordResultViewer {
 		return tree;
 	}
 
-	private String getThreadString(Map<Long,Tree<RecordStackFrame>> recordResultTreeMap) {
+	private Tree<RecordStackFrame> makeMergedThreadResultTree(Map<Long,List<RecordThreadInfo>> recThrInfoListMap, List<Long> targetThreadList, long from, long to) {
+		int totalCount = 0;
+		long totalRecordTime = 0L;
+		for(Long tid : targetThreadList) {
+			List<RecordThreadInfo> recThrInfoList = recThrInfoListMap.get(tid);
+			if(recThrInfoList == null) {
+				continue;
+			}
+			if(from > -1L && to > -1L) {
+				totalCount += getTotalCount(recThrInfoList, from, to);
+				totalRecordTime += getTotalRecordTime(recThrInfoList, from, to);
+			} else {
+				totalCount += getTotalCount(recThrInfoList, Long.MIN_VALUE, Long.MAX_VALUE);
+				totalRecordTime += getTotalRecordTime(recThrInfoList, Long.MIN_VALUE, Long.MAX_VALUE);
+			}
+		}
+		Tree<RecordStackFrame> tree = new Tree<RecordStackFrame>(new RecordStackFrame(null));
+		for(Long tid : targetThreadList) {
+			List<RecordThreadInfo> recThrInfoList = recThrInfoListMap.get(tid);
+			if(recThrInfoList == null) {
+				continue;
+			}
+			for(int idx = 0; idx < recThrInfoList.size(); idx++) {
+				RecordThreadInfo recThrInfo = recThrInfoList.get(idx);
+				if(!includeSample(recThrInfo)) {
+					continue;
+				}
+				if((from > -1L && from > recThrInfo.recordStartTime) || (to > -1L && to < recThrInfo.recordEndTime)) {
+					continue;
+				}
+				long realTime = recThrInfo.recordEndTime-recThrInfo.recordStartTime;
+				long sampleTime = getSampleTime(recThrInfoList, idx, realTime);
+				tree.toRoot();
+				for(int i = recThrInfo.stackTrace.length-1; i >= 0; i--) {
+					StackTraceElement el = recThrInfo.stackTrace[i];
+					RecordStackFrame nodeData;
+					boolean match = false;
+					for(TreeNode<RecordStackFrame> node : tree.getCurrent().getChilds()) {
+						nodeData = node.getData();
+						if(nodeData.stackTraceElement.getClassName().equals(el.getClassName()) && nodeData.stackTraceElement.getMethodName().equals(el.getMethodName()) && nodeData.stackTraceElement.getLineNumber() == el.getLineNumber()) {
+							nodeData.threadSet.add(recThrInfo.threadId);
+							nodeData.hit(realTime, sampleTime);
+							tree.setCurrent(node);
+							match = true;
+						}
+					}
+					if(!match) {
+						nodeData = new RecordStackFrame(el, totalCount, totalRecordTime);
+						nodeData.threadSet.add(recThrInfo.threadId);
+						nodeData.hit(realTime, sampleTime);
+						tree.setCurrent(tree.getCurrent().addChild(nodeData));
+					}
+				}
+			}
+		}
+		return tree;
+	}
+
+	/**
+	 * 스레드별 스택 트리의 모든 프레임을 순회해, THREAD 뷰에서 (hit/total)·(sample/total) 숫자 우측 정렬에 쓸 공통 자릿수를 구한다.
+	 */
+	private void collectThreadTreeStatWidths(TreeNode<RecordStackFrame> node, int[] out) {
+		if(node == null) {
+			return;
+		}
+		RecordStackFrame f = node.getData();
+		if(f != null && f.stackTraceElement != null) {
+			int cn = Math.max(String.valueOf(f.hitCount).length(), String.valueOf(f.totalCount).length());
+			int tn = Math.max(String.valueOf(f.sampleRecordTime).length(), String.valueOf(f.totalRecordTime).length());
+			out[0] = Math.max(out[0], cn);
+			out[1] = Math.max(out[1], tn);
+		}
+		for(TreeNode<RecordStackFrame> ch : node.getChilds()) {
+			collectThreadTreeStatWidths(ch, out);
+		}
+	}
+
+	private String getThreadString(Map<Long,List<ThreadViewSegment>> threadViewByTid) {
 		StringBuilder sb = new StringBuilder();
-		if(recordResultTreeMap == null || recordResultTreeMap.size() < 1) {
+		if(threadViewByTid == null || threadViewByTid.size() < 1) {
 			return "No thread data.";
 		}
 		int shownThreadCount = 0;
-		Iterator<Long> iter = recordResultTreeMap.keySet().iterator();
+		Iterator<Long> iter = threadViewByTid.keySet().iterator();
 		while(iter.hasNext()) {
 			Long tid = iter.next();
-			List<RecordThreadInfo> recThrInfoList = filterSamples(result.recordData.get(tid));
-			Tree<RecordStackFrame> tree = recordResultTreeMap.get(tid);
-			boolean hasData = tree.getRoot().getChild() != null;
+			List<ThreadViewSegment> segments = threadViewByTid.get(tid);
+			List<RecordThreadInfo> recThrInfoList = new ArrayList<RecordThreadInfo>();
+			if(tid != null && tid.longValue() >= 0L) {
+				List<RecordThreadInfo> byTid = result.recordData.get(tid);
+				if(byTid != null) {
+					recThrInfoList = filterSamples(byTid);
+				}
+			} else if(segments != null) {
+				for(ThreadViewSegment seg : segments) {
+					if(seg.viewSamples != null) {
+						recThrInfoList.addAll(seg.viewSamples);
+					}
+				}
+			}
+			boolean hasData = false;
+			if(segments != null) {
+				for(ThreadViewSegment seg : segments) {
+					if(seg.tree.getRoot().getChild() != null) {
+						hasData = true;
+						break;
+					}
+				}
+			}
 			if(!showEmptyThread && !hasData) {
 				continue;
 			}
 			shownThreadCount++;
-			String threadName = (recThrInfoList.size() > 0) ? recThrInfoList.get(0).getThreadName() : threadList.get(tid);
-			sb.append("  @ \"" + threadName + "\"" + " Id=" + tid + "\n");
-			if(hasData) {
-				sb.append("    " + tree.getRoot().getChild().getData().toThreadHeaderString() + "\n");
-				appendThreadBranchString(sb, tree.getRoot().getChild(), new ArrayList<Boolean>(), true, true);
-			} else {
+			String threadName = (tid != null && tid.longValue() >= 0L && recThrInfoList.size() > 0) ? recThrInfoList.get(0).getThreadName() : threadList.get(tid);
+			int totalFoundStacktraceCount = recThrInfoList.size();
+			sb.append("  @ \"" + threadName + "\"" + " Id=" + tid + " (FoundStacktrace=" + totalFoundStacktraceCount + ")\n");
+			if(!hasData || segments == null || segments.isEmpty()) {
 				sb.append("    No stacktrace data.\n");
+				sb.append("\n");
+				continue;
+			}
+			int[] maxStatWidths = new int[]{1, 1};
+			for(ThreadViewSegment seg : segments) {
+				TreeNode<RecordStackFrame> r = seg.tree.getRoot().getChild();
+				if(r == null) {
+					continue;
+				}
+				int[] w = new int[]{1, 1};
+				collectThreadTreeStatWidths(r, w);
+				maxStatWidths[0] = Math.max(maxStatWidths[0], w[0]);
+				maxStatWidths[1] = Math.max(maxStatWidths[1], w[1]);
+			}
+			TreeNode<RecordStackFrame> headerNode = null;
+			for(ThreadViewSegment seg : segments) {
+				if(seg.tree.getRoot().getChild() != null) {
+					headerNode = seg.tree.getRoot().getChild();
+					break;
+				}
+			}
+			if(headerNode != null) {
+				sb.append("    " + headerNode.getData().toThreadHeaderString(maxStatWidths[0], maxStatWidths[1]) + "\n");
+			}
+			boolean firstPrintedTree = true;
+			for(ThreadViewSegment seg : segments) {
+				TreeNode<RecordStackFrame> threadRoot = seg.tree.getRoot().getChild();
+				boolean treeHasData = threadRoot != null;
+				if(!showEmptyThread && !treeHasData) {
+					continue;
+				}
+				if(!firstPrintedTree) {
+					sb.append("\n");
+				}
+				firstPrintedTree = false;
+				if(!treeHasData) {
+					sb.append("    No stacktrace data.\n");
+					continue;
+				}
+				String rootSuffix = "";
+				if(recordViewMode == RecordViewMode.NO_REQUEST_WAIT && seg.viewSamples != null && !seg.viewSamples.isEmpty()) {
+					rootSuffix = "  |  stacktrace time: " + formatSegmentStackTraceTime(seg.viewSamples);
+				}
+				appendThreadBranchString(sb, threadRoot, new ArrayList<Boolean>(), true, true, maxStatWidths[0], maxStatWidths[1], rootSuffix);
 			}
 			sb.append("\n");
 		}
@@ -650,12 +941,16 @@ public class RecordResultViewer {
 		return sb.toString().trim();
 	}
 	
-	private void appendThreadBranchString(StringBuilder sb, TreeNode<RecordStackFrame> branchRoot, List<Boolean> ancestorsHasNext, boolean isLastBranch, boolean rootBranch) {
+	private void appendThreadBranchString(StringBuilder sb, TreeNode<RecordStackFrame> branchRoot, List<Boolean> ancestorsHasNext, boolean isLastBranch, boolean rootBranch, int countNumW, int timeNumW, String rootStatSuffix) {
 		if(branchRoot == null) return;
 		if(rootBranch) {
-			sb.append("    " + branchRoot.getData().toThreadBranchString() + "\n");
+			String rootLine = branchRoot.getData().toThreadBranchString(countNumW, timeNumW);
+			if(rootStatSuffix != null && rootStatSuffix.length() > 0) {
+				rootLine = rootLine + rootStatSuffix;
+			}
+			sb.append("    " + rootLine + "\n");
 		} else {
-			appendThreadTreeLine(sb, ancestorsHasNext, isLastBranch, branchRoot.getData().toThreadBranchString());
+			appendThreadTreeLine(sb, ancestorsHasNext, isLastBranch, branchRoot.getData().toThreadBranchString(countNumW, timeNumW));
 		}
 		List<Boolean> pathAncestors = new ArrayList<Boolean>(ancestorsHasNext);
 		if(!rootBranch) {
@@ -684,7 +979,7 @@ public class RecordResultViewer {
 			for(int i = 0; i < branchChildren.size(); i++) {
 				TreeNode<RecordStackFrame> child = branchChildren.get(i);
 				boolean isLastChildBranch = (i == branchChildren.size()-1);
-				appendThreadBranchString(sb, child, childAncestors, isLastChildBranch, false);
+				appendThreadBranchString(sb, child, childAncestors, isLastChildBranch, false, countNumW, timeNumW, null);
 			}
 		}
 	}
@@ -749,9 +1044,8 @@ public class RecordResultViewer {
 		RecordThreadInfo first = recThrInfos[0];
 		RecordThreadInfo last = recThrInfos[recThrInfos.length-1];
 		sb.append("@ \"" + first.getThreadName() + "\"" + " Id=" + first.getThreadId() + "\n");
-		String from = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_MSEC, new Date(first.recordStartTime));
-		String to = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_MSEC, new Date(last.recordEndTime));
-		sb.append("  - Period  : " + from + "~" + to + " (" + (first.recordStartTime-result.startTime) + "~" + (last.recordEndTime-result.startTime) + "ms)\n");
+		String time = DateUtil.dateToString(DateUtil.FORMAT_DATETIME_MSEC, new Date(first.recordStartTime));
+		sb.append("  - Time    : " + time + " (" + (first.recordStartTime-result.startTime) + "ms)\n");
 		if(recThrInfos.length == 1) {
 			sb.append("  - State   : \n");
 			sb.append("      . Blocked : " +  first.blockedCount + "(" + first.blockedTime + "ms)\n");
@@ -780,7 +1074,7 @@ public class RecordResultViewer {
 	public String getInfoString() {
 		StringBuilder sb = new StringBuilder();		
 		sb.append("Information of the recorded data.\n\n");
-		sb.append("  - Record Time     : " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(result.startTime)) + " ~ " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(result.endTime)) + "\n");
+		sb.append("  - Record Time     : " + DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(result.startTime)) + " ~ " + DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(result.endTime)) + "\n");
 		sb.append("  - Record Duration : " + (result.endTime-result.startTime) + "ms\n");
 		sb.append("  - Record Interval : " + result.recordIntervalMS + "ms\n");
 		sb.append("  - Sample Count    : " + result.sampleCount + "\n");
@@ -796,13 +1090,13 @@ public class RecordResultViewer {
 		sb.append("      . OS      : " + result.toolInfo.get("os") + "\n");
 		sb.append("      . Java    : " + result.toolInfo.get("java") + "\n");
 		sb.append("      . PID     : " + result.toolInfo.get("pid") + "\n");
-		sb.append("      . TIME    : " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(Long.parseLong(result.toolInfo.get("time")))) + "\n");
+		sb.append("      . TIME    : " + DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(Long.parseLong(result.toolInfo.get("time")))) + "\n");
 		sb.append("  - Target VM\n");
 		sb.append("      . OS      : " + result.vmInfo.get("os") + "\n");
 		sb.append("      . Java    : " + result.vmInfo.get("java") + "\n");
 		sb.append("      . PID     : " + result.vmInfo.get("pid") + "\n");
 		sb.append("      . Name    : " + result.vmInfo.get("name") + "\n");
-		sb.append("      . TIME    : " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(Long.parseLong(result.vmInfo.get("time")))) + "\n");
+		sb.append("      . TIME    : " + DateUtil.dateToString(STACK_TRACE_ABS_TIME_FORMAT, new Date(Long.parseLong(result.vmInfo.get("time")))) + "\n");
 		sb.append("  - Record Thread List (" + result.recordData.size() + " threads)\n");
 		for(Long id : new TreeSet<Long>(result.recordData.keySet())) {
 			List<RecordThreadInfo> threadInfoList = result.recordData.get(id);

@@ -80,9 +80,10 @@ public class JmxRecordCommand extends JmxCommand {
         logln("        arg 1) ThreadList : {*|ThreadIds|ThreadNames}");
         logln("        arg 2) RangeExpression : {AbsoluteTimeRange|RelativeTimeRange|SampleOrderRange}");
         logln("   'THREAD' means to aggregate the results per thread.");
-        logln("      Usage) record view thread ThreadList [RangeExpression]");
+        logln("      Usage) record view thread ThreadList [RangeExpression] [--merge|--split]");
         logln("        arg 1) ThreadList : {*|ThreadIds|ThreadNames}");
         logln("        arg 2) RangeExpression : {AbsoluteTimeRange|RelativeTimeRange|SampleOrderRange}");
+        logln("        arg 3) ViewOption : {--merge|-m|--split|-s} (default: --split)");
         logln("   'STACK' means to show the stacktraces of a specific point in time.");
         logln("      Usage) record view stack ThreadList PointExpression");
         logln("        arg 1) ThreadList : {*|ThreadIds|ThreadNames}");

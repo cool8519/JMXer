@@ -265,9 +265,11 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
         ![Screenhot](screenshots/command_rec_view_info.jpg)
     - `METHOD` : Thread들에서 수행된 모든 Method를 호출 결과를 집계하여 점유율 순으로 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **METHOD** *ThreadList [RangeExpression]*
+        (출력 가독성을 위해 상위 Method 통계와 하위 line/ThreadList 통계를 계층적으로 구분해 표시한다.)<br/>
         ![Screenhot](screenshots/command_rec_view_method.jpg)
     - `THREAD` : Thread별로 Method 호출 결과를 집계하여 트리 형태로 보여준다.<br/>
-        Usage) JMXer> RECORD VIEW **THREAD** *ThreadList [RangeExpression]*
+        Usage) JMXer> RECORD VIEW **THREAD** *ThreadList [RangeExpression] [--merge\|--split]*<br/>
+        (`--split` 기본값: Thread별 트리 출력, `--merge`: 대상 Thread들을 하나의 통합 트리로 출력)
         ![Screenhot](screenshots/command_rec_view_thread.jpg)
     - `STACK` : 특정 시점의 Thread StackTrace를 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **STACK** *ThreadList PointExpression*
@@ -305,3 +307,5 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - (Bug) 외부 명령어 수행시 인자값 전달 오류 수정
  - 레코드 뷰의 stack 타입이 다수의 ThreadList를 지원하도록 변경
  - 레코드 뷰에서 요청 대기상태를 제외하는 NO_REQUEST_WAIT 모드 기능 추가
+ - 레코드 뷰의 thread 타입에 통합 트리 출력 기능 및 옵션 추가
+ - 레코드 뷰의 출력 가독성 개선
