@@ -12,6 +12,8 @@ import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularType;
 
+import dal.tool.cli.Logger;
+
 
 /**
  * 객체의 데이터를 문자열로 변환하기 위한 Util 클래스
@@ -115,7 +117,7 @@ public class ObjectDataUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			buffer.append("\n").append(prefix).append("}");
 		}
@@ -164,7 +166,7 @@ public class ObjectDataUtil {
 	        }
 	        buffer.append("\n").append(prefix+"\t").append("}");
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			if(cnt > 0) {
 				buffer.append("\n").append(prefix);
@@ -201,7 +203,7 @@ public class ObjectDataUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			if(i > 0) {
 				buffer.append("\n").append(prefix);
@@ -238,7 +240,7 @@ public class ObjectDataUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			if(col.size() > 0) {
 				buffer.append("\n").append(prefix);
@@ -281,7 +283,7 @@ public class ObjectDataUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			buffer.append("\n").append(prefix).append("}");
 		}

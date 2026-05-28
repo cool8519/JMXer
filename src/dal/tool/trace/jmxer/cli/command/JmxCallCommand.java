@@ -7,10 +7,12 @@ import java.util.Set;
 import javax.management.MBeanFeatureInfo;
 import javax.management.ObjectName;
 
+import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
+import dal.tool.trace.jmxer.cli.JmxMutatingCallConfirmation;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
 import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.StringUtil;
@@ -55,6 +57,8 @@ public class JmxCallCommand extends JmxCommand {
         logln(" CALL [{*|ObjectName}] {?|??|#}");
         logln(" CALL [{*|ObjectName}] AttributeName [{?|AttributeValue}]");
         logln(" CALL [{*|ObjectName}] OperationName [{?|\"Argument(,Argument...)\"}]");
+        logln("");
+        logln(" Attribute writes and operation invokes require confirmation (Y/N) because they may change the target JVM.");
 	}
 
 
@@ -118,35 +122,56 @@ public class JmxCallCommand extends JmxCommand {
 	}
 
 
+	private Set<ObjectName> resolveMbeanObjectNameSet() throws Exception {
+		Set<ObjectName> mbeanObjectNameSet = new HashSet<ObjectName>();
+		if(mbeanObjectName.equals("*")) {
+			if(!callTargetName.equals("?") && !callTargetName.equals("??") && !callTargetName.equals("#")) {
+				logln("Multi-ObjectName is alloweded only if target name is one of '?', '??', '#'.");
+				return mbeanObjectNameSet;
+			}
+			mbeanObjectNameSet = getMBeanConnection().queryNames(null, null);
+		} else {
+			if(JMXUtil.existsObjectName(getMBeanConnection(), mbeanObjectName)) {
+				mbeanObjectNameSet.add(new ObjectName(mbeanObjectName));
+			} else {
+				Set<ObjectName> tempSet = getMBeanConnection().queryNames(new ObjectName(mbeanObjectName), null);
+				if(tempSet.size() < 1) {
+					logln("Not found ObjectName '" + mbeanObjectName + "'");
+					return mbeanObjectNameSet;
+				}
+				for(ObjectName oName : tempSet) {
+					mbeanObjectNameSet.add(oName);
+				}
+			}
+		}
+		return mbeanObjectNameSet;
+	}
+
+	private boolean confirmMutatingCallIfNeeded() throws Exception {
+		if(isReadOnlyCallTarget() || getMBeanConnection() == null) {
+			return true;
+		}
+		Set<ObjectName> mbeanObjectNameSet = resolveMbeanObjectNameSet();
+		if(mbeanObjectNameSet.isEmpty()) {
+			return true;
+		}
+		java.util.Iterator<ObjectName> it = mbeanObjectNameSet.iterator();
+		ObjectName sample = it.next();
+		return JmxMutatingCallConfirmation.confirmIfNeeded(getMBeanConnection(), sample, callTargetName,
+				callTargetValues, mbeanObjectNameSet.size());
+	}
+
 	public void doExecute() throws Exception {
         if(getMBeanConnection() == null) {
             logln(Level.ERROR, "Not connected.");
             return;
         }
-        
-        Set<ObjectName> mbeanObjectNameSet = new HashSet<ObjectName>();
-        
-        if(mbeanObjectName.equals("*")) {
-        	if(!callTargetName.equals("?") && !callTargetName.equals("??") && !callTargetName.equals("#")) {
-				logln("Multi-ObjectName is alloweded only if target name is one of '?', '??', '#'.");
-				return;
-        	}
-            mbeanObjectNameSet = getMBeanConnection().queryNames(null, null);
-        } else {
-        	if(JMXUtil.existsObjectName(getMBeanConnection(), mbeanObjectName)) {
-            	mbeanObjectNameSet.add(new ObjectName(mbeanObjectName));
-        	} else {
-        		Set<ObjectName> tempSet = getMBeanConnection().queryNames(new ObjectName(mbeanObjectName), null);
-        		if(tempSet.size() < 1) {
-            		logln("Not found ObjectName '" + mbeanObjectName + "'");
-                	return;
-        		}
-        		for(ObjectName oName : tempSet) {
-                	mbeanObjectNameSet.add(oName);
-        		}
-        	}
+
+        Set<ObjectName> mbeanObjectNameSet = resolveMbeanObjectNameSet();
+        if(mbeanObjectNameSet.isEmpty()) {
+        	return;
         }
-        
+
         for(ObjectName oName : mbeanObjectNameSet) {
         	if(mbeanObjectNameSet.size() > 1) {
 		        logln("");
@@ -164,18 +189,15 @@ public class JmxCallCommand extends JmxCommand {
 						JMXPrintUtil.printMBeanInfo(getMBeanConnection(), oName, callTargetName);
 					} else {
 			        	Object opRet = JMXUtil.getJMXResult(getMBeanConnection(), oName.toString(), callTargetName, callTargetValues);
-			        	logln("");
 			    		if(opRet != null) {
-			    			logln("################################## Return Value ##################################");
 			    			logln(ObjectDataUtil.toString(opRet, getSettings().prettyPrintInResult()));
-			    			logln("##################################################################################");
 			        	}
 					}
 				}
 	        } catch(MBeanNotFoundException mbnfe) {
 	        	logln(mbnfe.getMessage());
 	        } catch(Exception e) {
-	        	e.printStackTrace();
+	        	Logger.logStackTrace(e);
 	            logln(Level.ERROR, "Failed to execute command : " + e.getMessage());
 	        }
         	if(mbeanObjectNameSet.size() > 1) {
@@ -185,17 +207,38 @@ public class JmxCallCommand extends JmxCommand {
 	}
 
 	
+	private boolean isReadOnlyCallTarget() {
+		if("?".equals(callTargetName) || "??".equals(callTargetName) || "#".equals(callTargetName)) {
+			return true;
+		}
+		if(callTargetValues != null && callTargetValues.length == 1 && "?".equals(callTargetValues[0])) {
+			return true;
+		}
+		return false;
+	}
+
+
 	public final boolean beforeExecute() throws Exception {
 		if(JMXControl.isAnalyzeMode) {
 			logln("JMX commands are not allowed in analyze mode.");
 			return false;
 		}
-		if(parseCallArguments()) {
-			return initMBeanConnector();
-		} else {
+		if(!parseCallArguments()) {
 			setStopCommand(true);
 			return true;
 		}
+		if(commandArgs.size() == 1 && commandArgs.getArgument(1).equalsIgnoreCase("help")) {
+			return initMBeanConnector();
+		}
+		if(!initMBeanConnector()) {
+			return false;
+		}
+		if(!confirmMutatingCallIfNeeded()) {
+			setSaveToHistory(false);
+			Logger.abortTuiUserCaptureSession();
+			return false;
+		}
+		return true;
 	}
 
 }

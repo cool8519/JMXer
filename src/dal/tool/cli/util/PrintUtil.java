@@ -12,6 +12,7 @@ import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularType;
 
+import dal.tool.cli.Logger;
 import dal.tool.util.TypeUtil;
 
 /**
@@ -117,7 +118,7 @@ public class PrintUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			buffer.append("\n").append(prefix).append("}");
 		}
@@ -168,7 +169,7 @@ public class PrintUtil {
 	        }
 	        buffer.append("\n").append(prefix+"\t").append("}");
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			if(cnt > 0) {
 				buffer.append("\n").append(prefix);
@@ -206,7 +207,7 @@ public class PrintUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			if(i > 0) {
 				buffer.append("\n").append(prefix);
@@ -245,7 +246,7 @@ public class PrintUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			if(col.size() > 0) {
 				buffer.append("\n").append(prefix);
@@ -290,7 +291,7 @@ public class PrintUtil {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			Logger.logStackTrace(e);
 		} finally {
 			buffer.append("\n").append(prefix).append("}");
 		}

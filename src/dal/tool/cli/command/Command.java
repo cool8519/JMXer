@@ -179,6 +179,9 @@ public abstract class Command {
         	if(!this.beforeExecute()) {
         		return;
         	}
+        	if(Logger.isTuiPanelCapture()) {
+        		Logger.commitTuiUserCapturePreamble();
+        	}
         } catch(Exception e) {
         	logln(Level.ERROR, "Error occurred during beforeExecute.");
         }

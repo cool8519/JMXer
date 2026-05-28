@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import dal.tool.cli.CommandExecutor;
+import dal.tool.cli.ExternalUiHooks;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.util.ExternalProcessRunner;
 import dal.tool.cli.util.ExternalProcessRunner.Sink;
@@ -44,27 +45,26 @@ public class ExternalCommand extends Command {
 		}
 		String joined = joinTokens(tokens);
 		boolean unix = File.separatorChar == '/';
+		final ExternalCommand self = this;
+		Sink sink = new Sink() {
+			@Override
+			public void line(String s) {
+				self.logln(s);
+			}
+			@Override
+			public void logError(String message) {
+				self.logln(Level.ERROR, message);
+			}
+		};
+		ExternalUiHooks.runBeforeBlockingExternalProcess();
 		try {
-    		logln("");
-	    	logln("############################ Result of External-Process ##########################");
-	    	final ExternalCommand self = this;
-	    	Sink sink = new Sink() {
-				@Override
-				public void line(String s) {
-					self.logln(s);
-				}
-				@Override
-				public void logError(String message) {
-					self.logln(Level.ERROR, message);
-				}
-	    	};
-	    	int exit = ExternalProcessRunner.run(joined, unix, sink);
-	    	if (exit != 0) {
-	    		logln(Level.ERROR, "External process exited with code " + exit);
-	    	}
-        } finally {
-	    	logln("##################################################################################");
-        }
+			int exit = ExternalProcessRunner.run(joined, unix, sink);
+			if (exit != 0) {
+				logln(Level.ERROR, "External process exited with code " + exit);
+			}
+		} finally {
+			ExternalUiHooks.runAfterBlockingExternalProcess();
+		}
 	}
 
 	private static String joinTokens(List<String> tokens) {

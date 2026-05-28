@@ -1,7 +1,7 @@
 package dal.tool.cli.command;
 
 import dal.tool.cli.CommandExecutor;
-import dal.tool.cli.util.IOUtil;
+import dal.tool.cli.Logger;
 
 public class ClearCommand extends Command {
 
@@ -29,7 +29,7 @@ public class ClearCommand extends Command {
 
 	
 	public void doExecute() throws Exception {
-        IOUtil.clearScreen();
+        Logger.clearScreenDisplay();
 	}
 
 	public boolean afterExecute() throws Exception {

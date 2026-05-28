@@ -46,7 +46,7 @@ $ java -jar JMXer.jar [ARGUMENTS]
 옵션은 대소문자를 구분하지 않는다.
 
 ```sh
-$ java -jar JMXer.jar {PID=<pid> | NAME=<proc_name> | ADDRESS=<ip>:<port> [AUTH=<user>/<pass>] | DUMPFILE[=<dumpfile_path>]} [CommandLine_To_Execute]
+$ java -jar JMXer.jar {PID=<pid> | NAME=<proc_name> | ADDRESS=<ip>:<port> [AUTH=<user>/<pass>] | DUMPFILE[=<dumpfile_path>]} [--tui]
 ```
 
 JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
@@ -79,6 +79,23 @@ JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
 > Note: 모든 접속 옵션 뒤에 수행할 명령어를 나열할 수 있으며, 이를 생략하면 대화형 프롬프트로 실행된다.<br/>
 `$ java -jar JMXer.jar PID=12345 @'./jmx_script.txt'`<br/>
 `$ java -jar JMXer.jar ADDRESS=127.0.0.1:10001 CALL java.lang:type=Threading ThreadContentionMonitoringEnabled true`
+
+## TUI 모드
+`--tui` 옵션과 함께 실행하면, 풀스크린 터미널 UI로 동작한다.
+
+> Note: `--tui`는 `CommandLine_To_Execute`(inline 명령)와 함께 사용할 수 없다. `--tui` 사용 시 inline 명령은 생략해야 한다.
+
+- **기본 동작 유지**: `--tui`가 없으면 기존 텍스트 프롬프트 방식 그대로 동작한다.
+- **키 조작**
+  - **↑/↓ + Enter**: MBean 목록/Attribute·Operation 목록 선택
+  - **Tab**: 포커스 이동(리스트 ↔ 출력 ↔ 입력창 등)
+  - **입력창**: **↑/↓**로 과거 명령 불러오기, **←/→**로 커서 이동 후 수정
+  - **명령 실행 시 출력**: 새 명령을 실행할 때(입력창 Enter, MBean 선택으로 `OBJECT` 반영 시) Output 영역은 이전 내용을 지우고 새 결과만 표시한다.
+  - **Ctrl+F**: Features 창 보이기/숨기기 토글 (숨기면 MBeans가 가로를 꽉 채움)
+  - **Ctrl+O**: Output 영역 전체를 JMXer 실행 위치에 텍스트 파일로 저장 (파일명에 시간값 포함)
+  - **Ctrl+C**: 종료
+  - **F1**: 도움말
+  - **F2**: (MBeans/Features) 현재 선택된 항목의 전체 이름을 팝업으로 표시
 
 
 ## Commands
@@ -309,3 +326,6 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - 레코드 뷰에서 요청 대기상태를 제외하는 NO_REQUEST_WAIT 모드 기능 추가
  - 레코드 뷰의 thread 타입에 통합 트리 출력 기능 및 옵션 추가
  - 레코드 뷰의 출력 가독성 개선
+
+### v1.2.0
+ - `--tui` 옵션으로 풀스크린 TUI 모드 지원

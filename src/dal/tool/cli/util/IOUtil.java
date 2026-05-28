@@ -166,9 +166,7 @@ public class IOUtil {
      * 화면을 clear한다.
      */
     public static void clearScreen() {
-        for(int i = 0; i < SCREEN_LINE; i++) {
-        	Logger.logWithoutSpool("", true);
-        }
+        Logger.clearScreenDisplay();
     }
 
 }

@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import dal.tool.cli.CommandExecutor;
+import dal.tool.cli.ExternalUiHooks;
 import dal.tool.cli.History;
 import dal.tool.cli.Logger.Level;
 
@@ -96,11 +97,14 @@ public class EditCommand extends Command {
             }
 
             try {
+            	ExternalUiHooks.runBeforeBlockingExternalProcess();
 	            Process p = Runtime.getRuntime().exec(cmd + " " + abs_fname);
 	            p.waitFor();	
 	            logln(Level.INFO, "Wrote file \"" + fname + "\"");
             } catch(Exception e) {
             	throw e;
+            } finally {
+            	ExternalUiHooks.runAfterBlockingExternalProcess();
             }
 
             StringBuffer result = new StringBuffer("");

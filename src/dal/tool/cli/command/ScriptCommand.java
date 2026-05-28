@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dal.tool.cli.CommandExecutor;
+import dal.tool.cli.ExternalUiHooks;
 import dal.tool.cli.Logger.Level;
 import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 
@@ -51,6 +52,7 @@ public class ScriptCommand extends Command {
                 File scriptFile = new File(fname);
                 String absScriptPath = null;
                 try {
+                	ExternalUiHooks.runBeforeBlockingExternalProcess();
 	                if(scriptFile.exists() && scriptFile.isFile()) {
 	                	absScriptPath = scriptFile.getCanonicalPath();
 	                	visitedScript = threadLocal.get();
@@ -73,6 +75,8 @@ public class ScriptCommand extends Command {
 	                }
                 } catch(Exception e) {
                 	logln(Level.ERROR, "Failed to read script file \"" + fname + "\".");
+                } finally {
+                	ExternalUiHooks.runAfterBlockingExternalProcess();
                 }	                
                 if(scriptCmdLines != null) {
                 	if(!getCommandExecutor().processScriptCommand(fname, scriptCmdLines)) {

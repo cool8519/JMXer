@@ -3,6 +3,8 @@ package dal.tool.cli;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import dal.tool.util.StringUtil;
 
@@ -13,6 +15,159 @@ import dal.tool.util.StringUtil;
  *
  */
 public class Logger extends Object {
+
+	/**
+	 * 화면 출력 대상. TUI 모드에서 교체하여 결과를 터미널 GUI로 라우팅한다.
+	 */
+	public interface OutputSink {
+		void print(Object msg, boolean newline);
+	}
+
+	private static final OutputSink DEFAULT_OUTPUT_SINK = new OutputSink() {
+		@Override
+		public void print(Object msg, boolean newline) {
+			try {
+				if(newline) {
+					System.out.println(msg);
+				} else {
+					System.out.print(msg);
+				}
+			} catch(Exception e) {}
+		}
+	};
+
+	private static OutputSink outputSink = DEFAULT_OUTPUT_SINK;
+
+	/**
+	 * TUI Output 패널에 사용자 명시적 명령 결과만 붙일 때 true.
+	 * false이면 {@link #outputSink}는 화면에 쓰지 않는다(스풀 등 다른 기록은 유지).
+	 */
+	private static volatile boolean tuiPanelCapture = false;
+
+	/** @see #tuiPanelCapture */
+	public static boolean isTuiPanelCapture() {
+		return tuiPanelCapture;
+	}
+
+	/** @see #tuiPanelCapture */
+	public static void setTuiPanelCapture(boolean on) {
+		tuiPanelCapture = on;
+	}
+
+	/**
+	 * TUI mode is active (terminal UI owns the console). While true, direct writes to
+	 * {@link System#out}/{@link System#err} can corrupt the screen; route diagnostics via {@link Logger}.
+	 */
+	private static volatile boolean tuiActive = false;
+
+	public static boolean isTuiActive() {
+		return tuiActive;
+	}
+
+	public static void setTuiActive(boolean on) {
+		tuiActive = on;
+	}
+
+	/** TUI: roll back the current user command capture (e.g. mutating CALL cancelled). */
+	private static volatile Runnable tuiAbortUserCaptureRunnable;
+	private static volatile Runnable tuiCommitCapturePreambleRunnable;
+
+	public static void setTuiAbortUserCaptureRunnable(Runnable runnable) {
+		tuiAbortUserCaptureRunnable = runnable;
+	}
+
+	public static void setTuiCommitCapturePreambleRunnable(Runnable runnable) {
+		tuiCommitCapturePreambleRunnable = runnable;
+	}
+
+	public static void abortTuiUserCaptureSession() {
+		Runnable r = tuiAbortUserCaptureRunnable;
+		if(r != null) {
+			try {
+				r.run();
+			} catch(Exception e) {}
+		}
+	}
+
+	/** TUI: show {@code > command} in Output after confirmation passes. */
+	public static void commitTuiUserCapturePreamble() {
+		Runnable r = tuiCommitCapturePreambleRunnable;
+		if(r != null) {
+			try {
+				r.run();
+			} catch(Exception e) {}
+		}
+	}
+
+	/**
+	 * Writes a throwable stack trace through the configured {@link #outputSink} (never {@link System#err}).
+	 */
+	public static void logStackTrace(Throwable t) {
+		if(t == null) {
+			return;
+		}
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);
+		pw.flush();
+		String trace = sw.toString();
+		if(trace.isEmpty()) {
+			return;
+		}
+		String[] lines = trace.split("\\r?\\n", -1);
+		for(int i = 0; i < lines.length; i++) {
+			String line = lines[i];
+			if(i == lines.length - 1 && line.isEmpty()) {
+				continue;
+			}
+			logln(line);
+		}
+	}
+
+	/** 기본 동작: 빈 줄 여러 개 출력(IOUtil.clearScreen과 동일 개념). */
+	private static Runnable clearScreenHandler = new Runnable() {
+		@Override
+		public void run() {
+			for(int i = 0; i < 150; i++) {
+				try {
+					System.out.println("");
+				} catch(Exception e) {}
+			}
+		}
+	};
+
+	/**
+	 * 화면 출력 sink를 설정한다. null이면 기본(System.out)으로 복구한다.
+	 */
+	public static void setOutputSink(OutputSink sink) {
+		outputSink = (sink != null) ? sink : DEFAULT_OUTPUT_SINK;
+	}
+
+	public static OutputSink getOutputSink() {
+		return outputSink;
+	}
+
+	/**
+	 * CLEAR 명령 등에서 호출. TUI에서는 출력 패널 비우기로 연결한다.
+	 */
+	public static void setClearScreenHandler(Runnable handler) {
+		clearScreenHandler = (handler != null) ? handler : new Runnable() {
+			@Override
+			public void run() {
+				for(int i = 0; i < 150; i++) {
+					try {
+						System.out.println("");
+					} catch(Exception e) {}
+				}
+			}
+		};
+	}
+
+	public static void clearScreenDisplay() {
+		try {
+			clearScreenHandler.run();
+		} catch(Exception e) {}
+	}
 
 	/**
 	 * 로그 레벨
@@ -179,12 +334,7 @@ public class Logger extends Object {
      */
     public static void log(Object msg, boolean newline) {
         try {
-            if(newline) {
-                System.out.println(msg);
-            } else {
-                System.out.print(msg);
-            }
-
+            outputSink.print(msg, newline);
             logOnlySpool(msg, newline);
         } catch(Exception e) {}
     }
@@ -219,11 +369,7 @@ public class Logger extends Object {
      */
     public static void logWithoutSpool(Object msg, boolean newline) {
         try {
-            if(newline) {
-                System.out.println(msg);
-            } else {
-                System.out.print(msg);
-            }
+            outputSink.print(msg, newline);
         } catch(Exception e) {}
     }
 

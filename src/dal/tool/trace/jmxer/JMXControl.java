@@ -1,5 +1,7 @@
 package dal.tool.trace.jmxer;
 
+import java.lang.reflect.InvocationTargetException;
+
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.util.StringUtil;
@@ -26,6 +28,27 @@ public class JMXControl {
      * @throws Exception 수행 과정에서 발생한 모든 Exception
 	 */
 	public static void main(String[] args) throws Exception {
+		boolean useTui = false;
+		if(args != null && args.length > 0) {
+			String[] filtered = new String[args.length];
+			int n = 0;
+			for(int i = 0; i < args.length; i++) {
+				String a = args[i];
+				if(a != null && a.trim().equalsIgnoreCase("--tui")) {
+					useTui = true;
+					continue;
+				}
+				filtered[n++] = a;
+			}
+			if(n != args.length) {
+				String[] compact = new String[n];
+				for(int i = 0; i < n; i++) {
+					compact[i] = filtered[i];
+				}
+				args = compact;
+			}
+		}
+
     	if(args.length == 0) {
     		printUsageAndExit(false, args);
     	}
@@ -93,6 +116,13 @@ public class JMXControl {
 			System.exit(-1);
     	}
     	
+    	// Guard: TUI mode and inline command (CommandLine_To_Execute) are mutually exclusive.
+    	// `isPromptMode == false` means user provided inline commands after the attach/analyze target.
+    	if(useTui && !isPromptMode) {
+    		Logger.logln(Logger.Level.ERROR, "Invalid arguments: '--tui' cannot be used together with 'CommandLine_To_Execute'.");
+    		printUsageAndExit(true, args);
+    	}
+    	
     	try {
     		if(isAnalyzeMode) {
         		Logger.logln("Running as ANALYZE mode.\n");
@@ -105,7 +135,11 @@ public class JMXControl {
         			commandLine = "RECORD LOAD \"" + dumpFilePath + "\"; " + commandLine;
         		}
 	       		if(isPromptMode) {
-	       			executeCommandInPrompt(mbeanConnector, promptString, commandLine.trim());
+	       			if(useTui) {
+	       				launchTui(mbeanConnector, promptString, commandLine.trim());
+	       			} else {
+	       				executeCommandInPrompt(mbeanConnector, promptString, commandLine.trim());
+	       			}
 	       		} else {
 	       			executeCommand(mbeanConnector, promptString, commandLine.trim());
 	       		}
@@ -119,7 +153,11 @@ public class JMXControl {
         			System.exit(-1);
         		}
 	       		if(isPromptMode) {
-	       			executeCommandInPrompt(mbeanConnector, promptString);
+	       			if(useTui) {
+	       				launchTui(mbeanConnector, promptString, "");
+	       			} else {
+	       				executeCommandInPrompt(mbeanConnector, promptString);
+	       			}
 	       		} else {
 	       			executeCommand(mbeanConnector, promptString, commandLine.trim());
 	       		}
@@ -185,7 +223,7 @@ public class JMXControl {
 	private static void printUsageAndExit(boolean isError, String[] args) {
     	if(isError) {
     		Logger.logln(Logger.Level.ERROR, "Invalid Arguments : size=" + args.length);
-    		Logger.logln(Logger.Level.ERROR, "");
+    		Logger.logln("");
     	}
 		printUsage();
 		System.exit(0);
@@ -214,6 +252,8 @@ public class JMXControl {
     	Logger.logln("                     * Attach usually requires same OS user permission as target JVM.");
     	Logger.logln("    - Analyze Mode : To only analyze record dump files without JVM connection. Unable to execute JMX commands.");
     	Logger.logln(" *) If 'CommandLine_To_Execute' arguments are omitted, it will run as INTERACTIVE_MODE.");
+    	Logger.logln(" *) TUI mode: add '--tui' to run as full-screen terminal UI (k9s-like).");
+    	Logger.logln(" *) '--tui' cannot be used together with 'CommandLine_To_Execute'. (TUI uses full-screen interactive mode)");
     	Logger.logln("");
     	Logger.logln("Attach Mode Example :");
     	Logger.logln(" 1) Attach to JVM with PID. To run INTERACTIVE_MODE.");
@@ -234,5 +274,46 @@ public class JMXControl {
     	Logger.logln("    args> DUMPFILE='/home/dump/JMXer_Record_Trace.dmp' @'/home/script/view_script.txt'");
     	Logger.logln("");
     }
+
+	private static void launchTui(MBeanConnector mbeanConnector, String prompt, String initialCommandLine) {
+		try {
+			Class.forName("com.googlecode.lanterna.terminal.Terminal");
+		} catch(ClassNotFoundException cnfe) {
+			Logger.logln(Logger.Level.ERROR, "TUI mode is not available (terminal UI classes missing from classpath).");
+			System.exit(-1);
+			return;
+		}
+		try {
+			Class<?> bootstrap = Class.forName("dal.tool.trace.jmxer.tui.TuiBootstrap");
+			java.lang.reflect.Method m = bootstrap.getMethod("launch", new Class[] { MBeanConnector.class, String.class, String.class });
+			m.invoke(null, new Object[] { mbeanConnector, prompt, initialCommandLine });
+		} catch(Exception e) {
+			Throwable cause = unwrapInvocationTargetException(e);
+			if(isWindowsJavaConsoleTuiFailure(cause)) {
+				Logger.logln(Logger.Level.ERROR, "TUI mode must be run as 'javaw' on Windows.");
+			} else {
+				Logger.logln(Logger.Level.ERROR, "Failed to launch TUI mode: " + cause.getMessage());
+				cause.printStackTrace();
+			}
+			System.exit(-1);
+		}
+	}
+
+	private static Throwable unwrapInvocationTargetException(Throwable t) {
+		while(t instanceof InvocationTargetException && ((InvocationTargetException)t).getTargetException() != null) {
+			t = ((InvocationTargetException)t).getTargetException();
+		}
+		return t;
+	}
+
+	private static boolean isWindowsJavaConsoleTuiFailure(Throwable t) {
+		for(Throwable cur = t; cur != null; cur = cur.getCause()) {
+			String msg = cur.getMessage();
+			if(msg != null && msg.indexOf("To start java on Windows, use javaw!") >= 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 }

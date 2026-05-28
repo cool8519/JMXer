@@ -132,9 +132,7 @@ public class JMXPrintUtil {
 				// get attribute or invoke operation
 				Object opRet = JMXUtil.invokeAttributeOrOperation(mbeanConn, oName, target_name, target_values);
 				if(opRet != null) {
-					Logger.logln("################################## Return Value ##################################");
 					Logger.logln(ObjectDataUtil.toString(opRet, prettyPrint));
-					Logger.logln("##################################################################################");
 				}
 			}
 			if(it.hasNext()) {
@@ -200,6 +198,52 @@ public class JMXPrintUtil {
 	}
 
 	/**
+	 * MBean ObjectName, description, and descriptor only (no attributes, operations, or other features).
+	 */
+	public static void printMBeanOverview(MBeanServerConnection mbeanConn, ObjectName oName) throws Exception {
+		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
+		Logger.logln("Name : " + oName);
+		Logger.logln("Description : " + mbeanInfo.getDescription());
+		StringBuffer desc = new StringBuffer();
+		Descriptor mbeanDesc = mbeanInfo.getDescriptor();
+		for(String descName : mbeanDesc.getFieldNames()) {
+			Object descValue = mbeanDesc.getFieldValue(descName);
+			desc.append("\n - " + descName + " : " + descValue);
+		}
+		Logger.logln("Descriptor : " + desc);
+	}
+
+	/**
+	 * Prints detail for a single attribute or operation only (no other feature sections).
+	 */
+	public static void printMBeanFeatureDetail(MBeanServerConnection mbeanConn, ObjectName oName, MBeanFeatureInfo feature) throws Exception {
+		if(feature == null) {
+			Logger.logln("No feature selected.");
+			return;
+		}
+		if(feature instanceof MBeanAttributeInfo) {
+			MBeanAttributeInfo info = (MBeanAttributeInfo) feature;
+			StringBuffer attrs = new StringBuffer();
+			attrs.append("\n - " + info.getName());
+			attrs.append("\n   . Description : " + info.getDescription());
+			attrs.append("\n   . Type        : " + JMXHelper.toTypeString(info.getType()));
+			attrs.append("\n   . Permission  : " + JMXHelper.getPermissionString(info));
+			Logger.logln("Attributes : " + attrs);
+		} else if(feature instanceof MBeanOperationInfo) {
+			MBeanOperationInfo info = (MBeanOperationInfo) feature;
+			StringBuffer opers = new StringBuffer();
+			opers.append("\n - " + info.getName());
+			opers.append("\n   . Description : " + info.getDescription());
+			opers.append("\n   . Parameters  : " + JMXHelper.toNameAndTypeString(info.getSignature()));
+			opers.append("\n   . Return      : " + JMXHelper.toTypeString(info.getReturnType()));
+			opers.append("\n   . Impact      : " + JMXHelper.getOperationImpactString(info.getImpact()));
+			Logger.logln("Operations : " + opers);
+		} else {
+			Logger.logln("Unsupported feature type: " + feature.getClass().getName());
+		}
+	}
+
+	/**
 	 * MBean 상세 정보를 출력한다.
 	 * @param mbeanConn 접속할 JVM의 MBeanServerConnection 객체 
 	 * @param oName MBean ObjectName 객체
@@ -230,7 +274,9 @@ public class JMXPrintUtil {
 					constr.append("\n   . Parameters  : " + JMXHelper.toTypeString(info.getSignature()));
 				}
 			}
-			Logger.logln("Constructors : " + constr);
+			if(constr.length() > 0) {
+				Logger.logln("Constructors : " + constr);
+			}
 		}
 
 		if(mbeanInfo.getAttributes().length > 0) {
@@ -243,7 +289,9 @@ public class JMXPrintUtil {
 					attrs.append("\n   . Permission  : " + JMXHelper.getPermissionString(info));
 				}
 			}
-			Logger.logln("Attributes : " + attrs);
+			if(attrs.length() > 0) {
+				Logger.logln("Attributes : " + attrs);
+			}
 		}
 
 		if(mbeanInfo.getOperations().length > 0) {
@@ -257,7 +305,9 @@ public class JMXPrintUtil {
 					opers.append("\n   . Impact      : " + JMXHelper.getOperationImpactString(info.getImpact()));
 				}
 			}
-			Logger.logln("Operations : " + opers);
+			if(opers.length() > 0) {
+				Logger.logln("Operations : " + opers);
+			}
 		}
 
 		if(mbeanInfo.getNotifications().length > 0) {
@@ -269,7 +319,9 @@ public class JMXPrintUtil {
 					notis.append("\n   . Types       : " + JMXHelper.toTypeString(info.getNotifTypes()));
 				}
 			}
-			Logger.logln("Notifications : " + notis);
+			if(notis.length() > 0) {
+				Logger.logln("Notifications : " + notis);
+			}
 		}
 	}
 

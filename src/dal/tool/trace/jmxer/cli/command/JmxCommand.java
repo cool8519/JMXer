@@ -39,8 +39,14 @@ public abstract class JmxCommand extends Command {
 	}
 
 	
+	private boolean saveToHistoryFlag = true;
+
 	public boolean saveToHistory() {
-		return true;
+		return saveToHistoryFlag;
+	}
+
+	protected void setSaveToHistory(boolean save) {
+		saveToHistoryFlag = save;
 	}
 
 	
@@ -125,6 +131,9 @@ public abstract class JmxCommand extends Command {
         try {
         	if(!this.beforeExecute()) {
         		return;
+        	}
+        	if(Logger.isTuiPanelCapture()) {
+        		Logger.commitTuiUserCapturePreamble();
         	}
         } catch(Exception e) {
         	logln(Level.ERROR, "Error occurred during beforeExecute : " + e.getMessage());

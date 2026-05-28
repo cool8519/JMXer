@@ -3,6 +3,8 @@ package dal.tool.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import dal.tool.cli.Logger;
+
 /**
  * 문자열 조작을 쉽게 하기 위한 Util 클래스
  * @author 권영달
@@ -106,7 +108,7 @@ public class StringUtil {
 	    	}
 	    	return l;
     	} catch(Exception e) {
-    		e.printStackTrace();
+    		Logger.logStackTrace(e);
     		return null;
     	}
     }

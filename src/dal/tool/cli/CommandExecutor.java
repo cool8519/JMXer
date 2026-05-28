@@ -144,7 +144,7 @@ public abstract class CommandExecutor {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            Logger.logStackTrace(e);
             logln(Level.ERROR, e.getMessage());
         }        
 	}
@@ -174,19 +174,32 @@ public abstract class CommandExecutor {
 	 * @param commandLine 명령어
 	 */
 	protected void processCommand(String commandLine) {
+		if(processCommandCore(commandLine)) {
+			loop = false;
+		}
+	}
+
+	/**
+	 * TUI 등 대체 UI에서 사용. 프롬프트 루프(loop)와 무관하게 명령만 수행한다.
+	 * @param commandLine 명령어
+	 * @return EXIT/QUIT 등으로 세션 종료가 필요하면 true
+	 */
+	public boolean processCommandForTui(String commandLine) {
+		return processCommandCore(commandLine);
+	}
+
+	private boolean processCommandCore(String commandLine) {
         Command command = getCommandInternal(commandLine);
 		try {
 			command.execute();
 		} catch(Exception e) {
 			logln(Level.ERROR, "Error occurred during executing command " + command.toString() + " : " + e.getMessage());
 		}
-		if(!(command instanceof NoopCommand)) {
+		if(!(command instanceof NoopCommand) && !Logger.isTuiPanelCapture()) {
 			logln("");
 		}
-		if(command.isStopPrompt()) {
-			loop = false;
-		}
     	commandHistory.add(command);
+		return command.isStopPrompt();
 	}
 
 	
@@ -202,7 +215,7 @@ public abstract class CommandExecutor {
 			} catch(Exception e) {
 				logln(Level.ERROR, "Error occurred during executing command " + command.toString() + " : " + e.getMessage());
 			}
-			if(!(command instanceof NoopCommand)) {
+			if(!(command instanceof NoopCommand) && !Logger.isTuiPanelCapture()) {
 				logln("");
 			}
         } else {
