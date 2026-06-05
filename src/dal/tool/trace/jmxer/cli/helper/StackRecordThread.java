@@ -24,9 +24,18 @@ public class StackRecordThread extends AbstractRecordThread {
 	protected HashMap<Long,ResourceUsage> resourceData;
 	protected boolean threadCpuTimeEnabled;
 	protected boolean threadAllocatedMemoryEnabled;
+	protected java.util.Set<String> userEntrySignatures = java.util.Collections.emptySet();
 
 	public StackRecordThread(MBeanServerConnection mbeanConnection, String[] threadIds) throws Exception {
 		super("StackRecorder", mbeanConnection, threadIds);
+	}
+
+	public void setUserEntrySignatures(java.util.Set<String> userEntrySignatures) {
+		if(userEntrySignatures == null || userEntrySignatures.isEmpty()) {
+			this.userEntrySignatures = java.util.Collections.emptySet();
+		} else {
+			this.userEntrySignatures = userEntrySignatures;
+		}
 	}
 
 	protected void afterInit() throws Exception {
@@ -143,7 +152,7 @@ public class StackRecordThread extends AbstractRecordThread {
 		recThrInfo.suspended = thrInfo.isSuspended();
 		recThrInfo.threadState = thrInfo.getThreadState().name();
 		recThrInfo.stackTrace = thrInfo.getStackTrace();
-		RecordThreadSampleState state = RecordRequestWaitClassifier.classify(recThrInfo.stackTrace);
+		RecordThreadSampleState state = RecordRequestWaitClassifier.classify(recThrInfo.stackTrace, userEntrySignatures);
 		recThrInfo.sampleState = state;
 		return recThrInfo;		
 	}

@@ -23,6 +23,8 @@ import javax.management.remote.JMXConnector;
 
 import dal.tool.cli.Logger;
 import dal.tool.cli.util.PrintUtil;
+import dal.tool.trace.jmxer.cli.helper.RecordRequestWaitClassifier;
+import dal.tool.trace.jmxer.cli.helper.RequestEntryUserSignatures;
 import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.PatternUtil;
 import dal.tool.util.PatternUtil.PATTERN_TYPE;
@@ -40,6 +42,31 @@ import dal.tool.util.jmx.ThreadUtil;
  *
  */
 public class JMXPrintUtil {
+
+	private static final String MBEAN_LIST_INDEX_PREFIX = " #";
+
+	/**
+	 * Width of the numeric index field for MBean list lines (1-based {@code maxIndex}).
+	 */
+	public static int mbeanListIndexFieldWidth(int maxIndex) {
+		if(maxIndex < 1) {
+			return 1;
+		}
+		return String.valueOf(maxIndex).length();
+	}
+
+	/**
+	 * One indexed MBean ObjectName line for the TUI MBean pane:
+	 * {@code " #<index> <objectName>"} with index width fixed from {@code maxIndex} (no {@code " - "} suffix).
+	 */
+	public static String formatMbeanListPaneLine(int index, int maxIndex, String objectName) {
+		int width = mbeanListIndexFieldWidth(maxIndex);
+		return String.format(
+			"%s%-" + width + "d %s",
+			MBEAN_LIST_INDEX_PREFIX,
+			index,
+			objectName == null ? "" : objectName);
+	}
 
 	/**
 	 * JVM에 접속하여 JMX를 호출하고, 결과를 출력한다.
@@ -415,7 +442,21 @@ public class JMXPrintUtil {
 	 * @param maxDepth stacktrace 출력할 엔트리의 최대 개수. 1보다 작으면 전체 엔트리 출력.
 	 * @throws Exception 수행 과정에서 발생한 모든 Exception
 	 */
+	private static final String STACKTRACE_TARGET_ACTIVE_WARNING =
+		"[STACKTRACE_TARGET=ACTIVE] Only threads that passed a known WAS/Framework entry point are shown. "
+		+ "All other threads are not treated as active and are skipped.";
+
 	public static void printStackTrace(MBeanServerConnection mbeanConn, String[] threadIds, int maxDepth) throws Exception {
+		printStackTrace(mbeanConn, threadIds, maxDepth, false);
+	}
+
+	public static void printStackTrace(MBeanServerConnection mbeanConn, String[] threadIds, int maxDepth, boolean activeOnly) throws Exception {
+		printStackTrace(mbeanConn, threadIds, maxDepth, activeOnly, null);
+	}
+
+	public static void printStackTrace(MBeanServerConnection mbeanConn, String[] threadIds, int maxDepth,
+			boolean activeOnly, RequestEntryUserSignatures userEntryLoad) throws Exception {
+		Set<String> userEntrySignatures = userEntryLoad == null ? null : userEntryLoad.getSignatures();
 		if(threadIds.length < 1) {
 			return;
 		}
@@ -426,8 +467,10 @@ public class JMXPrintUtil {
 			resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "dumpAllThreads", new String[] { "false", "false" });
 		} else {
 			String threadIdsString = StringUtil.arrayToString(threadIds, ",");
-			String maxDepthString = (maxDepth < 1) ? String.valueOf(Integer.MAX_VALUE) : String.valueOf(maxDepth);
-			resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "getThreadInfo(long[],int)", new String[] { threadIdsString, maxDepthString });
+			String fetchDepthString = activeOnly
+				? String.valueOf(Integer.MAX_VALUE)
+				: ((maxDepth < 1) ? String.valueOf(Integer.MAX_VALUE) : String.valueOf(maxDepth));
+			resultData = JMXUtil.getJMXResult(mbeanConn, "java.lang:type=Threading", "getThreadInfo(long[],int)", new String[] { threadIdsString, fetchDepthString });
 		}
 
 		CompositeData[] resultDataArr = null;
@@ -448,14 +491,25 @@ public class JMXPrintUtil {
 			}
 		}
 
+		if(activeOnly) {
+			Logger.logln(STACKTRACE_TARGET_ACTIVE_WARNING);
+			if(userEntryLoad != null) {
+				userEntryLoad.logLoadSummaryIfRead();
+			}
+			Logger.logBlankLine();
+		}
+
 		int cnt = 0;
 		for(CompositeData cd : resultDataArr) {
 			if(cd == null) {
 				continue;
 			}
-			Logger.logln("");
 			ThreadInfo threadInfo = ThreadInfo.from(cd);
-			List<String> dump = ThreadUtil.getThreadDump(threadInfo);
+			if(activeOnly && !RecordRequestWaitClassifier.hasWhitelistedRequestEntry(threadInfo.getStackTrace(), userEntrySignatures)) {
+				continue;
+			}
+			Logger.logln("");
+			List<String> dump = ThreadUtil.getThreadDump(threadInfo, activeOnly ? maxDepth : -1);
 			dump.set(0, "@ " + dump.get(0));
 			for(String line : dump) {
 				Logger.logln(line);
@@ -463,7 +517,11 @@ public class JMXPrintUtil {
 			cnt++;
 		}
 		if(cnt == 0) {
-			Logger.logln("Could not get thread info.");
+			if(activeOnly) {
+				Logger.logln("No active thread found in the given scope.");
+			} else {
+				Logger.logln("Could not get thread info.");
+			}
 		} else {
 			Logger.logln("");
 		}

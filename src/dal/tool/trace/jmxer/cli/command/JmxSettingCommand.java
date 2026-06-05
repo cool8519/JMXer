@@ -21,7 +21,8 @@ public class JmxSettingCommand extends SettingCommand {
 	
 	public void printHelp() {
 		super.printHelp();
-		if(JMXControl.isAnalyzeMode) {
+		logln("     REQUEST_ENTRY_FILE - file of user-defined request-entry signatures (one 'package.Class.method' per line)");
+		if(JMXControl.isOfflineSession) {
 	        logln("");
 	        logln(" Following is the list of available record variable.");
 	        logln("     RECORD_VIEW_MODE - record view mode (NO_REQUEST_WAIT, FULL)");
@@ -32,6 +33,9 @@ public class JmxSettingCommand extends SettingCommand {
         logln(" Following is the list of available JMX variable.");
         logln("     MBEAN_ONAME  - set current MBean ObjectName");
         logln("     PRETTY_PRINT - display mbean object with newline and indentation");
+        logln("");
+        logln(" Following is the list of available thread variable.");
+        logln("     STACKTRACE_TARGET - thread stacktrace target (SELECTED, ACTIVE)");
         logln("");
         logln(" Following is the list of available record variable.");
         logln("     RECORD_VIEW_MODE - record view mode (NO_REQUEST_WAIT, FULL)");
@@ -46,9 +50,11 @@ public class JmxSettingCommand extends SettingCommand {
 		} else if(commandArgs.size() == 2) {
 			String variable = commandArgs.getArgument(1);
 			String value = commandArgs.getArgument(2);
-			if(JMXControl.isAnalyzeMode
-					&& (variable.equalsIgnoreCase("mbean_oname") || variable.equalsIgnoreCase("pretty_print"))) {
-				logln("JMX settings are not available in analyze mode.");
+			if(JMXControl.isOfflineSession
+					&& (variable.equalsIgnoreCase("mbean_oname")
+						|| variable.equalsIgnoreCase("pretty_print")
+						|| variable.equalsIgnoreCase("stacktrace_target"))) {
+				logln("JMX settings are not available in offline session.");
 				return;
 			}
             if(variable.equalsIgnoreCase("mbean_oname")) {
@@ -63,6 +69,10 @@ public class JmxSettingCommand extends SettingCommand {
             	settings.setRecordViewMode(value);
             } else if(variable.equalsIgnoreCase("show_empty_thread")) {
             	settings.setShowEmptyThreadInRecordView(value);
+            } else if(variable.equalsIgnoreCase("stacktrace_target")) {
+            	settings.setStacktraceTarget(value);
+            } else if(variable.equalsIgnoreCase("request_entry_file")) {
+            	settings.setReqEntryFile(value);
             } else {
             	super.doExecute();
             }			

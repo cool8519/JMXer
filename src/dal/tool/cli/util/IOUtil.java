@@ -119,6 +119,20 @@ public class IOUtil {
         }
     }
 
+    /**
+     * Case-insensitive {@link #isIncludeEquals(String, String, String)} for command keywords and abbreviations.
+     * Do not use for user data (ObjectName, quoted thread names, paths).
+     */
+    public static boolean isIncludeEqualsIgnoreCase(String str, String essential, String optional) {
+        if(str == null || essential == null) {
+            return false;
+        }
+        if(optional != null) {
+            return isIncludeEquals(str.toLowerCase(), essential.toLowerCase(), optional.toLowerCase());
+        }
+        return isIncludeEquals(str.toLowerCase(), essential.toLowerCase(), null);
+    }
+
 
     /**
      * 출력할 문자열을 컬럼 형식의 문자열로 가져온다.

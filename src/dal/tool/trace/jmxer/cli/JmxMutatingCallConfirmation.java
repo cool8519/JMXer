@@ -26,6 +26,8 @@ public final class JmxMutatingCallConfirmation {
 	}
 
 	private static final String CONFIRM_TITLE = "Confirm";
+	private static final String PROCEED_QUESTION = "Proceed with this change?";
+
 	private static volatile Handler handler;
 
 	private JmxMutatingCallConfirmation() {}
@@ -49,7 +51,8 @@ public final class JmxMutatingCallConfirmation {
 		if(!isMutatingCall(conn, objectName, targetName, targetValues)) {
 			return true;
 		}
-		return askUser(CONFIRM_TITLE, buildWarningMessage(objectName, targetName, targetValues, mbeanTargetCount));
+		String content = buildWarningContent(conn, objectName, targetName, targetValues, mbeanTargetCount);
+		return askUser(CONFIRM_TITLE, content);
 	}
 
 	public static boolean isMutatingCall(MBeanServerConnection conn, ObjectName objectName, String targetName,
@@ -96,8 +99,8 @@ public final class JmxMutatingCallConfirmation {
 		return false;
 	}
 
-	private static String buildWarningMessage(ObjectName objectName, String targetName, String[] targetValues,
-			int mbeanTargetCount) {
+	private static String buildWarningContent(MBeanServerConnection conn, ObjectName objectName, String targetName,
+			String[] targetValues, int mbeanTargetCount) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[CAUTION] This CALL may modify the target JVM. Changes can affect production systems.");
 		sb.append("\n          Review carefully before proceeding.");
@@ -105,29 +108,27 @@ public final class JmxMutatingCallConfirmation {
 			sb.append("\n\nThis CALL applies to ").append(mbeanTargetCount).append(" MBean(s).");
 		}
 		sb.append("\n\nObjectName: ").append(objectName);
-		sb.append("\nTarget: ").append(targetName);
-		if(targetValues != null && targetValues.length > 0) {
-			sb.append("\nValue/arguments: ");
-			for(int i = 0; i < targetValues.length; i++) {
-				if(i > 0) {
-					sb.append(", ");
-				}
-				sb.append(targetValues[i]);
-			}
+		String details = JmxCallInputValidator.formatCallConfirmationDetails(conn, objectName, targetName, targetValues);
+		if(details.indexOf("\nTarget:") < 0) {
+			sb.append("\nTarget: ").append(targetName);
 		}
-		sb.append("\n\nProceed with this change?");
+		sb.append(details);
 		return sb.toString();
 	}
 
-	private static boolean askUser(String title, String message) {
+	private static boolean askUser(String title, String content) {
 		Handler h = handler;
 		if(h != null) {
-			return h.confirm(title, message);
+			return h.confirm(title, content + "\n\n" + PROCEED_QUESTION);
 		}
-		Logger.logln(message);
+		Logger.logln(content);
+		return readYesNo(PROCEED_QUESTION + " (Y/N): ");
+	}
+
+	private static boolean readYesNo(String prompt) {
 		String yn = null;
 		while(true) {
-			yn = IOUtil.readLine("Proceed? (Y/N): ", Logger.Level.RESULT);
+			yn = IOUtil.readLine(prompt, Logger.Level.RESULT);
 			if(yn == null) {
 				yn = "";
 			}

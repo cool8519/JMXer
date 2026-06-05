@@ -11,6 +11,7 @@ import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.trace.jmxer.JMXControl;
+import dal.tool.trace.jmxer.cli.JmxCallInputValidator;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxMutatingCallConfirmation;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
@@ -50,13 +51,15 @@ public class JmxCallCommand extends JmxCommand {
         logln("                                    - '#'  means to view the values of all Attributes");
         logln("     ValueOrArguments - '?' means to view detailed information of the Attributes or Operation");
         logln("                      - MBean Attribute value to set");
-        logln("                      - MBean Operation arguments. It should be formatted \"Argument(,Argument...)\"");
-        logln("                        'Argument' could be array type. ex) [a,b,c]");
+        logln("                      - MBean Operation arguments (one command token): arg1,arg2,...");
+        logln("                        Use OperationName(type1,type2,...) when overloaded.");
+        logln("                        Array parameter: one argument in brackets, e.g. [1,5],7 for long[],int");
+        logln("                        Do not wrap the whole list in quotes (e.g. \"[1,5],7\" is one argument).");
         logln("");
         logln(" Examples)");
         logln(" CALL [{*|ObjectName}] {?|??|#}");
         logln(" CALL [{*|ObjectName}] AttributeName [{?|AttributeValue}]");
-        logln(" CALL [{*|ObjectName}] OperationName [{?|\"Argument(,Argument...)\"}]");
+        logln(" CALL [{*|ObjectName}] OperationName(type,...) [arg1,[a,b],arg3]");
         logln("");
         logln(" Attribute writes and operation invokes require confirmation (Y/N) because they may change the target JVM.");
 	}
@@ -147,6 +150,24 @@ public class JmxCallCommand extends JmxCommand {
 		return mbeanObjectNameSet;
 	}
 
+	private boolean validateCallInputIfNeeded() throws Exception {
+		if(isReadOnlyCallTarget() || getMBeanConnection() == null) {
+			return true;
+		}
+		Set<ObjectName> mbeanObjectNameSet = resolveMbeanObjectNameSet();
+		if(mbeanObjectNameSet.isEmpty()) {
+			return true;
+		}
+		ObjectName sample = mbeanObjectNameSet.iterator().next();
+		String error = JmxCallInputValidator.validate(getMBeanConnection(), sample, callTargetName, callTargetValues);
+		if(error != null) {
+			logln(Level.ERROR, error);
+			setStopCommand(true);
+			return false;
+		}
+		return true;
+	}
+
 	private boolean confirmMutatingCallIfNeeded() throws Exception {
 		if(isReadOnlyCallTarget() || getMBeanConnection() == null) {
 			return true;
@@ -219,8 +240,8 @@ public class JmxCallCommand extends JmxCommand {
 
 
 	public final boolean beforeExecute() throws Exception {
-		if(JMXControl.isAnalyzeMode) {
-			logln("JMX commands are not allowed in analyze mode.");
+		if(JMXControl.isOfflineSession) {
+			logln("JMX commands are not allowed in offline session.");
 			return false;
 		}
 		if(!parseCallArguments()) {
@@ -231,6 +252,9 @@ public class JmxCallCommand extends JmxCommand {
 			return initMBeanConnector();
 		}
 		if(!initMBeanConnector()) {
+			return false;
+		}
+		if(!validateCallInputIfNeeded()) {
 			return false;
 		}
 		if(!confirmMutatingCallIfNeeded()) {

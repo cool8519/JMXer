@@ -78,7 +78,7 @@ public class CommandMeta {
 		}
 		public boolean isMatch(String inputStr) {
 			if(optional != null) {
-				return IOUtil.isIncludeEquals(inputStr.toLowerCase(), essential.toLowerCase(), optional.toLowerCase());
+				return IOUtil.isIncludeEqualsIgnoreCase(inputStr, essential, optional);
 			} else {
 				return inputStr.toLowerCase().equals(essential.toLowerCase());
 			}

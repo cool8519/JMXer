@@ -1,9 +1,9 @@
-﻿JMXer
+JMXer
 =======
 JMX MBean의 Attribute및 Operation에 접근하기 위해서는 일반적으로 jconsole을 이용하며, 성능 프로파일링을 위해서도 visualvm과 같은 훌륭한 도구가 존재한다.
 그러나 이와 같은 툴들은 GUI 기반의 툴이라 사용자 환경의 제약이 따른다.
 예를 들어, PaaS(Container) 환경에서는 위와 같은 툴 사용에 어려움이 있을 수 밖에 없다.
-JMXer는 가벼운 CLI 기반의 툴로, JMX MBean을 컨트롤하고 기본적인 성능 분석을 위한 샘플링 기능을 제공한다.
+JMXer는 가벼운 TUI/CLI 기반의 툴로, JMX MBean을 컨트롤하고 기본적인 성능 분석을 위한 샘플링 기능을 제공한다.
 이를통해 JAVA 성능 이슈 발생시, 대상 프로세스에 빠르게 접속하여 분석할 수 있도록 한다. 
 
 
@@ -12,7 +12,7 @@ JMXer는 가벼운 CLI 기반의 툴로, JMX MBean을 컨트롤하고 기본적�
 * JAVA Runtime
   * 기본 권장: JDK 17+ (`JMXer.jar`)
   * 레거시 호환: JDK 8+ (`JMXer-java8.jar`)
-* Attach(PID/NAME) 모드 공통 조건
+* Online(PID/NAME) 세션 공통 조건
   * JDK 실행 환경 필요 (JRE 불가)
   * 대상 JVM과 동일 OS 사용자 권한 권장
   * Java 9+ 대상 JVM Attach는 `JMXer.jar`(Java 17 실행) 사용 권장
@@ -32,8 +32,8 @@ JMXer는 가벼운 CLI 기반의 툴로, JMX MBean을 컨트롤하고 기본적�
 
 ## Getting Started
 아래의 JAVA Archive 파일(jar)을 다운로드 한다.
-* 기본 권장 (Java 17+) : [JMXer.jar](https://github.com/cool8519/JMXer/releases/download/v1.1.0/JMXer.jar)
-* 레거시 호환 (Java 8+) : [JMXer-java8.jar](https://github.com/cool8519/JMXer/releases/download/v1.1.0/JMXer-java8.jar)
+* 기본 권장 (Java 17+) : [JMXer.jar](https://github.com/cool8519/JMXer/releases/download/v2.0.0/JMXer.jar)
+* 레거시 호환 (Java 8+) : [JMXer-java8.jar](https://github.com/cool8519/JMXer/releases/download/v2.0.0/JMXer-java8.jar)
 
 커맨드 창에서 아래와 같이 실행한다. 세부 ARGUMENT들은 Usage를 참고한다.
 ```sh
@@ -45,12 +45,19 @@ $ java -jar JMXer.jar [ARGUMENTS]
 아래는 JMXer를 실행하기 위한 Agument 사용법이다.
 옵션은 대소문자를 구분하지 않는다.
 
+### 용어 (Terminology)
+| 축 | 값 | 설명 |
+| --- | --- | --- |
+| **Session Mode** | Online / Offline | JVM 연결 여부 (`PID`/`NAME`/`ADDRESS` → Online, `DUMPFILE` → Offline) |
+| **Interface Mode** | CLI / TUI | 풀스크린 UI(기본, `--tui`) 또는 텍스트 프롬프트 (`--cli`) |
+| **UI Mode** (TUI만) | MBean / Thread / Record | TUI 작업 화면 |
+
 ```sh
-$ java -jar JMXer.jar {PID=<pid> | NAME=<proc_name> | ADDRESS=<ip>:<port> [AUTH=<user>/<pass>] | DUMPFILE[=<dumpfile_path>]} [--tui]
+$ java -jar JMXer.jar {PID=<pid> | NAME=<proc_name> | ADDRESS=<ip>:<port> [AUTH=<user>/<pass>] | DUMPFILE[=<dumpfile_path>]} [--cli|--tui]
 ```
 
-JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
-- Attatch 모드 : 원격 또는 로컬 JAVA 프로세스에 연결하여 JMX 명령을 실행한다. 분석을 포함한 모든 기능을 사용할 수 있다.
+JMXer를 실행하기 위해서는 두 가지 Session Mode를 사용할 수 있다.
+- **Online** 세션 : 원격 또는 로컬 JAVA 프로세스에 연결하여 JMX 명령을 실행한다. 레코드 분석을 포함한 모든 기능을 사용할 수 있다.
     - Local : JMXer를 수행시킨 서버 내에서 실행중인 JAVA 프로세스에 직접 접속<br/>
         Ex 1) `$ java -jar JMXer.jar PID=12345`<br/>
         Ex 2) `$ java -jar JMXer.jar NAME=my.pkg.MyProgram`
@@ -71,8 +78,8 @@ JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
         > `-Dcom.sun.management.jmxremote.ssl=false`<br/>
         > `-Dcom.sun.management.jmxremote.authenticate=false`
 
-- Analyze 모드 : JAVA 프로세스에 연결 없이 레코드 덤프 파일만 분석하기 위한 모드이다. Analyze 모드에서는 JMX 명령을 실행할 수 없다.
-    - DUMPFILE : Analyze 모드로 접속하기 위해 이 옵션을 사용. 파일명을 주면 자동으로 해당 파일을 로드<br/>
+- **Offline** 세션 : JAVA 프로세스에 연결 없이 레코드 덤프 파일만 분석한다. Offline 세션에서는 JMX 명령을 실행할 수 없다.
+    - DUMPFILE : Offline 세션으로 시작할 때 이 옵션을 사용. 파일명을 주면 자동으로 해당 파일을 로드<br/>
         `$ java -jar JMXer.jar DUMPFILE`<br/>
         `$ java -jar JMXer.jar DUMPFILE="/home/dump/JMXer_Record_Trace.dmp"`<br/><br/>
 
@@ -80,22 +87,21 @@ JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
 `$ java -jar JMXer.jar PID=12345 @'./jmx_script.txt'`<br/>
 `$ java -jar JMXer.jar ADDRESS=127.0.0.1:10001 CALL java.lang:type=Threading ThreadContentionMonitoringEnabled true`
 
-## TUI 모드
-`--tui` 옵션과 함께 실행하면, 풀스크린 터미널 UI로 동작한다.
+## Interface Mode
+- **TUI** (기본): Interface Mode 플래그를 생략하거나 `--tui`를 명시하면 풀스크린 터미널 UI로 동작한다.
+- **CLI**: `--cli` 옵션과 함께 실행하면 텍스트 프롬프트(기존 방식)로 동작한다.
 
-> Note: `--tui`는 `CommandLine_To_Execute`(inline 명령)와 함께 사용할 수 없다. `--tui` 사용 시 inline 명령은 생략해야 한다.
+> Note: `--cli`와 `--tui`는 함께 사용할 수 없다.<br/>
+> Note: `CommandLine_To_Execute`(inline 명령)가 있으면 항상 CLI로 비대화형 실행된다. `--tui`는 inline 명령과 함께 사용할 수 없다.
 
-- **기본 동작 유지**: `--tui`가 없으면 기존 텍스트 프롬프트 방식 그대로 동작한다.
-- **키 조작**
-  - **↑/↓ + Enter**: MBean 목록/Attribute·Operation 목록 선택
-  - **Tab**: 포커스 이동(리스트 ↔ 출력 ↔ 입력창 등)
-  - **입력창**: **↑/↓**로 과거 명령 불러오기, **←/→**로 커서 이동 후 수정
-  - **명령 실행 시 출력**: 새 명령을 실행할 때(입력창 Enter, MBean 선택으로 `OBJECT` 반영 시) Output 영역은 이전 내용을 지우고 새 결과만 표시한다.
-  - **Ctrl+F**: Features 창 보이기/숨기기 토글 (숨기면 MBeans가 가로를 꽉 채움)
-  - **Ctrl+O**: Output 영역 전체를 JMXer 실행 위치에 텍스트 파일로 저장 (파일명에 시간값 포함)
-  - **Ctrl+C**: 종료
-  - **F1**: 도움말
-  - **F2**: (MBeans/Features) 현재 선택된 항목의 전체 이름을 팝업으로 표시
+TUI는 CLI와 동일한 JMXer 명령을 **Command** 창에서 입력할 수 있으며, 상태·필터·목록·출력을 화면 창으로 나누어 보여준다. 단축키와 창 조작 방법은 TUI 화면의 상태 줄 및 내장 도움말에서 확인할 수 있다.
+
+### UI Mode (TUI 전용)
+UI Mode는 TUI 작업 화면을 전환하는 축이다. **MBean → Thread → Record** 순으로 순환된다.
+
+- **MBean**: MBean ObjectName 목록과 Attribute/Operation(Features)을 탐색한다. CLI의 `OBJECT`/`LIST`/`CALL` 흐름과 동일한 작업을 GUI로 수행한다. Online 세션에서만 동작한다.
+- **Thread**: 대상 JVM의 Thread 목록을 조회·필터하고, 선택한 Thread의 Stacktrace를 Output에 출력한다. 실시간으로 변하는 Thread들의 상태를 모니터링하고 Stacktrace를 편리하게 확인할 수 있다. Online 세션에서만 동작한다.
+- **Record**: 레코드 덤프를 기록하고 분석하기 위한 레이아웃을 제공한다. `RECORD` 명령(샘플링·저장·로드·뷰)을 사용자 인터페이스와 함께 사용할 수 있도록 한다. Offline/Online 세션에서 모두 사용할 수 있다.
 
 
 ## Commands
@@ -122,7 +128,7 @@ JMXer를 실행하기 위해서는 두가지 모드를 사용할 수 있다.
 
 #### JMX 명령어
 다음과 같은 명령어를 사용할 수 있다.
-> Analyze 모드에서는 `INFO`와 `RECORD` 명령어 사용만 가능하다.
+> Offline 세션에서는 `INFO`와 `RECORD` 명령어 사용만 가능하다.
 
 | 기능 | 명령어 | 설명 |
 | ------ | ------ | ------ | 
@@ -173,13 +179,16 @@ JMXer> CALL [{*|ObjectName}] AttributeName [{?|AttributeValue}]
 ###### 2.3 MBean Operation 조회/호출
 아래와 같이 MBean내 특정 Operation의 정보를 조회하거나 호출한다.
 ```sh
-JMXer> CALL [{*|ObjectName}] OperationName [{?|"Argument(,Argument...)"}]
+JMXer> CALL [{*|ObjectName}] OperationName [{?|ArgumentList}]
+JMXer> CALL [{*|ObjectName}] OperationName(type1,type2,...) [{?|ArgumentList}]
 ```
 - `?` : 해당 Operation의 상세 정보 출력
-- Arguments : 해당 Operation을 Arguments(인자값 목록)과 함께 호출
-    > 인자값 목록은 쌍따옴표(`""`)로 둘러쌓여야 한다.<br/>
-    > 콤마(`,`)로 여러개의 인자를 지정할수 있으며, 인자값이 배열인 경우는 대괄호(`[]`)로 표현한다.
-    
+- **OperationName** : Operation 이름. 오버로드가 있으면 `OperationName(type1,type2,...)`와 같이 명시할 수 있다.
+- **ArgumentList** : 파라미터가 복수개 일 경우는 값을 쉼표(`,`)로 연결하여 입력한다. (ObjectName·OperationName 다음은 공백 기준 토큰 1개만 허용)
+  - `[a,b,...]` : 배열 파라미터 표현 (원소 사이 콤마 구분)
+  - `"..."` : 공백·콤마가 들어가는 문자열 값을 감쌀 때 쌍따옴표 사용 (인자 목록 전체를 따옴표로 감싸지 않도록 주의)
+  - 무인자 Operation : ArgumentList 없이 호출
+
 ![Screenhot](screenshots/command_call_oper.jpg)
 
 ##### 3. 쓰레드
@@ -218,6 +227,10 @@ JMXer> THR[EAD] STACK[TRACE] ThreadList [MaxDepth]
 ```
 - ThreadList : 특정 Thread ID 또는 Name에 해당하는 StackTrace을 출력한다. *참고) ThreadList 표현식*
 - MaxDepth : 출력할 최대 Stack 깊이를 지정한다. 지정하지 않으면 전체 Stack을 출력한다.
+- `SET STACKTRACE_TARGET` 설정에 따라 동작이 달라진다.
+    - `SELECTED` (기본값): ThreadList로 해석된 Thread 전체를 출력한다.
+    - `ACTIVE`: ThreadList로 후보 범위를 정한 뒤, 등록된 WAS/프레임워크 진입점 시그니처(화이트리스트) 및 `REQUEST_ENTRY_FILE`에 정의된 사용자 시그니처가 스택에 있는 Thread만 출력한다. RECORD용 이름 휴리스틱(`*Controller`, `*Service` 등)은 사용하지 않는다. (판별은 풀 스택으로 수행하고, 출력은 MaxDepth만큼 잘라 표시)
+    - 예시) `JMXer> SET STACKTRACE_TARGET ACTIVE` 후 `JMXer> THREAD STACK *` — 전체 Thread 중 active만 출력
 
 ![Screenhot](screenshots/command_thr_stack.jpg)
 
@@ -245,6 +258,7 @@ Sampling Time in milliseconds(0, Until the enter key is pressed):
 - ThreadList : 수집할 Thread ID 또는 Name을 한정할 수 있다. *참고) ThreadList 표현식*
 - Sampling Interval : 모니터링 간격(ms)
 - Sampling Time : 모니터링 시간(ms). 0을 입력하면 <kbd>Enter</kbd>를 누를때 까지 모니터링 한다.
+- ACTIVE/WAITING_REQUEST 분류 시 내장 request-entry 시그니처와 `REQUEST_ENTRY_FILE`의 사용자 정의 시그니처를 함께 사용한다. (`SET REQUEST_ENTRY_FILE` — Common 설정 참고)
     > 주의:<br/>
     > Sampling Interval이 너무 길면 정확도가 떨어지며, 너무 짧으면 프로세스에 부하를 유발할 수 있다.<br/>
     > Sampling Time이 너무 길면 JMXer가 느려지거나 다운될 수 있다.
@@ -327,5 +341,8 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - 레코드 뷰의 thread 타입에 통합 트리 출력 기능 및 옵션 추가
  - 레코드 뷰의 출력 가독성 개선
 
-### v1.2.0
- - `--tui` 옵션으로 풀스크린 TUI 모드 지원
+### v2.0.0
+ - TUI 모드 지원 (기본 Interface 모드로 변경)
+ - Thread stacktrace 요청시 Active Thread만 출력하는 기능 추가
+ - Active Thread 판별시 사용자 정의 Request Entry 등록 기능 추가
+ 

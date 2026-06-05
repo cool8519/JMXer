@@ -2,7 +2,7 @@ package dal.tool.trace.jmxer;
 
 public class JMXerConstant {
 
-	public static final String JMXER_VERSION = "1.1.0";
+	public static final String JMXER_VERSION = "2.0.0";
 	public static final String JMXER_VERSION_STRING = "JMXer v" + JMXER_VERSION;
 	public static final String JMXER_COPYRIGHT_STRING = "Copyright 2022. YoungDal,Kwon All rights reserved.";
 	public static final String JMXER_PROMPT_STRING = "JMXer";
@@ -11,5 +11,8 @@ public class JMXerConstant {
 	public static final String DEFAULT_DUMP_FILE_NAME = "JMXer_Record_Trace.dmp";
 	public static final String DEFAULT_DUMP_FILE_PATH = "./" + DEFAULT_DUMP_FILE_NAME;
 	public static final String DUMP_FILE_VALIDATION_HEADER = "[JMXer Record File]";
+
+	/** JMX/RMI remote request timeout (ms) for connect and calls on a stale link. */
+	public static final int JMX_REMOTE_REQUEST_TIMEOUT_MS = 15000;
 
 }

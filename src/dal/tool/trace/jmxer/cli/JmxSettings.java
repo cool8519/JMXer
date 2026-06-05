@@ -11,10 +11,17 @@ public class JmxSettings extends Settings {
 		FULL
 	}
 
+	public static enum StacktraceTarget {
+		SELECTED,
+		ACTIVE
+	}
+
 	protected String setOName = null;
 	protected boolean prettyPrint = true;	
 	protected RecordViewMode recordViewMode = RecordViewMode.NO_REQUEST_WAIT;
 	protected boolean showEmptyThreadInRecordView = true;
+	protected StacktraceTarget stacktraceTarget = StacktraceTarget.SELECTED;
+	protected String reqEntryFile = ".jmxer/request-entries.txt";
 
 	
 	public String getMBeanObjectName() {
@@ -44,6 +51,12 @@ public class JmxSettings extends Settings {
         	prettyPrint = (value.trim().equalsIgnoreCase("on"))?true:false;
         	return true;
         }
+	}
+
+	/** Toggles {@code PRETTY_PRINT}; same field updated by {@code SET PRETTY_PRINT ON|OFF}. */
+	public boolean togglePrettyPrintInResult() {
+		prettyPrint = !prettyPrint;
+		return prettyPrint;
 	}
 
 	public RecordViewMode getRecordViewMode() {
@@ -77,10 +90,51 @@ public class JmxSettings extends Settings {
 		return true;
 	}
 
+	public StacktraceTarget getStacktraceTarget() {
+		return stacktraceTarget;
+	}
+
+	public boolean setStacktraceTarget(String value) {
+		if(value == null) {
+			Logger.logln("The value must be one of \"SELECTED,ACTIVE\"");
+			return false;
+		}
+		try {
+			stacktraceTarget = StacktraceTarget.valueOf(value.trim().toUpperCase());
+			return true;
+		} catch(IllegalArgumentException iae) {
+			Logger.logln("The value must be one of \"SELECTED,ACTIVE\"");
+			return false;
+		}
+	}
+
+	/** Toggles {@code STACKTRACE_TARGET}; same field updated by {@code SET STACKTRACE_TARGET SELECTED|ACTIVE}. */
+	public StacktraceTarget toggleStacktraceTarget() {
+		stacktraceTarget = (stacktraceTarget == StacktraceTarget.SELECTED)
+			? StacktraceTarget.ACTIVE
+			: StacktraceTarget.SELECTED;
+		return stacktraceTarget;
+	}
+
+	public String getReqEntryFile() {
+		return reqEntryFile;
+	}
+
+	/** @see #reqEntryFile Empty value disables user-defined request-entry loading. */
+	public boolean setReqEntryFile(String value) {
+		if(value == null || value.trim().isEmpty()) {
+			reqEntryFile = "";
+			return true;
+		}
+		reqEntryFile = value.trim();
+		return true;
+	}
+
 	
 	public void printSettings() {
 		super.printSettings();
-		if(JMXControl.isAnalyzeMode) {
+		Logger.logln("   - REQUEST_ENTRY_FILE\t" + reqEntryFile);
+		if(JMXControl.isOfflineSession) {
 			Logger.logln(" Record");
 			Logger.logln("   - RECORD_VIEW_MODE\t" + recordViewMode.name());
 			Logger.logln("   - SHOW_EMPTY_THREAD\t" + (showEmptyThreadInRecordView?"ON":"OFF"));
@@ -89,6 +143,8 @@ public class JmxSettings extends Settings {
 		Logger.logln(" JMX");
 		Logger.logln("   - MBEAN_ONAME\t" + ((setOName==null)?"":setOName));
 		Logger.logln("   - PRETTY_PRINT\t" + ((prettyPrint)?"ON":"OFF"));
+		Logger.logln(" Thread");
+		Logger.logln("   - STACKTRACE_TARGET\t" + stacktraceTarget.name());
 		Logger.logln(" Record");
 		Logger.logln("   - RECORD_VIEW_MODE\t" + recordViewMode.name());
 		Logger.logln("   - SHOW_EMPTY_THREAD\t" + (showEmptyThreadInRecordView?"ON":"OFF"));

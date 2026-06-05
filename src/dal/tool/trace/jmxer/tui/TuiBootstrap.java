@@ -17,6 +17,12 @@ import dal.tool.cli.ExternalUiHooks;
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxMutatingCallConfirmation;
+import dal.tool.trace.jmxer.cli.JmxTuiConnectionLossHandler;
+import dal.tool.trace.jmxer.tui.app.JmxTuiApp;
+import dal.tool.trace.jmxer.tui.app.JmxTuiWindow;
+import dal.tool.trace.jmxer.tui.output.JmxTuiOutputSink;
+import dal.tool.trace.jmxer.tui.dialog.TuiDialogs;
+import dal.tool.trace.jmxer.tui.support.TuiStdioRedirect;
 import dal.tool.util.jmx.MBeanConnector;
 
 public class TuiBootstrap {
@@ -108,6 +114,13 @@ public class TuiBootstrap {
 				}
 			});
 
+			JmxTuiConnectionLossHandler.setHandler(new JmxTuiConnectionLossHandler.Handler() {
+				@Override
+				public void onConnectionLoss(String message) {
+					app.handleConnectionLoss(message);
+				}
+			});
+
 			ExternalUiHooks.beforeBlockingExternalProcess = new Runnable() {
 				@Override
 				public void run() {
@@ -134,6 +147,8 @@ public class TuiBootstrap {
 
 			// Ensure Ctrl+C works reliably on Windows where it can be delivered as SIGINT instead of a key stroke.
 			installSigIntHandler(gui, app);
+			// Ctrl+Z must not suspend the JVM on Unix-like terminals.
+			installIgnoredSignal("TSTP");
 
 			// Initial sizing (prefer output to expand, header fixed at 4 lines inside app)
 			try {
@@ -163,9 +178,11 @@ public class TuiBootstrap {
 
 			gui.addWindowAndWait(window);
 
+			((JmxTuiOutputSink) app.getOutputSink()).shutdown();
 			Logger.setTuiPanelCapture(false);
 			Logger.setTuiActive(false);
 			JmxMutatingCallConfirmation.clearHandler();
+			JmxTuiConnectionLossHandler.clearHandler();
 			if(stdioRedirect != null) {
 				stdioRedirect.restore();
 			}
@@ -176,7 +193,13 @@ public class TuiBootstrap {
 			ExternalUiHooks.beforeBlockingExternalProcess = null;
 			ExternalUiHooks.afterBlockingExternalProcess = null;
 		} finally {
+			try {
+				if(Logger.getOutputSink() instanceof JmxTuiOutputSink) {
+					((JmxTuiOutputSink) Logger.getOutputSink()).shutdown();
+				}
+			} catch(Exception e) {}
 			JmxMutatingCallConfirmation.clearHandler();
+			JmxTuiConnectionLossHandler.clearHandler();
 			Logger.setTuiAbortUserCaptureRunnable(null);
 			Logger.setTuiCommitCapturePreambleRunnable(null);
 			Logger.setTuiActive(false);
@@ -187,6 +210,24 @@ public class TuiBootstrap {
 				try { screen.stopScreen(); } catch(Exception e) {}
 				try { screen.close(); } catch(Exception e) {}
 			}
+		}
+	}
+
+	/**
+	 * Ignore a signal (e.g. SIGTSTP from Ctrl+Z). Uses reflection when {@code sun.misc.Signal} is available.
+	 */
+	private static void installIgnoredSignal(String signalName) {
+		if(signalName == null || signalName.length() == 0) {
+			return;
+		}
+		try {
+			final Class<?> signalClass = Class.forName("sun.misc.Signal");
+			final Class<?> handlerClass = Class.forName("sun.misc.SignalHandler");
+			final java.lang.reflect.Method handleMethod = signalClass.getMethod("handle", signalClass, handlerClass);
+			Object sigIgn = handlerClass.getField("SIG_IGN").get(null);
+			handleMethod.invoke(null, signalClass.getConstructor(String.class).newInstance(signalName), sigIgn);
+		} catch(Throwable t) {
+			// Ignore: keystroke handling may still swallow Ctrl+Z.
 		}
 	}
 

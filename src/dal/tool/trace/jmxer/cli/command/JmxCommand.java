@@ -16,6 +16,7 @@ import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.Command;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
+import dal.tool.trace.jmxer.cli.JmxConnectionRecovery;
 import dal.tool.trace.jmxer.cli.JmxSettings;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXHelper;
@@ -27,6 +28,10 @@ import dal.tool.util.jmx.MBeanNotFoundException;
 public abstract class JmxCommand extends Command {
 
 	protected static Map<String,Map<String,MBeanFeatureInfo>> mbeanInfoCache = new HashMap<String,Map<String,MBeanFeatureInfo>>();
+
+	public static void clearMbeanInfoCache() {
+		mbeanInfoCache.clear();
+	}
 
 	protected MBeanConnector mbeanConnector = null;
 	
@@ -141,30 +146,39 @@ public abstract class JmxCommand extends Command {
 
         if(isStopCommand()) return;
 
+        boolean connectionRetried = false;
         try {
 			startTime = System.currentTimeMillis();
-			String subCmd = StringUtil.stripQuote(commandArgs.getArgument(1), new char[]{'"','\''}, true);
-			if(commandArgs.size() == 1 && subCmd.equalsIgnoreCase("help")) {
-				logln("");
-				this.printHelp();
-				logln("");
-			} else {
-				this.doExecute();
-			}
-		} catch(Exception ex) {
-			if(ex instanceof IOException) {
-				logln(Level.ERROR, "The JMX Connection was disconnected : " + ex.getMessage());
-				logln(Level.DEBUG, "Reconnecting to JVM...");
+			String rawSub = commandArgs == null ? null : commandArgs.getArgument(1);
+			String subCmd = rawSub == null ? "" : StringUtil.stripQuote(rawSub, new char[]{'"','\''}, true);
+			while(true) {
 				try {
-					mbeanConnector.connect();
-					logln(Level.DEBUG, "Executing failed command again...");
-					commandArgs.toFirstIndex();
-					this.doExecute();
-				} catch(Exception e) {
-					throw e;
+					if(commandArgs.size() == 1 && subCmd.equalsIgnoreCase("help")) {
+						logln("");
+						this.printHelp();
+						logln("");
+					} else {
+						this.doExecute();
+					}
+					break;
+				} catch(Exception ex) {
+					IOException disconnectCause = JmxConnectionRecovery.asDisconnectIOException(ex);
+					if(!connectionRetried && (disconnectCause != null
+							|| JmxConnectionRecovery.isLikelyConnectionFailure(ex))) {
+						connectionRetried = true;
+						if(disconnectCause == null) {
+							disconnectCause = JmxConnectionRecovery.asDisconnectIOException(ex);
+						}
+						if(disconnectCause == null) {
+							throw ex;
+						}
+						JmxConnectionRecovery.reconnectOrThrow(mbeanConnector, disconnectCause);
+						logln(Level.DEBUG, "Executing failed command again...");
+						commandArgs.toFirstIndex();
+						continue;
+					}
+					throw ex;
 				}
-			} else {
-				throw ex;
 			}
 		} finally {
 			endTime = System.currentTimeMillis();

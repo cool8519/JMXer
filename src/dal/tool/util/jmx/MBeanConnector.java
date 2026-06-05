@@ -1,5 +1,7 @@
 package dal.tool.util.jmx;
 
+import java.io.IOException;
+
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 
@@ -64,6 +66,16 @@ public class MBeanConnector {
 	}
 
     /**
+     * Marks the session disconnected without remote {@link JMXConnector#close()} I/O
+     * (avoids blocking on a dead RMI link). Use before prompting for reconnect in TUI.
+     */
+    public void markConnectionStale() {
+    	initialized = false;
+    	mbeanConnection = null;
+    	jmxConnector = null;
+    }
+
+    /**
      * 연결을 끊고, 세션을 정리한다.
      */
     public void close() {
@@ -90,6 +102,19 @@ public class MBeanConnector {
      */
     public void connect() throws Exception {
     	close();
+    	openNewSession();
+    }
+
+    /**
+     * Reconnect after a dead session without calling {@link #close()} on a stale remote connector
+     * (avoids blocking RMI teardown). On failure the session is left stale.
+     */
+    public void reconnect() throws Exception {
+    	markConnectionStale();
+    	openNewSession();
+    }
+
+    private void openNewSession() throws Exception {
     	try {
     		Logger.logln("Connecting to JVM(" + connectType.name() + ":" + targetName + ") ...");
 			jmxConnector = JMXHelper.connectToVM(connectType, targetName, new String[]{authUser, authPass});
@@ -98,7 +123,7 @@ public class MBeanConnector {
     		Logger.logln("Successfully connected to JVM.");
     		Logger.logln("");
     	} catch(Exception e) {
-    		initialized = false;
+    		markConnectionStale();
     		throw e;
     	}
     }
@@ -190,6 +215,24 @@ public class MBeanConnector {
      */
     public boolean isInitialized() {
     	return initialized;
+    }
+
+    /**
+     * Verifies that the JMX session accepts MBeanServer operations (detects stale connectors).
+     */
+    public void verifySession() throws IOException {
+    	if(!initialized || mbeanConnection == null) {
+    		throw new IOException("JMX session is not connected.");
+    	}
+    	try {
+    		mbeanConnection.getDefaultDomain();
+    	} catch(IOException e) {
+    		throw e;
+    	} catch(Exception e) {
+    		IOException io = new IOException(
+    				e.getMessage() == null ? "JMX session verification failed." : e.getMessage(), e);
+    		throw io;
+    	}
     }
 
 }

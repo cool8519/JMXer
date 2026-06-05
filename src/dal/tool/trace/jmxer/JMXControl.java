@@ -19,7 +19,7 @@ import dal.tool.util.jmx.MBeanConnector.ConnectType;
 public class JMXControl {
 
 	public static ConnectType connectType = ConnectType.NOT_SET;
-	public static boolean isAnalyzeMode = false;
+	public static boolean isOfflineSession = false;
 	
 
 	/**
@@ -29,6 +29,7 @@ public class JMXControl {
 	 */
 	public static void main(String[] args) throws Exception {
 		boolean useTui = false;
+		boolean useCli = false;
 		if(args != null && args.length > 0) {
 			String[] filtered = new String[args.length];
 			int n = 0;
@@ -36,6 +37,10 @@ public class JMXControl {
 				String a = args[i];
 				if(a != null && a.trim().equalsIgnoreCase("--tui")) {
 					useTui = true;
+					continue;
+				}
+				if(a != null && a.trim().equalsIgnoreCase("--cli")) {
+					useCli = true;
 					continue;
 				}
 				filtered[n++] = a;
@@ -77,7 +82,7 @@ public class JMXControl {
     	} else if("ADDRESS".equals(target[0])) {
     		connectType = ConnectType.RMI_BY_ADDRESS;
     	} else if("DUMPFILE".equals(target[0])) {
-    		isAnalyzeMode = true;
+    		isOfflineSession = true;
     	} else {
     		connectType = ConnectType.UNKNOWN;
     	}
@@ -89,7 +94,7 @@ public class JMXControl {
     	String[] auth = null;
     	
     	if(connectType == ConnectType.ATTACH_BY_PID || connectType == ConnectType.ATTACH_BY_NAME || connectType == ConnectType.RMI_BY_ADDRESS) {
-    		// attach mode
+    		// online session
     		int idxOffset = 0;
     		if(args.length > 1 && (args[1].startsWith("AUTH=") || args[1].startsWith("auth="))) {
     			auth = args[1].substring(5).split("/");
@@ -103,8 +108,8 @@ public class JMXControl {
     		}
     		promptString = JMXerConstant.JMXER_PROMPT_STRING;
 			isPromptMode = (args.length == 1+idxOffset); 
-    	} else if(connectType == ConnectType.NOT_SET && isAnalyzeMode) {
-    		// analyze mode
+    	} else if(connectType == ConnectType.NOT_SET && isOfflineSession) {
+    		// offline session
     		for(int i = 1; i < args.length; i++) {
     			commandLine += args[i] + " ";
     		}
@@ -116,16 +121,21 @@ public class JMXControl {
 			System.exit(-1);
     	}
     	
-    	// Guard: TUI mode and inline command (CommandLine_To_Execute) are mutually exclusive.
-    	// `isPromptMode == false` means user provided inline commands after the attach/analyze target.
+    	// Guard: Interface Mode flags and inline command (CommandLine_To_Execute) are mutually exclusive.
+    	// `isPromptMode == false` means user provided inline commands after the session target.
+    	if(useTui && useCli) {
+    		Logger.logln(Logger.Level.ERROR, "Invalid arguments: '--cli' and '--tui' cannot be used together.");
+    		printUsageAndExit(true, args);
+    	}
     	if(useTui && !isPromptMode) {
     		Logger.logln(Logger.Level.ERROR, "Invalid arguments: '--tui' cannot be used together with 'CommandLine_To_Execute'.");
     		printUsageAndExit(true, args);
     	}
+    	boolean useTuiInterface = !useCli;
     	
     	try {
-    		if(isAnalyzeMode) {
-        		Logger.logln("Running as ANALYZE mode.\n");
+    		if(isOfflineSession) {
+        		Logger.logln("Running as OFFLINE session.\n");
         		if(target[1] != null) {
         			String dumpFilePath = StringUtil.stripOuterFilenameQuotes(target[1]);
         			if(dumpFilePath == null || dumpFilePath.trim().isEmpty()) {
@@ -135,7 +145,7 @@ public class JMXControl {
         			commandLine = "RECORD LOAD \"" + dumpFilePath + "\"; " + commandLine;
         		}
 	       		if(isPromptMode) {
-	       			if(useTui) {
+	       			if(useTuiInterface) {
 	       				launchTui(mbeanConnector, promptString, commandLine.trim());
 	       			} else {
 	       				executeCommandInPrompt(mbeanConnector, promptString, commandLine.trim());
@@ -144,7 +154,7 @@ public class JMXControl {
 	       			executeCommand(mbeanConnector, promptString, commandLine.trim());
 	       		}
     		} else {
-        		Logger.logln("Running as ATTACH mode.\n");
+        		Logger.logln("Running as ONLINE session.\n");
         		try {
         			mbeanConnector = new MBeanConnector(connectType, target[1], auth);
         			mbeanConnector.connect();
@@ -153,7 +163,7 @@ public class JMXControl {
         			System.exit(-1);
         		}
 	       		if(isPromptMode) {
-	       			if(useTui) {
+	       			if(useTuiInterface) {
 	       				launchTui(mbeanConnector, promptString, "");
 	       			} else {
 	       				executeCommandInPrompt(mbeanConnector, promptString);
@@ -236,6 +246,7 @@ public class JMXControl {
     public static void printUsage() {
     	StringBuffer args = new StringBuffer();
     	args.append("{PID=<pid>|NAME=<proc_name>|ADDRESS=<ip>:<port> [AUTH=<user>/<pass>]|DUMPFILE[=<dumpfile_path>]} ");
+    	args.append("[--cli|--tui] ");
     	args.append("[CommandLine_To_Execute]");
    	
     	Logger.logln("");
@@ -246,29 +257,29 @@ public class JMXControl {
     	Logger.logln("");
     	Logger.logln("Arguments   : " + args.toString());
     	Logger.logln("");
-    	Logger.logln(" *) There are two modes to run JMXer.");
-    	Logger.logln("    - Attach Mode  : To connect to a remote or local JVM to execute JMX commands. All functions including analysis are available.");
-    	Logger.logln("                     * PID/NAME attach requires JDK runtime. (Java 8: tools.jar, Java 9+: jdk.attach)");
-    	Logger.logln("                     * Attach usually requires same OS user permission as target JVM.");
-    	Logger.logln("    - Analyze Mode : To only analyze record dump files without JVM connection. Unable to execute JMX commands.");
+    	Logger.logln(" *) There are two Session Modes to run JMXer.");
+    	Logger.logln("    - Online Session  : Connect to a remote or local JVM to execute JMX commands. All functions including record analysis are available.");
+    	Logger.logln("                        * PID/NAME connection requires JDK runtime. (Java 8: tools.jar, Java 9+: jdk.attach)");
+    	Logger.logln("                        * PID/NAME usually requires same OS user permission as target JVM.");
+    	Logger.logln("    - Offline Session : Analyze record dump files without JVM connection. JMX commands are not available.");
+    	Logger.logln(" *) Interface Mode: TUI (default, optional '--tui') or CLI ('--cli' text prompt).");
     	Logger.logln(" *) If 'CommandLine_To_Execute' arguments are omitted, it will run as INTERACTIVE_MODE.");
-    	Logger.logln(" *) TUI mode: add '--tui' to run as full-screen terminal UI (k9s-like).");
-    	Logger.logln(" *) '--tui' cannot be used together with 'CommandLine_To_Execute'. (TUI uses full-screen interactive mode)");
+    	Logger.logln(" *) TUI Interface Mode cannot be used together with 'CommandLine_To_Execute'. Use '--cli' or omit Interface Mode flags for non-interactive CLI execution.");
     	Logger.logln("");
-    	Logger.logln("Attach Mode Example :");
-    	Logger.logln(" 1) Attach to JVM with PID. To run INTERACTIVE_MODE.");
+    	Logger.logln("Online Session Example :");
+    	Logger.logln(" 1) Connect to JVM with PID. To run INTERACTIVE_MODE.");
     	Logger.logln("    args> PID=12345");
-    	Logger.logln(" 2) Attach to JVM with NAME. To view list of Attribute and operation in ObjectName 'java.lang:type=Runtime'.");
+    	Logger.logln(" 2) Connect to JVM with NAME. To view list of Attribute and operation in ObjectName 'java.lang:type=Runtime'.");
     	Logger.logln("    args> NAME=my.pkg.MyProgram LIST java.lang:type=Runtime/*");
-    	Logger.logln(" 3) Attach to JVM with ADDRESS. To set Attribute 'ThreadContentionMonitoringEnabled' to 'true' in ObjectName 'java.lang:type=Threading'.");
+    	Logger.logln(" 3) Connect to JVM with ADDRESS. To set Attribute 'ThreadContentionMonitoringEnabled' to 'true' in ObjectName 'java.lang:type=Threading'.");
     	Logger.logln("    args> ADDRESS=127.0.0.1:10001 CALL java.lang:type=Threading ThreadContentionMonitoringEnabled true");
-    	Logger.logln(" 4) Attach to JVM with ADDRESS with auth. To invoke Operation 'getThreadInfo' with arguments '2,10' in ObjectName 'java.lang:type=Threading'.");
+    	Logger.logln(" 4) Connect to JVM with ADDRESS with auth. To invoke Operation 'getThreadInfo' with arguments '2,10' in ObjectName 'java.lang:type=Threading'.");
     	Logger.logln("    args> ADDRESS=127.0.0.1:10001 AUTH=myuser/mypass CALL java.lang:type=Threading getThreadInfo 2,10");
-    	Logger.logln(" 5) Attach to JVM with PID. To execute script file 'jmx_script.txt' in current directory.");
+    	Logger.logln(" 5) Connect to JVM with PID. To execute script file 'jmx_script.txt' in current directory.");
     	Logger.logln("    args> PID=12345 @'./jmx_script.txt'");
     	Logger.logln("");
-    	Logger.logln("Analyze Mode Example :");
-    	Logger.logln(" 1) Load the dump file 'JMXer_Record_Trace.dmp' in current directory and analyze it. To run INTERACTIVE_MODE.");
+    	Logger.logln("Offline Session Example :");
+    	Logger.logln(" 1) Load the dump file 'JMXer_Record_Trace.dmp' in current directory. To run INTERACTIVE_MODE.");
     	Logger.logln("    args> DUMPFILE='JMXer_Record_Trace.dmp'");
     	Logger.logln(" 2) Load the dump file '/home/dump/JMXer_Record_Trace.dmp' and execute script file '/home/script/jmx_script.txt'");
     	Logger.logln("    args> DUMPFILE='/home/dump/JMXer_Record_Trace.dmp' @'/home/script/view_script.txt'");
@@ -279,7 +290,7 @@ public class JMXControl {
 		try {
 			Class.forName("com.googlecode.lanterna.terminal.Terminal");
 		} catch(ClassNotFoundException cnfe) {
-			Logger.logln(Logger.Level.ERROR, "TUI mode is not available (terminal UI classes missing from classpath).");
+			Logger.logln(Logger.Level.ERROR, "TUI Interface Mode is not available (terminal UI classes missing from classpath).");
 			System.exit(-1);
 			return;
 		}
@@ -290,9 +301,9 @@ public class JMXControl {
 		} catch(Exception e) {
 			Throwable cause = unwrapInvocationTargetException(e);
 			if(isWindowsJavaConsoleTuiFailure(cause)) {
-				Logger.logln(Logger.Level.ERROR, "TUI mode must be run as 'javaw' on Windows.");
+				Logger.logln(Logger.Level.ERROR, "TUI Interface Mode must be run as 'javaw' on Windows.");
 			} else {
-				Logger.logln(Logger.Level.ERROR, "Failed to launch TUI mode: " + cause.getMessage());
+				Logger.logln(Logger.Level.ERROR, "Failed to launch TUI Interface Mode: " + cause.getMessage());
 				cause.printStackTrace();
 			}
 			System.exit(-1);

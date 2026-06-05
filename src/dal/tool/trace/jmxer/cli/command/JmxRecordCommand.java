@@ -13,6 +13,7 @@ import dal.tool.trace.jmxer.JMXerConstant;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.data.RecordResult;
 import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
+import dal.tool.trace.jmxer.cli.helper.RequestEntryUserSignatures;
 import dal.tool.trace.jmxer.cli.helper.ResourceRecordThread;
 import dal.tool.trace.jmxer.cli.helper.StackRecordThread;
 import dal.tool.util.NumberUtil;
@@ -31,10 +32,10 @@ public class JmxRecordCommand extends JmxCommand {
 
 	
 	public boolean beforeExecute() throws Exception {
-		if(JMXControl.isAnalyzeMode && commandArgs.size() > 0) {
+		if(JMXControl.isOfflineSession && commandArgs.size() > 0) {
 			String arg = StringUtil.stripQuote(commandArgs.getArguments().get(0), new char[]{'"','\''}, true);
-			if(IOUtil.isIncludeEquals(arg, "res", "ource") || IOUtil.isIncludeEquals(arg, "stack", "trace")) {
-				logln("JMX commands are not allowed in analyze mode.");
+			if(IOUtil.isIncludeEqualsIgnoreCase(arg, "res", "ource") || IOUtil.isIncludeEqualsIgnoreCase(arg, "stack", "trace")) {
+				logln("JMX commands are not allowed in offline session.");
 				return false;
 			}
 		}
@@ -106,10 +107,10 @@ public class JmxRecordCommand extends JmxCommand {
 	public void doExecute() throws Exception {
 		if(!checkArgument(1, -1)) return;
 		String arg = StringUtil.stripQuote(commandArgs.nextArgument(), new char[]{'"','\''}, true);
-		if(IOUtil.isIncludeEquals(arg, "res", "ource") || IOUtil.isIncludeEquals(arg, "stack", "trace")) {
+		if(IOUtil.isIncludeEqualsIgnoreCase(arg, "res", "ource") || IOUtil.isIncludeEqualsIgnoreCase(arg, "stack", "trace")) {
 			commandArgs.setArguments(ListArgumentsHelper.concatSpaceWithQuotes(commandArgs, '"'));
 			if(!checkArgument(2)) {
-				if(IOUtil.isIncludeEquals(arg, "res", "ource")) {
+				if(IOUtil.isIncludeEqualsIgnoreCase(arg, "res", "ource")) {
 			        logln("  Usage) REC[ORD] RES[OURCE] ThreadList");					
 				} else {
 			        logln("  Usage) REC[ORD] STACK[TRACE] ThreadList");					
@@ -127,7 +128,7 @@ public class JmxRecordCommand extends JmxCommand {
 				logln(Level.ERROR, "Failed to get thread id from the argument : " + e.getMessage());
 				return;
 			}
-			if(IOUtil.isIncludeEquals(arg, "res", "ource")) {
+			if(IOUtil.isIncludeEqualsIgnoreCase(arg, "res", "ource")) {
 		    	if(threadIds == null || threadIds.length < 1) {
 		    		logln("No target thread(s) specified.");
 		    		return;
@@ -159,7 +160,7 @@ public class JmxRecordCommand extends JmxCommand {
 					}
 					recordThread.printResult();
 				}
-			} else if(IOUtil.isIncludeEquals(arg, "stack", "trace")) {
+			} else if(IOUtil.isIncludeEqualsIgnoreCase(arg, "stack", "trace")) {
 		    	if(threadIds == null || threadIds.length < 1) {
 		    		logln("No target thread(s) specified.");
 		    		return;
@@ -197,8 +198,18 @@ public class JmxRecordCommand extends JmxCommand {
 						break;
 					}
 				}
-				if("Y".equals(yn)) {	
+				if("Y".equals(yn)) {
+					RequestEntryUserSignatures loaded = RequestEntryUserSignatures.load(getSettings().getReqEntryFile());
+					if(loaded.isReadError()) {
+						logln(Level.WARNING,
+							"Could not read user-defined request-entry file '"
+							+ loaded.getResolvedPath()
+							+ "'; ignoring user-defined entry signatures.");
+					} else {
+						loaded.logLoadSummaryIfRead();
+					}
 					StackRecordThread recordThread = new StackRecordThread(getMBeanConnection(), threadIds);
+					recordThread.setUserEntrySignatures(loaded.getSignatures());
 					recordThread.startRecording(interval_ms, time_ms);
 					if(time_ms == 0) {
 						IOUtil.readLine("Press enter key to stop recording.\n", Logger.Level.RESULT);

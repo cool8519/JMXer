@@ -48,9 +48,9 @@ public class InfoCommand extends JmxCommand {
 			Logger.logln("   - OS      : " + tool_result.get("os"));
 			Logger.logln("   - Java    : " + tool_result.get("java"));
 			Logger.logln("   - PID     : " + tool_result.get("pid"));
-			Logger.logln("   - MODE    : " + (JMXControl.isAnalyzeMode ? "Analyze" : "Attach("+JMXControl.connectType.name()+")"));
+			Logger.logln("   - SESSION : " + (JMXControl.isOfflineSession ? "Offline" : "Online("+JMXControl.connectType.name()+")"));
 			Logger.logln("   - TIME    : " + DateUtil.dateToString(DateUtil.FORMAT_DATETIME_SEC, new Date(Long.parseLong(tool_result.get("time")))));
-			if(JMXControl.isAnalyzeMode) return;
+			if(JMXControl.isOfflineSession) return;
 			Map<String,String> target_result = getTargetVMInfo(getMBeanConnection());
 			Logger.logln(" Target JVM");
 			Logger.logln("   - OS      : " + target_result.get("os"));

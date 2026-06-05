@@ -17,7 +17,9 @@ import dal.tool.cli.command.CommandMeta;
 import dal.tool.cli.util.IOUtil;
 import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
+import dal.tool.trace.jmxer.cli.JmxSettings.StacktraceTarget;
 import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
+import dal.tool.trace.jmxer.cli.helper.RequestEntryUserSignatures;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
 import dal.tool.util.NumberUtil;
 import dal.tool.util.StringUtil;
@@ -34,8 +36,8 @@ public class JmxThreadCommand extends JmxCommand {
 
 
 	public boolean beforeExecute() throws Exception {
-		if(JMXControl.isAnalyzeMode) {
-			logln("JMX commands are not allowed in analyze mode.");
+		if(JMXControl.isOfflineSession) {
+			logln("JMX commands are not allowed in offline session.");
 			return false;
 		}
 		return super.beforeExecute();
@@ -56,6 +58,8 @@ public class JmxThreadCommand extends JmxCommand {
         logln("     LIST       - show list of all threads.");
         logln("     INFO       - get detail thread info.");
         logln("     STACKTRACE - view current stacktrace of threads. Without MaxDepth, show all entries in stack.");
+        logln("                  When SET STACKTRACE_TARGET is ACTIVE, only threads with a known WAS/framework");
+        logln("                  entry point in the stack are shown (ThreadList still scopes the candidate set).");
         logln("");
         logln(" ThreadList : {*|ThreadIds|ThreadNames}");
         logln("   '*' means ALL_THREADS");
@@ -129,7 +133,7 @@ public class JmxThreadCommand extends JmxCommand {
 					}
 					logln(Level.ERROR, "Failed to get thread info : \"" + StringUtil.arrayToString(threadIds,",") + "\" : " + e.getMessage());
 				}
-			} else if(IOUtil.isIncludeEquals(arg, "stack", "trace")) {
+			} else if(IOUtil.isIncludeEqualsIgnoreCase(arg, "stack", "trace")) {
 				if(!checkArgument(2, 3)) return;
 		    	if(threadIds == null || threadIds.length < 1) {
 		    		logln("No target thread(s) specified.");
@@ -147,7 +151,19 @@ public class JmxThreadCommand extends JmxCommand {
 					}
 				}
 				try {
-					JMXPrintUtil.printStackTrace(getMBeanConnection(), threadIds, maxDepth);
+					boolean activeOnly = getSettings().getStacktraceTarget() == StacktraceTarget.ACTIVE
+						&& !getCommandExecutor().consumeStacktraceSelectedBypassOnce();
+					RequestEntryUserSignatures loaded = null;
+					if(activeOnly) {
+						loaded = RequestEntryUserSignatures.load(getSettings().getReqEntryFile());
+						if(loaded.isReadError()) {
+							logln(Level.WARNING,
+								"Could not read user-defined request-entry file '"
+								+ loaded.getResolvedPath()
+								+ "'; ignoring user-defined entry signatures.");
+						}
+					}
+					JMXPrintUtil.printStackTrace(getMBeanConnection(), threadIds, maxDepth, activeOnly, loaded);
 				} catch(Exception e) {
 					if(e instanceof IOException) {
 						throw e;

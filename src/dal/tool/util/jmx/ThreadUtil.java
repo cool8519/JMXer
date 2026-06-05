@@ -22,6 +22,13 @@ public class ThreadUtil {
 	 * @return 쓰레드 덤프 문자열 목록
 	 */
 	public static List<String> getThreadDump(ThreadInfo ti) {
+		return getThreadDump(ti, -1);
+	}
+
+	/**
+	 * @param maxDepth maximum stack frames to print; values less than 1 mean all frames
+	 */
+	public static List<String> getThreadDump(ThreadInfo ti, int maxDepth) {
 		List<String> dump = new ArrayList<String>();
 		StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" + " Id=" + ti.getThreadId() + " in " + ti.getThreadState());
 		if(ti.getLockName() != null) {
@@ -41,7 +48,8 @@ public class ThreadUtil {
 		
 		StackTraceElement[] stacktrace = ti.getStackTrace();
 		MonitorInfo[] monitors = ti.getLockedMonitors();
-		for(int i = 0; i < stacktrace.length; i++) {
+		int limit = (maxDepth < 1) ? stacktrace.length : Math.min(maxDepth, stacktrace.length);
+		for(int i = 0; i < limit; i++) {
 			StackTraceElement ste = stacktrace[i];
 			dump.add(INDENT + "at " + ste.toString());
 			for(MonitorInfo mi : monitors) {

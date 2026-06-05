@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -72,17 +73,16 @@ public class JMXHelper {
     		} else {
     			Logger.logln(Level.ERROR, "Failed to get serviceURL : " + getAttachFailureReason(t));
     		}
-    		System.exit(0);
+    		throw new Exception("Failed to get JMX service URL: " + getAttachFailureReason(t));
     	}
-    	JMXConnector connector;
-    	if(authenticate == null) {
-    		connector = JMXConnectorFactory.connect(serviceURL);
-    	} else {
-    		HashMap<String, String[]> env = new HashMap<String, String[]>();
+    	HashMap<String, Object> env = new HashMap<String, Object>();
+    	env.put("jmx.remote.x.request.waiting.timeout",
+    			String.valueOf(dal.tool.trace.jmxer.JMXerConstant.JMX_REMOTE_REQUEST_TIMEOUT_MS));
+    	if(authenticate != null) {
 			String[] credentials = new String[] {authenticate[0], authenticate[1]};
-			env.put(JMXConnector.CREDENTIALS, credentials);		
-			connector = JMXConnectorFactory.connect(serviceURL, env);
+			env.put(JMXConnector.CREDENTIALS, credentials);
     	}
+    	JMXConnector connector = JMXConnectorFactory.connect(serviceURL, env);
         return connector;        
 	}
 	
@@ -344,6 +344,29 @@ public class JMXHelper {
 	}
 
 	
+	/**
+	 * Parses a boolean text value. Only {@code true} and {@code false} are accepted (case-insensitive).
+	 * @param value input text
+	 * @return parsed value
+	 * @throws Exception if the text is not {@code true} or {@code false}
+	 */
+	public static boolean parseStrictBoolean(String value) throws Exception {
+		if(value == null) {
+			throw new Exception("Boolean value cannot be null.");
+		}
+		String trimmed = value.trim();
+		if(trimmed.length() == 0) {
+			throw new Exception("Boolean value cannot be empty. Use true or false.");
+		}
+		if("true".equalsIgnoreCase(trimmed)) {
+			return true;
+		}
+		if("false".equalsIgnoreCase(trimmed)) {
+			return false;
+		}
+		throw new Exception("Invalid boolean value \"" + trimmed + "\". Use true or false.");
+	}
+
 	/** 입력받은 문자열을 Class에 맞는 Type의 객체로 변환한다. 
 	 * @param clsName 클래스명(구분자:".")
 	 * @param value 변환할 문자열
@@ -357,11 +380,20 @@ public class JMXHelper {
 		if("java.lang.String".equals(clsName)) {
 			return value;
 		}
+		if(isBooleanClassName(clsName)) {
+			Boolean ret = Boolean.valueOf(parseStrictBoolean(value));
+			Logger.logln(Logger.Level.DEBUG, "String(" + value + ") is transformed to " + ret.getClass().getName());
+			return ret;
+		}
 		Class<?> cl = TypeUtil.getWrapperClass(clsName);
 		Constructor<?> co = cl.getConstructor(new Class[] {String.class});
 		Object ret = co.newInstance(value.trim());
 		Logger.logln(Logger.Level.DEBUG, "String(" + value + ") is transformed to " + ret.getClass().getName());
 		return ret;
+	}
+
+	private static boolean isBooleanClassName(String clsName) {
+		return "boolean".equals(clsName) || "java.lang.Boolean".equals(clsName);
 	}
 	
 	
@@ -417,6 +449,112 @@ public class JMXHelper {
 	    	opSig[i] = paramInfos[i].getType();
 	    }
 	    return toTypeString(opSig);		
+	}
+
+	/**
+	 * CALL command target name with operation signature types (e.g. {@code getThreadInfo(long[],boolean,int)}).
+	 * @param operationInfo Operation metadata
+	 * @return target name for {@code CALL ObjectName TargetName ...}
+	 */
+	public static String toOperationCallTargetName(MBeanOperationInfo operationInfo) {
+		if(operationInfo == null) {
+			return "";
+		}
+		return toOperationCallTargetName(operationInfo.getName(), operationInfo.getSignature());
+	}
+
+	/**
+	 * CALL command target name with operation signature types.
+	 * @param operationName Operation name
+	 * @param signature Parameter metadata; empty or null yields {@code operationName()}
+	 * @return target name for {@code CALL ObjectName TargetName ...}
+	 */
+	public static String toOperationCallTargetName(String operationName, MBeanParameterInfo[] signature) {
+		if(operationName == null) {
+			return "";
+		}
+		String name = operationName.trim();
+		if(name.length() == 0) {
+			return "";
+		}
+		if(signature == null || signature.length == 0) {
+			return name + "()";
+		}
+		return name + "(" + toTypeString(signature) + ")";
+	}
+
+	/**
+	 * Formats operation argument values for a CALL ArgumentList (one command token, comma-separated).
+	 * Array parameters are wrapped in {@code []}; string values with comma or space are quoted per argument.
+	 * @param signature Operation parameter metadata
+	 * @param values One trimmed value per parameter (same order as signature)
+	 * @return ArgumentList text without outer quotes, e.g. {@code [1,5],7}
+	 */
+	public static String formatCallArgumentList(MBeanParameterInfo[] signature, String[] values) {
+		if(signature == null || values == null || signature.length == 0) {
+			return "";
+		}
+		if(signature.length != values.length) {
+			throw new IllegalArgumentException("Argument count does not match the operation signature.");
+		}
+		StringBuilder buffer = new StringBuilder();
+		for(int i = 0; i < signature.length; i++) {
+			if(i > 0) {
+				buffer.append(',');
+			}
+			buffer.append(formatCallArgument(signature[i], values[i]));
+		}
+		return buffer.toString();
+	}
+
+	public static boolean isArrayParameter(MBeanParameterInfo paramInfo) {
+		if(paramInfo == null) {
+			return false;
+		}
+		OpenType<?> openType = (OpenType<?>)paramInfo.getDescriptor().getFieldValue("openType");
+		if(openType != null && openType.isArray()) {
+			return true;
+		}
+		String type = paramInfo.getType();
+		return type != null && type.startsWith("[");
+	}
+
+	public static String normalizeArrayArgumentInput(String value) {
+		if(value == null) {
+			return "";
+		}
+		String trimmed = value.trim();
+		if(trimmed.length() >= 2 && trimmed.charAt(0) == '[' && trimmed.charAt(trimmed.length() - 1) == ']') {
+			return trimmed.substring(1, trimmed.length() - 1).trim();
+		}
+		return trimmed;
+	}
+
+	private static String formatCallArgument(MBeanParameterInfo paramInfo, String value) {
+		String trimmed = value == null ? "" : value.trim();
+		if(isArrayParameter(paramInfo)) {
+			return "[" + normalizeArrayArgumentInput(trimmed) + "]";
+		}
+		if(needsCallArgumentQuoting(paramInfo, trimmed)) {
+			return quoteCallArgument(trimmed);
+		}
+		return trimmed;
+	}
+
+	private static boolean needsCallArgumentQuoting(MBeanParameterInfo paramInfo, String value) {
+		if(value.length() == 0) {
+			return false;
+		}
+		if("java.lang.String".equals(paramInfo.getType())) {
+			return value.indexOf(',') >= 0 || value.indexOf(' ') >= 0 || value.indexOf('"') >= 0;
+		}
+		return value.indexOf(',') >= 0;
+	}
+
+	private static String quoteCallArgument(String value) {
+		String escaped = value.replace("\\", "\\\\");
+		escaped = escaped.replace("\"", "\\\"");
+		return "\"" + escaped + "\"";
 	}
 
 	

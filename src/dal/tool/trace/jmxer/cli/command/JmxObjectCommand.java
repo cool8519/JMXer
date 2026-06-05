@@ -84,8 +84,8 @@ public class JmxObjectCommand extends JmxCommand {
 
 	
 	public boolean beforeExecute() throws Exception {
-		if(JMXControl.isAnalyzeMode) {
-			logln("JMX commands are not allowed in analyze mode.");
+		if(JMXControl.isOfflineSession) {
+			logln("JMX commands are not allowed in offline session.");
 			return false;
 		}
 		return super.beforeExecute();

@@ -302,6 +302,14 @@ public class Logger extends Object {
         logln(Level.RESULT, msg);
     }
 
+    /**
+     * Emits one visible blank line in CLI and TUI output.
+     * TUI output skips empty strings; a no-break space is used there so the row is still reserved.
+     */
+    public static void logBlankLine() {
+        logln(tuiActive ? "\u00a0" : "");
+    }
+
     
     /**
      * 로그를 기록한다.

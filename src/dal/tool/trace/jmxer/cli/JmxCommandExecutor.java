@@ -43,6 +43,7 @@ public class JmxCommandExecutor extends CommandExecutor {
 	}
 	
 	protected MBeanConnector mbeanConnector = null;
+	private boolean stacktraceSelectedBypassOnce = false;
     
    
 	/**
@@ -65,6 +66,20 @@ public class JmxCommandExecutor extends CommandExecutor {
 
 	public JmxSettings getSettings() {
 		return (JmxSettings)settings;
+	}
+
+	/** Next THREAD STACKTRACE uses SELECTED semantics even when STACKTRACE_TARGET is ACTIVE (TUI Enter). */
+	public void setStacktraceSelectedBypassOnce() {
+		stacktraceSelectedBypassOnce = true;
+	}
+
+	/** Returns true once if a one-shot SELECTED bypass was requested; clears the flag. */
+	public boolean consumeStacktraceSelectedBypassOnce() {
+		if(!stacktraceSelectedBypassOnce) {
+			return false;
+		}
+		stacktraceSelectedBypassOnce = false;
+		return true;
 	}
 
 	
