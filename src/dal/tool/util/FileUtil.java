@@ -27,23 +27,20 @@ public class FileUtil {
 	 * @param filepath 파일 경로
 	 */
 	public static void createFileDirectory(String filepath) {
-		String path = filepath.replaceAll("\\\\", "/");		
-		int idx = path.lastIndexOf("/");
-		String dirName = path;
-		if(idx > -1) {
-			dirName = path.substring(0, idx);
+		if(filepath == null || filepath.trim().isEmpty()) {
+			return;
 		}
-		File dir = new File(dirName);
-		createDirectory(dir);
+		createFileDirectory(new File(filepath));
 	}
 
-	/**
-	 * 주어진 파일 경로에 대한 디렉토리를 생성한다. 필요한 하위 디렉토리가 모두 생성된다. 
-	 * @param file File 객체
-	 */
 	public static void createFileDirectory(File file) {
-		String filepath = file.getAbsolutePath().replaceAll("\\\\", "/");
-		createFileDirectory(new File(filepath));
+		if(file == null) {
+			return;
+		}
+		File parent = file.getParentFile();
+		if(parent != null) {
+			createDirectory(parent);
+		}
 	}
 
 	/**
@@ -55,10 +52,6 @@ public class FileUtil {
 		createDirectory(dir);
 	}
 
-	/**
-	 * 주어진 경로에 대한 디렉토리를 생성한다. 필요한 하위 디렉토리가 모두 생성된다. 
-	 * @param directory 디렉토리를 나타내는 File 객체
-	 */
 	public static void createDirectory(File directory) {
 		if(!directory.exists()) {
 			directory.mkdirs();
@@ -75,11 +68,6 @@ public class FileUtil {
 		deleteDirectory(new File(path), recursive);
 	}
 
-	/**
-	 * 주어진 파일 또는 디렉토리를 삭제한다.
-	 * @param fileOrDirectory 삭제할 파일 또는 디렉토리를 나타내는 File 객체
-	 * @param recursive 하위파일 또는 디렉토리까지 모두 삭제하려면 true
-	 */
 	public static void deleteDirectory(File fileOrDirectory, boolean recursive) {
 	    if(recursive && fileOrDirectory.isDirectory()) {
 	        for(File child : fileOrDirectory.listFiles()) {

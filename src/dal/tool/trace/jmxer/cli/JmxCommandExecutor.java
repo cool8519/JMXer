@@ -18,6 +18,7 @@ import dal.tool.trace.jmxer.cli.command.JmxObjectCommand;
 import dal.tool.trace.jmxer.cli.command.JmxRecordCommand;
 import dal.tool.trace.jmxer.cli.command.JmxSettingCommand;
 import dal.tool.trace.jmxer.cli.command.JmxThreadCommand;
+import dal.tool.trace.jmxer.knowledge.KnowledgeBase;
 import dal.tool.util.jmx.JMXUtil;
 import dal.tool.util.jmx.MBeanConnector;
 
@@ -53,6 +54,7 @@ public class JmxCommandExecutor extends CommandExecutor {
 	public JmxCommandExecutor(MBeanConnector mbeanConnector) {
 		super();
 		this.settings = new JmxSettings();
+		KnowledgeBase.getInstance().loadBundled();
 		this.mbeanConnector = mbeanConnector;
 		if(mbeanConnector != null) {
 			try {
@@ -68,12 +70,10 @@ public class JmxCommandExecutor extends CommandExecutor {
 		return (JmxSettings)settings;
 	}
 
-	/** Next THREAD STACKTRACE uses SELECTED semantics even when STACKTRACE_TARGET is ACTIVE (TUI Enter). */
 	public void setStacktraceSelectedBypassOnce() {
 		stacktraceSelectedBypassOnce = true;
 	}
 
-	/** Returns true once if a one-shot SELECTED bypass was requested; clears the flag. */
 	public boolean consumeStacktraceSelectedBypassOnce() {
 		if(!stacktraceSelectedBypassOnce) {
 			return false;
@@ -132,9 +132,6 @@ public class JmxCommandExecutor extends CommandExecutor {
 
 	protected boolean isAllowedInNonPrompt(Command command) {
 		if(!containsCommand(commandMetaList, command)) {
-			return false;
-		}
-		if(command instanceof JmxHelpCommand) {
 			return false;
 		}
 		return true;

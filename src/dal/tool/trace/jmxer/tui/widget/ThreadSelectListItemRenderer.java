@@ -18,7 +18,8 @@ import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
 import dal.tool.trace.jmxer.tui.support.ThreadPaneTableFormat;
 
 /**
- * Thread list row renderer with cursor arrow, multi-select background, and search-term highlighting.
+ * 커서 화살표, 다중 선택 배경, 검색어 강조를 적용하는 스레드 목록 행 렌더러.
+ *
  */
 public final class ThreadSelectListItemRenderer extends AbstractListBox.ListItemRenderer<Runnable, ActionListBox> {
 	private volatile String highlightQuery = "";
@@ -185,10 +186,10 @@ public final class ThreadSelectListItemRenderer extends AbstractListBox.ListItem
 			boolean multiSelected,
 			ThreadRowState rowState) {
 		boolean cursorRow = selected && focused;
-		if(multiSelected) {
-			graphics.setBackgroundColor(JmxTuiTheme.THREAD_SELECTED_BG);
-		} else if(cursorRow) {
+		if(cursorRow) {
 			graphics.setBackgroundColor(JmxTuiTheme.SELECTED_ROW_BG);
+		} else if(multiSelected) {
+			graphics.setBackgroundColor(JmxTuiTheme.THREAD_SELECTED_BG);
 		} else {
 			graphics.applyThemeStyle(themeDefinition.getNormal());
 		}

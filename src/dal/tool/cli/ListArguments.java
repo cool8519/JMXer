@@ -6,6 +6,11 @@ import java.util.List;
 import dal.tool.util.StringUtil;
 
 
+/**
+ * 명령어 인자를 문자열 목록으로 보관하는 Arguments 구현
+ * @author 권영달
+ *
+ */
 public class ListArguments extends AbstractArguments {
 
 	protected String command;

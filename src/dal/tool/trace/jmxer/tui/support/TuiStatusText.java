@@ -3,7 +3,8 @@ package dal.tool.trace.jmxer.tui.support;
 import com.googlecode.lanterna.TerminalTextUtils;
 
 /**
- * Fits Status pane label text to a fixed column width without wrapping (no extra rows / scroll).
+ * Status 패널 라벨 텍스트를 고정 열 너비에 맞춰 한 줄로 자른다(줄바꿈·스크롤 없음).
+ *
  */
 public final class TuiStatusText {
 	private static final String ELLIPSIS = "...";
@@ -11,7 +12,10 @@ public final class TuiStatusText {
 	private TuiStatusText() {}
 
 	/**
-	 * Returns {@code text} if it fits in {@code maxColumns}; otherwise truncates the start and appends {@code ...}.
+	 * text가 maxColumns 이내면 그대로 반환하고, 넘치면 앞을 잘라 ...을 붙인다.
+	 * @param text 대상 문자열
+	 * @param maxColumns 최대 열 너비
+	 * @return 한 줄로 맞춘 문자열
 	 */
 	public static String fitSingleLine(String text, int maxColumns) {
 		if(text == null) {

@@ -2,6 +2,11 @@ package dal.tool.cli.command;
 
 import dal.tool.cli.CommandExecutor;
 
+/**
+ * 빈 입력·미인식 명령 처리
+ * @author 권영달
+ *
+ */
 public class NoopCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(NoopCommand.class);

@@ -12,11 +12,14 @@ import javax.management.openmbean.CompositeData;
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.data.RecordResult;
 import dal.tool.trace.jmxer.cli.data.RecordThreadInfo;
-import dal.tool.trace.jmxer.cli.data.RecordThreadSampleState;
 import dal.tool.trace.jmxer.cli.data.ResourceUsage;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * RECORD STACKTRACE 샘플링 스레드
+ *
+ */
 public class StackRecordThread extends AbstractRecordThread {
 
 	protected HashMap<Long,List<RecordThreadInfo>> recordData;
@@ -24,18 +27,9 @@ public class StackRecordThread extends AbstractRecordThread {
 	protected HashMap<Long,ResourceUsage> resourceData;
 	protected boolean threadCpuTimeEnabled;
 	protected boolean threadAllocatedMemoryEnabled;
-	protected java.util.Set<String> userEntrySignatures = java.util.Collections.emptySet();
 
 	public StackRecordThread(MBeanServerConnection mbeanConnection, String[] threadIds) throws Exception {
 		super("StackRecorder", mbeanConnection, threadIds);
-	}
-
-	public void setUserEntrySignatures(java.util.Set<String> userEntrySignatures) {
-		if(userEntrySignatures == null || userEntrySignatures.isEmpty()) {
-			this.userEntrySignatures = java.util.Collections.emptySet();
-		} else {
-			this.userEntrySignatures = userEntrySignatures;
-		}
 	}
 
 	protected void afterInit() throws Exception {
@@ -49,7 +43,16 @@ public class StackRecordThread extends AbstractRecordThread {
 		return sampleCount;
 	}
 
+	public static int getActiveSampleCount() {
+		AbstractRecordThread active = getActiveRecording();
+		if(!(active instanceof StackRecordThread)) {
+			return -1;
+		}
+		return ((StackRecordThread) active).getSampleCount();
+	}
+
 	protected void beforeStartRecording() {
+		markActiveRecording();
 		try {
 			collectResourceData();
 		} catch(Exception e) {
@@ -63,6 +66,7 @@ public class StackRecordThread extends AbstractRecordThread {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		clearActiveRecording();
 	}
 
 	private void collectResourceData() throws Exception {
@@ -152,8 +156,6 @@ public class StackRecordThread extends AbstractRecordThread {
 		recThrInfo.suspended = thrInfo.isSuspended();
 		recThrInfo.threadState = thrInfo.getThreadState().name();
 		recThrInfo.stackTrace = thrInfo.getStackTrace();
-		RecordThreadSampleState state = RecordRequestWaitClassifier.classify(recThrInfo.stackTrace, userEntrySignatures);
-		recThrInfo.sampleState = state;
 		return recThrInfo;		
 	}
 	

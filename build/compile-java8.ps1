@@ -4,6 +4,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $LanternaJar,
     [Parameter(Mandatory = $true)]
+    [string] $SnakeYamlJar,
+    [Parameter(Mandatory = $true)]
     [string] $OutClasses,
     [Parameter(Mandatory = $true)]
     [string] $SrcRoot
@@ -25,6 +27,6 @@ if (-not (Test-Path $tj)) {
 if (-not (Test-Path $javac)) { throw "javac not found under $JdkHome" }
 if (-not (Test-Path $tj)) { throw "tools.jar not found under $JdkHome" }
 
-$cp = "$LanternaJar;$tj"
+$cp = "$LanternaJar;$SnakeYamlJar;$tj"
 $sources = Get-ChildItem -Recurse -Path $SrcRoot -Filter '*.java' | ForEach-Object { $_.FullName }
 & $javac -encoding UTF-8 -source 8 -target 8 -cp $cp -d $OutClasses @sources

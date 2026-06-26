@@ -15,11 +15,14 @@ import dal.tool.trace.jmxer.cli.JmxCallInputValidator;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxMutatingCallConfirmation;
 import dal.tool.trace.jmxer.util.JMXPrintUtil;
-import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 import dal.tool.util.jmx.MBeanNotFoundException;
 
+/**
+ * JMXer CALL 명령(MBean 속성 조회·쓰기 및 오퍼레이션 호출)
+ *
+ */
 public class JmxCallCommand extends JmxCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(JmxCallCommand.class, "CALL");
@@ -210,8 +213,10 @@ public class JmxCallCommand extends JmxCommand {
 						JMXPrintUtil.printMBeanInfo(getMBeanConnection(), oName, callTargetName);
 					} else {
 			        	Object opRet = JMXUtil.getJMXResult(getMBeanConnection(), oName.toString(), callTargetName, callTargetValues);
-			    		if(opRet != null) {
-			    			logln(ObjectDataUtil.toString(opRet, getSettings().prettyPrintInResult()));
+			        	String output = JMXUtil.formatInvokeOutput(getMBeanConnection(), oName, callTargetName,
+			        			callTargetValues, opRet, getSettings().prettyPrintInResult());
+			        	if(output != null) {
+			        		logln(output);
 			        	}
 					}
 				}

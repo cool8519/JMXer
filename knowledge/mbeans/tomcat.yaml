@@ -1,0 +1,4024 @@
+entries:
+  - match:
+      objectName: "Catalina:type=Server"
+      className: "org.apache.catalina.core.StandardServer"
+    description: "Apache Tomcat server MBean."
+    attributes:
+      Address:
+        description: "Returns the address."
+      Catalina:
+        description: "Returns the catalina."
+      CatalinaBase:
+        description: "Returns the catalinaBase."
+      CatalinaHome:
+        description: "Returns the catalinaHome."
+      DomainInternal:
+        description: "Returns the domainInternal."
+      GlobalNamingResources:
+        description: "Returns the globalNamingResources."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      ParentClassLoader:
+        description: "Returns the parentClassLoader."
+      PeriodicEventDelay:
+        description: "Returns the periodicEventDelay."
+      Port:
+        description: "Returns the port."
+      PortOffset:
+        description: "Returns the portOffset."
+      PortWithOffset:
+        description: "Returns the portWithOffset."
+      ServerBuilt:
+        description: "Return the current server built timestamp."
+      ServerInfo:
+        description: "Report the current Tomcat Server Release number."
+      ServerNumber:
+        description: "Return the current server's version number."
+      ServiceNames:
+        description: "Returns the serviceNames."
+      Shutdown:
+        description: "Returns the shutdown."
+      UseNaming:
+        description: "Tests whether useNaming."
+      UtilityExecutor:
+        description: "Returns the utilityExecutor."
+      UtilityThreads:
+        description: "Returns the utilityThreads."
+      UtilityThreadsAsDaemon:
+        description: "Get if the utility threads are daemon threads."
+    operations:
+      "addPropertyChangeListener(java.lang.PropertyChangeListener)":
+        description: "Add a property change listener to this component."
+        params:
+          - name: listener
+            type: java.lang.PropertyChangeListener
+      "addService(java.lang.Service)":
+        description: "Invokes addService."
+        params:
+          - name: service
+            type: java.lang.Service
+      "await()":
+        description: "Invokes await."
+      "findServices()":
+        description: "Invokes findServices."
+        return: "Return type: Service[]."
+      "getUtilityThreadsInternal(int)":
+        description: "Handles the special values."
+        return: "Return type: private static int."
+        params:
+          - name: utilityThreads
+            type: int
+      "removePropertyChangeListener(java.lang.PropertyChangeListener)":
+        description: "Remove a property change listener from this component."
+        params:
+          - name: listener
+            type: java.lang.PropertyChangeListener
+      "removeService(java.lang.Service)":
+        description: "Invokes removeService."
+        params:
+          - name: service
+            type: java.lang.Service
+      "setAddress(java.lang.String)":
+        description: "Sets the address."
+        params:
+          - name: address
+            type: java.lang.String
+      "setCatalina(java.lang.Catalina)":
+        description: "Sets the catalina."
+        params:
+          - name: catalina
+            type: java.lang.Catalina
+      "setCatalinaBase(java.lang.File)":
+        description: "Sets the catalinaBase."
+        params:
+          - name: catalinaBase
+            type: java.lang.File
+      "setCatalinaHome(java.lang.File)":
+        description: "Sets the catalinaHome."
+        params:
+          - name: catalinaHome
+            type: java.lang.File
+      "setGlobalNamingContext(javax.naming.Context)":
+        description: "Global naming resources context."
+        params:
+          - name: globalNamingContext
+            type: javax.naming.Context
+      "setGlobalNamingResources(java.lang.NamingResourcesImpl)":
+        description: "Sets the globalNamingResources."
+        params:
+          - name: globalNamingResources
+            type: java.lang.NamingResourcesImpl
+      "setParentClassLoader(java.lang.ClassLoader)":
+        description: "Sets the parentClassLoader."
+        params:
+          - name: parent
+            type: java.lang.ClassLoader
+      "setPeriodicEventDelay(int)":
+        description: "Set the new period between two lifecycle events in seconds."
+        params:
+          - name: periodicEventDelay
+            type: int
+      "setPort(int)":
+        description: "Sets the port."
+        params:
+          - name: port
+            type: int
+      "setPortOffset(int)":
+        description: "Sets the portOffset."
+        params:
+          - name: portOffset
+            type: int
+      "setShutdown(java.lang.String)":
+        description: "Sets the shutdown."
+        params:
+          - name: shutdown
+            type: java.lang.String
+      "setState()":
+        description: "Sets the state."
+        return: "Return type: ."
+      "setUtilityThreads(int)":
+        description: "Sets the utilityThreads."
+        params:
+          - name: utilityThreads
+            type: int
+      "setUtilityThreadsAsDaemon(boolean)":
+        description: "Set the utility threads daemon flag. The default value is true."
+        params:
+          - name: utilityThreadsAsDaemon
+            type: boolean
+      "storeConfig()":
+        description: "Write the configuration information for this entire Server out to the server.xml configuration file."
+      "storeContext(java.lang.Context)":
+        description: "Write the configuration information for Context out to the specified configuration file."
+        params:
+          - name: context
+            type: java.lang.Context
+
+  - match:
+      objectName: "Catalina:type=Service,*"
+      className: "org.apache.catalina.core.StandardService"
+    description: "Apache Tomcat service MBean."
+    attributes:
+      DomainInternal:
+        description: "Returns the domainInternal."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      ParentClassLoader:
+        description: "Returns the parentClassLoader."
+    operations:
+      "addExecutor(java.lang.Executor)":
+        description: "Invokes addExecutor."
+        params:
+          - name: ex
+            type: java.lang.Executor
+      "addPropertyChangeListener(java.lang.PropertyChangeListener)":
+        description: "Standard implementation of the Service interface."
+        params:
+          - name: listener
+            type: java.lang.PropertyChangeListener
+      "findConnectors()":
+        description: "Invokes findConnectors."
+        return: "Return type: Connector[]."
+      "findExecutors()":
+        description: "Invokes findExecutors."
+        return: "Return type: Executor[]."
+      "getExecutor(java.lang.String)":
+        description: "Invokes getExecutor."
+        return: "Return type: Executor."
+        params:
+          - name: executorName
+            type: java.lang.String
+      "removeConnector(java.lang.Connector)":
+        description: "Invokes removeConnector."
+        params:
+          - name: connector
+            type: java.lang.Connector
+      "removeExecutor(java.lang.Executor)":
+        description: "Invokes removeExecutor."
+        params:
+          - name: ex
+            type: java.lang.Executor
+      "removePropertyChangeListener(java.lang.PropertyChangeListener)":
+        description: "Remove a property change listener from this component."
+        params:
+          - name: listener
+            type: java.lang.PropertyChangeListener
+      "setParentClassLoader(java.lang.ClassLoader)":
+        description: "Sets the parentClassLoader."
+        params:
+          - name: parent
+            type: java.lang.ClassLoader
+      "setState()":
+        description: "Sets the state."
+        return: "Return type: ."
+
+  - match:
+      objectName: "Catalina:type=Engine,*"
+      className: "org.apache.catalina.core.StandardEngine"
+    description: "Apache Tomcat engine container MBean."
+    attributes:
+      CatalinaBase:
+        description: "Returns the catalinaBase."
+      CatalinaHome:
+        description: "Returns the catalinaHome."
+      DomainInternal:
+        description: "Returns the domainInternal."
+      Name:
+        description: "Returns the name."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      ParentClassLoader:
+        description: "Returns the parentClassLoader."
+      Realm:
+        description: "Returns the realm."
+      RequestAttributesEnabled:
+        description: "Returns the requestAttributesEnabled."
+    operations:
+      "addChild(java.lang.Container)":
+        description: "Host name to use when no server host, or an unknown host, is specified in the request."
+        params:
+          - name: child
+            type: java.lang.Container
+      "containerEvent(java.lang.ContainerEvent)":
+        description: "Invokes containerEvent."
+        params:
+          - name: event
+            type: java.lang.ContainerEvent
+      "lifecycleEvent(java.lang.LifecycleEvent)":
+        description: "Invokes lifecycleEvent."
+        params:
+          - name: event
+            type: java.lang.LifecycleEvent
+      "logAccess(java.lang.Request,java.lang.Response,long,boolean)":
+        description: "{@inheritDoc} Override the default implementation. If no access log is defined for the Engine, look for one in the Engine's default host and then the default host's ROOT context. If still none is found, return the default NoOp access log."
+        params:
+          - name: request
+            type: java.lang.Request
+          - name: response
+            type: java.lang.Response
+          - name: time
+            type: long
+          - name: useDefault
+            type: boolean
+      "propertyChange(java.lang.PropertyChangeEvent)":
+        description: "Invokes propertyChange."
+        params:
+          - name: evt
+            type: java.lang.PropertyChangeEvent
+      "setParent(java.lang.Container)":
+        description: "Disallow any attempt to set a parent for this Container, since an Engine is supposed to be at the top of the Container hierarchy."
+        params:
+          - name: container
+            type: java.lang.Container
+      "setRequestAttributesEnabled(boolean)":
+        description: "Sets the requestAttributesEnabled."
+        params:
+          - name: requestAttributesEnabled
+            type: boolean
+
+  - match:
+      objectName: "Catalina:type=Host,host=*"
+      className: "org.apache.catalina.core.StandardHost"
+    description: "Apache Tomcat virtual host container MBean."
+    attributes:
+      Aliases:
+        description: "Returns the aliases."
+      AutoDeploy:
+        description: "{@inheritDoc} The default value for this implementation is true."
+      ConfigClass:
+        description: "Returns the configClass."
+      ContextClass:
+        description: "Returns the contextClass."
+      CopyXML:
+        description: "Tests whether copyXML."
+      CreateDirs:
+        description: "The set of aliases for this Host."
+      DeployIgnore:
+        description: "Returns the deployIgnore."
+      DeployIgnorePattern:
+        description: "Returns the deployIgnorePattern."
+      DeployOnStartup:
+        description: "{@inheritDoc} The default value for this implementation is true."
+      DeployXML:
+        description: "Tests whether deployXML."
+      ErrorReportValveClass:
+        description: "Returns the errorReportValveClass."
+      FailCtxIfServletStartFails:
+        description: "Tests whether failCtxIfServletStartFails."
+      Name:
+        description: "Returns the name."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      UnpackWARs:
+        description: "Tests whether unpackWARs."
+      ValveNames:
+        description: "Returns the valveNames."
+      WorkDir:
+        description: "Returns the workDir."
+    operations:
+      "addAlias(java.lang.String)":
+        description: "Invokes addAlias."
+        params:
+          - name: alias
+            type: java.lang.String
+      "addChild(java.lang.Container)":
+        description: "{@inheritDoc} The child must be an implementation of Context ."
+        params:
+          - name: child
+            type: java.lang.Container
+      "findAliases()":
+        description: "Invokes findAliases."
+        return: "Return type: String[]."
+      "findReloadedContextMemoryLeaks()":
+        description: "Used to ensure that regardless of {@link Context} implementation, a record is kept of the class loader used every time a context starts. private class MemoryLeakTrackingListener implements LifecycleListener {."
+        return: "Return type: String[]."
+      "removeAlias(java.lang.String)":
+        description: "Invokes removeAlias."
+        params:
+          - name: alias
+            type: java.lang.String
+      "setAutoDeploy(boolean)":
+        description: "Sets the autoDeploy."
+        params:
+          - name: autoDeploy
+            type: boolean
+      "setConfigClass(java.lang.String)":
+        description: "Sets the configClass."
+        params:
+          - name: configClass
+            type: java.lang.String
+      "setContextClass(java.lang.String)":
+        description: "Set the Java class name of the Context implementation class for new web applications."
+        params:
+          - name: contextClass
+            type: java.lang.String
+      "setCopyXML(boolean)":
+        description: "Set the copy XML config file flag for this component."
+        params:
+          - name: copyXML
+            type: boolean
+      "setCreateDirs(boolean)":
+        description: "Sets the createDirs."
+        params:
+          - name: createDirs
+            type: boolean
+      "setDeployIgnore(java.lang.String)":
+        description: "Sets the deployIgnore."
+        params:
+          - name: deployIgnore
+            type: java.lang.String
+      "setDeployOnStartup(boolean)":
+        description: "Sets the deployOnStartup."
+        params:
+          - name: deployOnStartup
+            type: boolean
+      "setDeployXML(boolean)":
+        description: "Deploy XML Context config files flag mutator."
+        params:
+          - name: deployXML
+            type: boolean
+      "setErrorReportValveClass(java.lang.String)":
+        description: "Set the Java class name of the error report valve class for new web applications."
+        params:
+          - name: errorReportValveClass
+            type: java.lang.String
+      "setFailCtxIfServletStartFails(boolean)":
+        description: "Change the behavior of Servlet startup errors on web application starts."
+        params:
+          - name: failCtxIfServletStartFails
+            type: boolean
+      "setName(java.lang.String)":
+        description: "Sets the name."
+        params:
+          - name: name
+            type: java.lang.String
+      "setUnpackWARs(boolean)":
+        description: "Unpack WARs flag mutator."
+        params:
+          - name: unpackWARs
+            type: boolean
+      "setWorkDir(java.lang.String)":
+        description: "Set host work directory base."
+        params:
+          - name: workDir
+            type: java.lang.String
+
+  - match:
+      objectName: "Catalina:type=Context,context=*,host=*"
+      className: "org.apache.catalina.core.StandardContext"
+    description: "Apache Tomcat web application context MBean."
+    attributes:
+      AddWebinfClassesResources:
+        description: "Returns the addWebinfClassesResources."
+      AllowCasualMultipartParsing:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      AltDDName:
+        description: "Returns the altDDName."
+      AntiResourceLocking:
+        description: "Returns the antiResourceLocking."
+      ApplicationEventListeners:
+        description: "Returns the applicationEventListeners."
+      ApplicationLifecycleListeners:
+        description: "Returns the applicationLifecycleListeners."
+      AttributeNames:
+        description: "Returns the attributeNames."
+      Authenticator:
+        description: "Returns the authenticator."
+      BaseName:
+        description: "Returns the baseName."
+      CharsetMapper:
+        description: "Returns the charsetMapper."
+      CharsetMapperClass:
+        description: "Returns the charsetMapperClass."
+      ClassLoader:
+        description: "Returns the classLoader."
+      ClearReferencesHttpClientKeepAliveThread:
+        description: "Returns the clearReferencesHttpClientKeepAliveThread."
+      ClearReferencesRmiTargets:
+        description: "Returns the clearReferencesRmiTargets."
+      ClearReferencesStopThreads:
+        description: "Returns the clearReferencesStopThreads."
+      ClearReferencesStopTimerThreads:
+        description: "Returns the clearReferencesStopTimerThreads."
+      ClearReferencesThreadLocals:
+        description: "Returns the clearReferencesThreadLocals."
+      ComputedFailCtxIfServletStartFails:
+        description: "Returns the computedFailCtxIfServletStartFails."
+      ConfigFile:
+        description: "Returns the configFile."
+      Configured:
+        description: "Returns the configured."
+      ContainerSciFilter:
+        description: "Returns the containerSciFilter."
+      ContextPath:
+        description: "Returns the contextPath."
+      CookieProcessor:
+        description: "Returns the cookieProcessor."
+      Cookies:
+        description: "Returns the cookies."
+      CopyXML:
+        description: "Flag which indicates if bundled context.xml files should be copied to the config folder. The doesn't occur by default."
+      CrossContext:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      DefaultContextXml:
+        description: "Returns the defaultContextXml."
+      DefaultSessionTrackingModes:
+        description: "Returns the defaultSessionTrackingModes."
+      DefaultWebXml:
+        description: "Returns the defaultWebXml."
+      Delegate:
+        description: "Return the 'follow standard delegation model' flag used to configure our ClassLoader."
+      DenyUncoveredHttpMethods:
+        description: "Returns the denyUncoveredHttpMethods."
+      DispatchersUseEncodedPaths:
+        description: "{@inheritDoc} The default value for this implementation is true."
+      DisplayName:
+        description: "Returns the displayName."
+      Distributable:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      DocBase:
+        description: "Returns the docBase."
+      EffectiveMajorVersion:
+        description: "Returns the effectiveMajorVersion."
+      EffectiveMinorVersion:
+        description: "Returns the effectiveMinorVersion."
+      EffectiveSessionTrackingModes:
+        description: "Returns the effectiveSessionTrackingModes."
+      EncodedPath:
+        description: "Returns the encodedPath."
+      ErrorCount:
+        description: "Gets the cumulative error count of all servlets in this StandardContext."
+      FailCtxIfServletStartFails:
+        description: "Returns the failCtxIfServletStartFails."
+      FilterRegistrations:
+        description: "Returns the filterRegistrations."
+      FireRequestListenersOnForwards:
+        description: "Returns the fireRequestListenersOnForwards."
+      IgnoreAnnotations:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      InitParameterNames:
+        description: "Returns the initParameterNames."
+      InstanceManager:
+        description: "Returns the instanceManager."
+      J2EEApplication:
+        description: "Returns the j2EEApplication."
+      J2EEServer:
+        description: "Returns the j2EEServer."
+      JarScanner:
+        description: "Returns the jarScanner."
+      JndiExceptionOnFailedWrite:
+        description: "Returns the jndiExceptionOnFailedWrite."
+      JspConfigDescriptor:
+        description: "Returns the jspConfigDescriptor."
+      Loader:
+        description: "Returns the loader."
+      LogEffectiveWebXml:
+        description: "Returns the logEffectiveWebXml."
+      LoginConfig:
+        description: "Returns the loginConfig."
+      MajorVersion:
+        description: "Returns the majorVersion."
+      Manager:
+        description: "Returns the manager."
+      MapperContextRootRedirectEnabled:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      MapperDirectoryRedirectEnabled:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      MaxTime:
+        description: "Gets the maximum processing time of all servlets in this StandardContext."
+      MetadataComplete:
+        description: "Returns the metadataComplete."
+      MinTime:
+        description: "Gets the minimum processing time of all servlets in this StandardContext."
+      MinorVersion:
+        description: "Returns the minorVersion."
+      NamingContextListener:
+        description: "Naming context listener accessor."
+      NamingContextName:
+        description: "Get naming context full name."
+      NamingResources:
+        description: "Returns the namingResources."
+      NamingToken:
+        description: "Returns the namingToken."
+      NotificationInfo:
+        description: "Returns the notificationInfo."
+      ObjectKeyPropertiesNameOnly:
+        description: "Returns the objectKeyPropertiesNameOnly."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      OriginalDocBase:
+        description: "Returns the originalDocBase."
+      Override:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      ParallelAnnotationScanning:
+        description: "Returns the parallelAnnotationScanning."
+      ParentClassLoader:
+        description: "Returns the parentClassLoader."
+      Path:
+        description: "Returns the path."
+      Paused:
+        description: "Returns the paused."
+      PreemptiveAuthentication:
+        description: "Returns the preemptiveAuthentication."
+      Privileged:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      ProcessingTime:
+        description: "Gets the cumulative processing times of all servlets in this StandardContext."
+      PublicId:
+        description: "Returns the publicId."
+      Reloadable:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      RenewThreadsWhenStoppingContext:
+        description: "Returns the renewThreadsWhenStoppingContext."
+      RequestCharacterEncoding:
+        description: "Returns the requestCharacterEncoding."
+      RequestCount:
+        description: "Gets the cumulative request count of all servlets in this StandardContext."
+      ResourceOnlyServlets:
+        description: "Returns the resourceOnlyServlets."
+      Resources:
+        description: "Returns the resources."
+      ResponseCharacterEncoding:
+        description: "Returns the responseCharacterEncoding."
+      SendRedirectBody:
+        description: "Returns the sendRedirectBody."
+      ServerInfo:
+        description: "Returns the serverInfo."
+      Servlet22:
+        description: "Tests whether servlet22."
+      ServletContext:
+        description: "Returns the servletContext."
+      ServletContextName:
+        description: "Returns the servletContextName."
+      ServletRegistrations:
+        description: "Returns the servletRegistrations."
+      SessionCookieConfig:
+        description: "Returns the sessionCookieConfig."
+      SessionCookieDomain:
+        description: "Returns the sessionCookieDomain."
+      SessionCookieName:
+        description: "Returns the sessionCookieName."
+      SessionCookiePath:
+        description: "Returns the sessionCookiePath."
+      SessionCookiePathUsesTrailingSlash:
+        description: "Returns the sessionCookiePathUsesTrailingSlash."
+      SessionTimeout:
+        description: "{@inheritDoc} The default value for this implementation is 30 minutes."
+      SkipMemoryLeakChecksOnJvmShutdown:
+        description: "Returns the skipMemoryLeakChecksOnJvmShutdown."
+      StartTime:
+        description: "The J2EE Server ObjectName this module is deployed on. private String server = null; public String getServer() { return server; } public String setServer(String server) { return this.server = server; } Gets the time this context was started."
+      StartupTime:
+        description: "Gets the time (in milliseconds) it took to start this context."
+      SwallowAbortedUploads:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      SwallowOutput:
+        description: "{@inheritDoc} The default value for this implementation is false."
+      ThreadBindingListener:
+        description: "Returns the threadBindingListener."
+      TldScanTime:
+        description: "Returns the tldScanTime."
+      TldValidation:
+        description: "Returns the tldValidation."
+      UnloadDelay:
+        description: "Returns the unloadDelay."
+      UnpackWAR:
+        description: "Returns the unpackWAR."
+      UseHttpOnly:
+        description: "{@inheritDoc} The default value for this implementation is true."
+      UseNaming:
+        description: "Tests whether useNaming."
+      UsePartitioned:
+        description: "Returns the usePartitioned."
+      UseRelativeRedirects:
+        description: "{@inheritDoc} The default value for this implementation is true."
+      ValidateClientProvidedNewSessionId:
+        description: "{@inheritDoc} The default value for this implementation is true."
+      VirtualServerName:
+        description: "Returns the virtualServerName."
+      WebappVersion:
+        description: "Returns the webappVersion."
+      WelcomeFiles:
+        description: "Returns the welcomeFiles."
+      WorkDir:
+        description: "Returns the workDir."
+      WorkPath:
+        description: "Get the absolute path to the work dir. To avoid duplication."
+      WrapperClass:
+        description: "Returns the wrapperClass."
+      XmlBlockExternal:
+        description: "Returns the xmlBlockExternal."
+      XmlNamespaceAware:
+        description: "Returns the xmlNamespaceAware."
+      XmlValidation:
+        description: "Returns the xmlValidation."
+    operations:
+      "add(java.lang.FilterMap)":
+        description: "Add a filter mapping at the end of the current set of filter mappings."
+        params:
+          - name: filterMap
+            type: java.lang.FilterMap
+      "addApplicationEventListener(java.lang.Object)":
+        description: "Add a listener to the end of the list of initialized application event listeners."
+        params:
+          - name: listener
+            type: java.lang.Object
+      "addApplicationLifecycleListener(java.lang.Object)":
+        description: "Add a listener to the end of the list of initialized application lifecycle listeners."
+        params:
+          - name: listener
+            type: java.lang.Object
+      "addApplicationListener(java.lang.String)":
+        description: "Invokes addApplicationListener."
+        params:
+          - name: listener
+            type: java.lang.String
+      "addApplicationParameter(java.lang.ApplicationParameter)":
+        description: "Invokes addApplicationParameter."
+        params:
+          - name: parameter
+            type: java.lang.ApplicationParameter
+      "addBefore(java.lang.FilterMap)":
+        description: "Add a filter mapping before the mappings defined in the deployment descriptor but after any other mappings added via this method."
+        params:
+          - name: filterMap
+            type: java.lang.FilterMap
+      "addChild(java.lang.Container)":
+        description: "Invokes addChild."
+        params:
+          - name: child
+            type: java.lang.Container
+      "addConstraint(java.lang.SecurityConstraint)":
+        description: "Invokes addConstraint."
+        params:
+          - name: constraint
+            type: java.lang.SecurityConstraint
+      "addErrorPage(java.lang.ErrorPage)":
+        description: "Invokes addErrorPage."
+        params:
+          - name: errorPage
+            type: java.lang.ErrorPage
+      "addFilterDef(java.lang.FilterDef)":
+        description: "Invokes addFilterDef."
+        params:
+          - name: filterDef
+            type: java.lang.FilterDef
+      "addFilterMap(java.lang.FilterMap)":
+        description: "Invokes addFilterMap."
+        params:
+          - name: filterMap
+            type: java.lang.FilterMap
+      "addFilterMapBefore(java.lang.FilterMap)":
+        description: "Invokes addFilterMapBefore."
+        params:
+          - name: filterMap
+            type: java.lang.FilterMap
+      "addListener(java.lang.Class)":
+        description: "Invokes addListener."
+        params:
+          - name: listenerClass
+            type: java.lang.Class
+      "addListener(java.lang.String)":
+        description: "Invokes addListener."
+        params:
+          - name: className
+            type: java.lang.String
+      "addLocaleEncodingMappingParameter(java.lang.String,java.lang.String)":
+        description: "Invokes addLocaleEncodingMappingParameter."
+        params:
+          - name: locale
+            type: java.lang.String
+          - name: encoding
+            type: java.lang.String
+      "addMessageDestination(java.lang.MessageDestination)":
+        description: "Add a message destination for this web application."
+        params:
+          - name: md
+            type: java.lang.MessageDestination
+      "addMimeMapping(java.lang.String,java.lang.String)":
+        description: "Invokes addMimeMapping."
+        params:
+          - name: extension
+            type: java.lang.String
+          - name: mimeType
+            type: java.lang.String
+      "addNotificationListener(java.lang.NotificationListener,java.lang.NotificationFilter,java.lang.Object)":
+        description: "Invokes addNotificationListener."
+        params:
+          - name: listener
+            type: java.lang.NotificationListener
+          - name: filter
+            type: java.lang.NotificationFilter
+          - name: object
+            type: java.lang.Object
+      "addParameter(java.lang.String,java.lang.String)":
+        description: "Invokes addParameter."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: value
+            type: java.lang.String
+      "addPostConstructMethod(java.lang.String,java.lang.String)":
+        description: "Invokes addPostConstructMethod."
+        params:
+          - name: clazz
+            type: java.lang.String
+          - name: method
+            type: java.lang.String
+      "addPreDestroyMethod(java.lang.String,java.lang.String)":
+        description: "Invokes addPreDestroyMethod."
+        params:
+          - name: clazz
+            type: java.lang.String
+          - name: method
+            type: java.lang.String
+      "addRoleMapping(java.lang.String,java.lang.String)":
+        description: "Invokes addRoleMapping."
+        params:
+          - name: role
+            type: java.lang.String
+          - name: link
+            type: java.lang.String
+      "addSecurityRole(java.lang.String)":
+        description: "Invokes addSecurityRole."
+        params:
+          - name: role
+            type: java.lang.String
+      "addServletContainerInitializer(java.lang.ServletContainerInitializer,java.lang.Set>)":
+        description: "Invokes addServletContainerInitializer."
+        params:
+          - name: sci
+            type: java.lang.ServletContainerInitializer
+          - name: classes
+            type: java.lang.Set>
+      "addServletMappingDecoded(java.lang.String,java.lang.String,boolean)":
+        description: "Invokes addServletMappingDecoded."
+        params:
+          - name: pattern
+            type: java.lang.String
+          - name: name
+            type: java.lang.String
+          - name: jspWildCard
+            type: boolean
+      "addWatchedResource(java.lang.String)":
+        description: "Invokes addWatchedResource."
+        params:
+          - name: name
+            type: java.lang.String
+      "addWelcomeFile(java.lang.String)":
+        description: "Invokes addWelcomeFile."
+        params:
+          - name: name
+            type: java.lang.String
+      "addWrapperLifecycle(java.lang.String)":
+        description: "Invokes addWrapperLifecycle."
+        params:
+          - name: listener
+            type: java.lang.String
+      "addWrapperListener(java.lang.String)":
+        description: "Invokes addWrapperListener."
+        params:
+          - name: listener
+            type: java.lang.String
+      "asArray()":
+        description: "A helper class to manage the filter mappings in a Context."
+        return: "Return type: FilterMap[]."
+      "backgroundProcess()":
+        description: "Invokes backgroundProcess."
+      "declareRoles(String...)":
+        description: "Invokes declareRoles."
+        params:
+          - name: roleNames
+            type: String...
+      "dynamicServletCreated(java.lang.Servlet)":
+        description: "Hook to track which Servlets were created via {@link ServletContext#createServlet(Class)}."
+        params:
+          - name: servlet
+            type: java.lang.Servlet
+      "filterStart()":
+        description: "Configure and initialize the set of filters for this Context."
+        return: "Return type: boolean."
+      "filterStop()":
+        description: "Finalize and release the set of filters for this Context."
+        return: "Return type: boolean."
+      "findApplicationListeners()":
+        description: "Invokes findApplicationListeners."
+        return: "Return type: String[]."
+      "findApplicationParameters()":
+        description: "Invokes findApplicationParameters."
+        return: "Return type: ApplicationParameter[]."
+      "findConstraints()":
+        description: "Invokes findConstraints."
+        return: "Return type: SecurityConstraint[]."
+      "findErrorPages()":
+        description: "Invokes findErrorPages."
+        return: "Return type: ErrorPage[]."
+      "findFilterDefs()":
+        description: "Invokes findFilterDefs."
+        return: "Return type: FilterDef[]."
+      "findFilterMaps()":
+        description: "Invokes findFilterMaps."
+        return: "Return type: FilterMap[]."
+      "findMessageDestinations()":
+        description: "Invokes findMessageDestinations."
+        return: "Return type: MessageDestination[]."
+      "findMimeMapping(java.lang.String)":
+        description: "Invokes findMimeMapping."
+        return: "Return type: String."
+        params:
+          - name: extension
+            type: java.lang.String
+      "findMimeMappings()":
+        description: "Invokes findMimeMappings."
+        return: "Return type: String[]."
+      "findParameter(java.lang.String)":
+        description: "Invokes findParameter."
+        return: "Return type: String."
+        params:
+          - name: name
+            type: java.lang.String
+      "findParameters()":
+        description: "Invokes findParameters."
+        return: "Return type: String[]."
+      "findPostConstructMethod(java.lang.String)":
+        description: "Invokes findPostConstructMethod."
+        return: "Return type: String."
+        params:
+          - name: clazz
+            type: java.lang.String
+      "findPreDestroyMethod(java.lang.String)":
+        description: "Invokes findPreDestroyMethod."
+        return: "Return type: String."
+        params:
+          - name: clazz
+            type: java.lang.String
+      "findRoleMapping(java.lang.String)":
+        description: "Invokes findRoleMapping."
+        return: "Return type: String."
+        params:
+          - name: role
+            type: java.lang.String
+      "findSecurityRole(java.lang.String)":
+        description: "Invokes findSecurityRole."
+        return: "Return type: boolean."
+        params:
+          - name: role
+            type: java.lang.String
+      "findSecurityRoles()":
+        description: "Invokes findSecurityRoles."
+        return: "Return type: String[]."
+      "findServletMapping(java.lang.String)":
+        description: "Invokes findServletMapping."
+        return: "Return type: String."
+        params:
+          - name: pattern
+            type: java.lang.String
+      "findServletMappings()":
+        description: "Invokes findServletMappings."
+        return: "Return type: String[]."
+      "findWatchedResources()":
+        description: "Invokes findWatchedResources."
+        return: "Return type: String[]."
+      "findWelcomeFile(java.lang.String)":
+        description: "Invokes findWelcomeFile."
+        return: "Return type: boolean."
+        params:
+          - name: name
+            type: java.lang.String
+      "findWelcomeFiles()":
+        description: "Invokes findWelcomeFiles."
+        return: "Return type: String[]."
+      "findWrapperLifecycles()":
+        description: "Invokes findWrapperLifecycles."
+        return: "Return type: String[]."
+      "findWrapperListeners()":
+        description: "Invokes findWrapperListeners."
+        return: "Return type: String[]."
+      "fireRequestDestroyEvent(java.lang.ServletRequest)":
+        description: "Invokes fireRequestDestroyEvent."
+        return: "Return type: boolean."
+        params:
+          - name: request
+            type: java.lang.ServletRequest
+      "fireRequestInitEvent(java.lang.ServletRequest)":
+        description: "Invokes fireRequestInitEvent."
+        return: "Return type: boolean."
+        params:
+          - name: request
+            type: java.lang.ServletRequest
+      "getAttribute(java.lang.String)":
+        description: "Invokes getAttribute."
+        return: "Return type: Object."
+        params:
+          - name: name
+            type: java.lang.String
+      "getCharset(java.lang.Locale)":
+        description: "Invokes getCharset."
+        return: "Return type: String."
+        params:
+          - name: locale
+            type: java.lang.Locale
+      "getContext(java.lang.String)":
+        description: "Invokes getContext."
+        return: "Return type: ServletContext."
+        params:
+          - name: uripath
+            type: java.lang.String
+      "getFilterRegistration(java.lang.String)":
+        description: "Invokes getFilterRegistration."
+        return: "Return type: FilterRegistration."
+        params:
+          - name: filterName
+            type: java.lang.String
+      "getInitParameter(java.lang.String)":
+        description: "Invokes getInitParameter."
+        return: "Return type: String."
+        params:
+          - name: name
+            type: java.lang.String
+      "getMimeType(java.lang.String)":
+        description: "Invokes getMimeType."
+        return: "Return type: String."
+        params:
+          - name: file
+            type: java.lang.String
+      "getNamedDispatcher(java.lang.String)":
+        description: "Invokes getNamedDispatcher."
+        return: "Return type: RequestDispatcher."
+        params:
+          - name: name
+            type: java.lang.String
+      "getRealPath(java.lang.String)":
+        description: "Invokes getRealPath."
+        return: "Return type: String."
+        params:
+          - name: path
+            type: java.lang.String
+      "getRequestDispatcher(java.lang.String)":
+        description: "Invokes getRequestDispatcher."
+        return: "Return type: RequestDispatcher."
+        params:
+          - name: path
+            type: java.lang.String
+      "getResource(java.lang.String)":
+        description: "Invokes getResource."
+        return: "Return type: URL."
+        params:
+          - name: path
+            type: java.lang.String
+      "getResourceAsStream(java.lang.String)":
+        description: "Invokes getResourceAsStream."
+        return: "Return type: InputStream."
+        params:
+          - name: path
+            type: java.lang.String
+      "getResourcePaths(java.lang.String)":
+        description: "Invokes getResourcePaths."
+        return: "Return type: Set ."
+        params:
+          - name: path
+            type: java.lang.String
+      "getServletRegistration(java.lang.String)":
+        description: "Invokes getServletRegistration."
+        return: "Return type: ServletRegistration."
+        params:
+          - name: servletName
+            type: java.lang.String
+      "isResourceOnlyServlet(java.lang.String)":
+        description: "Invokes isResourceOnlyServlet."
+        return: "Return type: boolean."
+        params:
+          - name: servletName
+            type: java.lang.String
+      "listenerStart()":
+        description: "Configure the set of instantiated application event listeners for this Context."
+        return: "Return type: boolean."
+      "listenerStop()":
+        description: "Send an application stop event to all interested listeners."
+        return: "Return type: boolean."
+      "loadOnStartup(java.lang.Container[])":
+        description: "Load and initialize all servlets marked 'load on startup' in the web application deployment descriptor."
+        return: "Return type: boolean."
+        params:
+          - name: children
+            type: java.lang.Container[]
+      "matches(java.lang.String,java.lang.String)":
+        description: "Invokes matches."
+        return: "Return type: boolean."
+        params:
+          - name: inputCredentials
+            type: java.lang.String
+          - name: storedCredentials
+            type: java.lang.String
+      "mutate(java.lang.String)":
+        description: "Invokes mutate."
+        return: "Return type: String."
+        params:
+          - name: inputCredentials
+            type: java.lang.String
+      "reload()":
+        description: "{@inheritDoc} IMPLEMENTATION NOTE : This method is designed to deal with reloads required by changes to classes in the underlying repositories of our class loader and changes to the web."
+      "remove(java.lang.FilterMap)":
+        description: "Remove a filter mapping."
+        params:
+          - name: filterMap
+            type: java.lang.FilterMap
+      "removeApplicationListener(java.lang.String)":
+        description: "Invokes removeApplicationListener."
+        params:
+          - name: listener
+            type: java.lang.String
+      "removeApplicationParameter(java.lang.String)":
+        description: "Invokes removeApplicationParameter."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeAttribute(java.lang.String)":
+        description: "Invokes removeAttribute."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeChild(java.lang.Container)":
+        description: "Invokes removeChild."
+        params:
+          - name: child
+            type: java.lang.Container
+      "removeConstraint(java.lang.SecurityConstraint)":
+        description: "Invokes removeConstraint."
+        params:
+          - name: constraint
+            type: java.lang.SecurityConstraint
+      "removeErrorPage(java.lang.ErrorPage)":
+        description: "Invokes removeErrorPage."
+        params:
+          - name: errorPage
+            type: java.lang.ErrorPage
+      "removeFilterDef(java.lang.FilterDef)":
+        description: "Invokes removeFilterDef."
+        params:
+          - name: filterDef
+            type: java.lang.FilterDef
+      "removeFilterMap(java.lang.FilterMap)":
+        description: "Invokes removeFilterMap."
+        params:
+          - name: filterMap
+            type: java.lang.FilterMap
+      "removeMessageDestination(java.lang.String)":
+        description: "Remove any message destination with the specified name."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeMimeMapping(java.lang.String)":
+        description: "Invokes removeMimeMapping."
+        params:
+          - name: extension
+            type: java.lang.String
+      "removeNotificationListener(java.lang.NotificationListener)":
+        description: "Invokes removeNotificationListener."
+        params:
+          - name: listener
+            type: java.lang.NotificationListener
+      "removeNotificationListener(java.lang.NotificationListener,java.lang.NotificationFilter,java.lang.Object)":
+        description: "Invokes removeNotificationListener."
+        params:
+          - name: listener
+            type: java.lang.NotificationListener
+          - name: filter
+            type: java.lang.NotificationFilter
+          - name: object
+            type: java.lang.Object
+      "removeParameter(java.lang.String)":
+        description: "Invokes removeParameter."
+        params:
+          - name: name
+            type: java.lang.String
+      "removePostConstructMethod(java.lang.String)":
+        description: "Invokes removePostConstructMethod."
+        params:
+          - name: clazz
+            type: java.lang.String
+      "removePreDestroyMethod(java.lang.String)":
+        description: "Invokes removePreDestroyMethod."
+        params:
+          - name: clazz
+            type: java.lang.String
+      "removeRoleMapping(java.lang.String)":
+        description: "Invokes removeRoleMapping."
+        params:
+          - name: role
+            type: java.lang.String
+      "removeSecurityRole(java.lang.String)":
+        description: "Invokes removeSecurityRole."
+        params:
+          - name: role
+            type: java.lang.String
+      "removeServletMapping(java.lang.String)":
+        description: "Invokes removeServletMapping."
+        params:
+          - name: pattern
+            type: java.lang.String
+      "removeWatchedResource(java.lang.String)":
+        description: "Invokes removeWatchedResource."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeWelcomeFile(java.lang.String)":
+        description: "Invokes removeWelcomeFile."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeWrapperLifecycle(java.lang.String)":
+        description: "Invokes removeWrapperLifecycle."
+        params:
+          - name: listener
+            type: java.lang.String
+      "removeWrapperListener(java.lang.String)":
+        description: "Invokes removeWrapperListener."
+        params:
+          - name: listener
+            type: java.lang.String
+      "resourcesStart()":
+        description: "Allocate resources, including proxy."
+      "resourcesStop()":
+        description: "Deallocate resources and destroy proxy."
+        return: "Return type: boolean."
+      "setAddWebinfClassesResources(boolean)":
+        description: "Sets the addWebinfClassesResources."
+        params:
+          - name: addWebinfClassesResources
+            type: boolean
+      "setAllowCasualMultipartParsing(boolean)":
+        description: "Sets the allowCasualMultipartParsing."
+        params:
+          - name: allowCasualMultipartParsing
+            type: boolean
+      "setAltDDName(java.lang.String)":
+        description: "Sets the altDDName."
+        params:
+          - name: altDDName
+            type: java.lang.String
+      "setAntiResourceLocking(boolean)":
+        description: "Set the antiResourceLocking feature for this Context."
+        params:
+          - name: antiResourceLocking
+            type: boolean
+      "setApplicationEventListeners()":
+        description: "Sets the applicationEventListeners."
+        return: "Return type: ."
+      "setApplicationEventListeners(java.lang.Object[])":
+        description: "{@inheritDoc} Note that this implementation is not thread safe. If two threads call this method concurrently, the result may be either set of listeners or the union of both."
+        params:
+          - name: listeners
+            type: java.lang.Object[]
+      "setApplicationLifecycleListeners()":
+        description: "Sets the applicationLifecycleListeners."
+        return: "Return type: ."
+      "setApplicationLifecycleListeners(java.lang.Object[])":
+        description: "Sets the applicationLifecycleListeners."
+        params:
+          - name: listeners
+            type: java.lang.Object[]
+      "setAttribute(java.lang.String,java.lang.Object)":
+        description: "Sets the attribute."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: object
+            type: java.lang.Object
+      "setCharsetMapper()":
+        description: "Sets the charsetMapper."
+        return: "Return type: Finalize our character set mapper."
+      "setCharsetMapper(java.lang.CharsetMapper)":
+        description: "Set the Locale to character set mapper for this Context."
+        params:
+          - name: mapper
+            type: java.lang.CharsetMapper
+      "setCharsetMapperClass(java.lang.String)":
+        description: "Set the Locale to character set mapper class for this Context."
+        params:
+          - name: mapper
+            type: java.lang.String
+      "setClearReferencesHttpClientKeepAliveThread(boolean)":
+        description: "Set the clearReferencesHttpClientKeepAliveThread feature for this Context."
+        params:
+          - name: clearReferencesHttpClientKeepAliveThread
+            type: boolean
+      "setClearReferencesRmiTargets(boolean)":
+        description: "Sets the clearReferencesRmiTargets."
+        params:
+          - name: clearReferencesRmiTargets
+            type: boolean
+      "setClearReferencesStopThreads(boolean)":
+        description: "Set the clearReferencesStopThreads feature for this Context."
+        params:
+          - name: clearReferencesStopThreads
+            type: boolean
+      "setClearReferencesStopTimerThreads(boolean)":
+        description: "Set the clearReferencesStopTimerThreads feature for this Context."
+        params:
+          - name: clearReferencesStopTimerThreads
+            type: boolean
+      "setClearReferencesThreadLocals(boolean)":
+        description: "Sets the clearReferencesThreadLocals."
+        params:
+          - name: clearReferencesThreadLocals
+            type: boolean
+      "setConfigFile(java.lang.URL)":
+        description: "Sets the configFile."
+        params:
+          - name: configFile
+            type: java.lang.URL
+      "setConfigured()":
+        description: "Sets the configured."
+        return: "Return type: ."
+      "setConfigured(boolean)":
+        description: "Sets the configured."
+        params:
+          - name: configured
+            type: boolean
+      "setContainerSciFilter(java.lang.String)":
+        description: "Sets the containerSciFilter."
+        params:
+          - name: containerSciFilter
+            type: java.lang.String
+      "setCookieProcessor(java.lang.CookieProcessor)":
+        description: "Sets the cookieProcessor."
+        params:
+          - name: cookieProcessor
+            type: java.lang.CookieProcessor
+      "setCookies(boolean)":
+        description: "Sets the cookies."
+        params:
+          - name: cookies
+            type: boolean
+      "setCopyXML(boolean)":
+        description: "Allows copying a bundled context.xml file to the host configuration base folder on deployment."
+        params:
+          - name: copyXML
+            type: boolean
+      "setCrossContext(boolean)":
+        description: "Sets the crossContext."
+        params:
+          - name: crossContext
+            type: boolean
+      "setDefaultContextXml(java.lang.String)":
+        description: "Set the location of the default context xml that will be used. If not absolute, it'll be made relative to the engine's base dir ( which defaults to catalina.base system property )."
+        params:
+          - name: defaultContextXml
+            type: java.lang.String
+      "setDefaultWebXml(java.lang.String)":
+        description: "Set the location of the default web xml that will be used. If not absolute, it'll be made relative to the engine's base dir ( which defaults to catalina.base system property )."
+        params:
+          - name: defaultWebXml
+            type: java.lang.String
+      "setDelegate(boolean)":
+        description: "Set the 'follow standard delegation model' flag used to configure our ClassLoader."
+        params:
+          - name: delegate
+            type: boolean
+      "setDenyUncoveredHttpMethods(boolean)":
+        description: "Sets the denyUncoveredHttpMethods."
+        params:
+          - name: denyUncoveredHttpMethods
+            type: boolean
+      "setDispatchersUseEncodedPaths(boolean)":
+        description: "Sets the dispatchersUseEncodedPaths."
+        params:
+          - name: dispatchersUseEncodedPaths
+            type: boolean
+      "setDisplayName(java.lang.String)":
+        description: "Sets the displayName."
+        params:
+          - name: displayName
+            type: java.lang.String
+      "setDistributable(boolean)":
+        description: "Sets the distributable."
+        params:
+          - name: distributable
+            type: boolean
+      "setDocBase(java.lang.String)":
+        description: "Sets the docBase."
+        params:
+          - name: docBase
+            type: java.lang.String
+      "setEffectiveMajorVersion(int)":
+        description: "Sets the effectiveMajorVersion."
+        params:
+          - name: effectiveMajorVersion
+            type: int
+      "setEffectiveMinorVersion(int)":
+        description: "Sets the effectiveMinorVersion."
+        params:
+          - name: effectiveMinorVersion
+            type: int
+      "setFailCtxIfServletStartFails(java.lang.Boolean)":
+        description: "Sets the failCtxIfServletStartFails."
+        params:
+          - name: failCtxIfServletStartFails
+            type: java.lang.Boolean
+      "setFireRequestListenersOnForwards(boolean)":
+        description: "Sets the fireRequestListenersOnForwards."
+        params:
+          - name: enable
+            type: boolean
+      "setIgnoreAnnotations(boolean)":
+        description: "Sets the ignoreAnnotations."
+        params:
+          - name: ignoreAnnotations
+            type: boolean
+      "setInitParameter(java.lang.String,java.lang.String)":
+        description: "Sets the initParameter."
+        return: "Return type: boolean."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: value
+            type: java.lang.String
+      "setInstanceManager()":
+        description: "Sets the instanceManager."
+        return: "Return type: reset the instance manager."
+      "setInstanceManager(java.lang.InstanceManager)":
+        description: "Sets the instanceManager."
+        params:
+          - name: instanceManager
+            type: java.lang.InstanceManager
+      "setJ2EEApplication(java.lang.String)":
+        description: "Sets the j2EEApplication."
+        params:
+          - name: j2EEApplication
+            type: java.lang.String
+      "setJ2EEServer(java.lang.String)":
+        description: "Sets the j2EEServer."
+        params:
+          - name: j2EEServer
+            type: java.lang.String
+      "setJarScanner(java.lang.JarScanner)":
+        description: "Sets the jarScanner."
+        params:
+          - name: jarScanner
+            type: java.lang.JarScanner
+      "setJndiExceptionOnFailedWrite(boolean)":
+        description: "Controls whether or not an attempt to modify the JNDI context will trigger an exception or if the request will be ignored."
+        params:
+          - name: jndiExceptionOnFailedWrite
+            type: boolean
+      "setJspConfigDescriptor(java.lang.JspConfigDescriptor)":
+        description: "Sets the jspConfigDescriptor."
+        params:
+          - name: descriptor
+            type: java.lang.JspConfigDescriptor
+      "setLoader()":
+        description: "Sets the loader."
+        return: "Return type: ."
+      "setLoader(java.lang.Loader)":
+        description: "Sets the loader."
+        params:
+          - name: loader
+            type: java.lang.Loader
+      "setLogEffectiveWebXml(boolean)":
+        description: "Sets the logEffectiveWebXml."
+        params:
+          - name: logEffectiveWebXml
+            type: boolean
+      "setLoginConfig(java.lang.LoginConfig)":
+        description: "Sets the loginConfig."
+        params:
+          - name: config
+            type: java.lang.LoginConfig
+      "setManager()":
+        description: "Sets the manager."
+        return: "Return type: ."
+      "setManager(java.lang.Manager)":
+        description: "Sets the manager."
+        params:
+          - name: manager
+            type: java.lang.Manager
+      "setMapperContextRootRedirectEnabled(boolean)":
+        description: "Sets the mapperContextRootRedirectEnabled."
+        params:
+          - name: mapperContextRootRedirectEnabled
+            type: boolean
+      "setMapperDirectoryRedirectEnabled(boolean)":
+        description: "Sets the mapperDirectoryRedirectEnabled."
+        params:
+          - name: mapperDirectoryRedirectEnabled
+            type: boolean
+      "setMetadataComplete(boolean)":
+        description: "Sets the metadataComplete."
+        params:
+          - name: metadataComplete
+            type: boolean
+      "setName()":
+        description: "Sets the name."
+        return: "Return type: ."
+      "setNamingContextListener()":
+        description: "Sets the namingContextListener."
+        return: "Return type: ."
+      "setNamingContextListener(java.lang.NamingContextListener)":
+        description: "Naming context listener setter."
+        params:
+          - name: namingContextListener
+            type: java.lang.NamingContextListener
+      "setNamingResources(java.lang.NamingResourcesImpl)":
+        description: "Sets the namingResources."
+        params:
+          - name: namingResources
+            type: java.lang.NamingResourcesImpl
+      "setOriginalDocBase(java.lang.String)":
+        description: "Set the original document root for this Context. This can be an absolute pathname, a relative pathname, or a URL."
+        params:
+          - name: docBase
+            type: java.lang.String
+      "setOverride(boolean)":
+        description: "Sets the override."
+        params:
+          - name: override
+            type: boolean
+      "setParallelAnnotationScanning(boolean)":
+        description: "Sets the parallelAnnotationScanning."
+        params:
+          - name: parallelAnnotationScanning
+            type: boolean
+      "setPath(java.lang.String)":
+        description: "Sets the path."
+        params:
+          - name: path
+            type: java.lang.String
+      "setPaused()":
+        description: "Sets the paused."
+        return: "Return type: Stop accepting requests temporarily.."
+      "setPaused(boolean)":
+        description: "Set the request processing paused flag for this Context."
+        params:
+          - name: paused
+            type: boolean
+      "setPreemptiveAuthentication(boolean)":
+        description: "Sets the preemptiveAuthentication."
+        params:
+          - name: preemptiveAuthentication
+            type: boolean
+      "setPrivileged(boolean)":
+        description: "Sets the privileged."
+        params:
+          - name: privileged
+            type: boolean
+      "setPublicId(java.lang.String)":
+        description: "Sets the publicId."
+        params:
+          - name: publicId
+            type: java.lang.String
+      "setReloadable(boolean)":
+        description: "Sets the reloadable."
+        params:
+          - name: reloadable
+            type: boolean
+      "setRenewThreadsWhenStoppingContext(boolean)":
+        description: "Sets the renewThreadsWhenStoppingContext."
+        params:
+          - name: renewThreadsWhenStoppingContext
+            type: boolean
+      "setReplaceWelcomeFiles()":
+        description: "Sets the replaceWelcomeFiles."
+        return: "Return type: ."
+      "setReplaceWelcomeFiles(boolean)":
+        description: "Set the 'replace welcome files' property."
+        params:
+          - name: replaceWelcomeFiles
+            type: boolean
+      "setRequestCharacterEncoding(java.lang.String)":
+        description: "Sets the requestCharacterEncoding."
+        params:
+          - name: encoding
+            type: java.lang.String
+      "setResourceOnlyServlets(java.lang.String)":
+        description: "Sets the resourceOnlyServlets."
+        params:
+          - name: resourceOnlyServlets
+            type: java.lang.String
+      "setResources(java.lang.WebResourceRoot)":
+        description: "Sets the resources."
+        params:
+          - name: resources
+            type: java.lang.WebResourceRoot
+      "setResponseCharacterEncoding(java.lang.String)":
+        description: "Sets the responseCharacterEncoding."
+        params:
+          - name: encoding
+            type: java.lang.String
+      "setSendRedirectBody(boolean)":
+        description: "Sets the sendRedirectBody."
+        params:
+          - name: sendRedirectBody
+            type: boolean
+      "setSessionCookieDomain(java.lang.String)":
+        description: "Sets the sessionCookieDomain."
+        params:
+          - name: sessionCookieDomain
+            type: java.lang.String
+      "setSessionCookieName(java.lang.String)":
+        description: "Sets the sessionCookieName."
+        params:
+          - name: sessionCookieName
+            type: java.lang.String
+      "setSessionCookiePath(java.lang.String)":
+        description: "Sets the sessionCookiePath."
+        params:
+          - name: sessionCookiePath
+            type: java.lang.String
+      "setSessionCookiePathUsesTrailingSlash(boolean)":
+        description: "Sets the sessionCookiePathUsesTrailingSlash."
+        params:
+          - name: sessionCookiePathUsesTrailingSlash
+            type: boolean
+      "setSessionTimeout(int)":
+        description: "Sets the sessionTimeout."
+        params:
+          - name: sessionTimeout
+            type: int
+      "setSessionTrackingModes(java.lang.Set)":
+        description: "Sets the sessionTrackingModes."
+        params:
+          - name: sessionTrackingModes
+            type: java.lang.Set
+      "setSkipMemoryLeakChecksOnJvmShutdown(boolean)":
+        description: "Sets the skipMemoryLeakChecksOnJvmShutdown."
+        params:
+          - name: skipMemoryLeakChecksOnJvmShutdown
+            type: boolean
+      "setStartupTime(long)":
+        description: "Sets the startupTime."
+        params:
+          - name: startupTime
+            type: long
+      "setState()":
+        description: "Sets the state."
+        return: "Return type: ."
+      "setSwallowAbortedUploads(boolean)":
+        description: "Sets the swallowAbortedUploads."
+        params:
+          - name: swallowAbortedUploads
+            type: boolean
+      "setSwallowOutput(boolean)":
+        description: "Sets the swallowOutput."
+        params:
+          - name: swallowOutput
+            type: boolean
+      "setThreadBindingListener(java.lang.ThreadBindingListener)":
+        description: "Sets the threadBindingListener."
+        params:
+          - name: threadBindingListener
+            type: java.lang.ThreadBindingListener
+      "setTldScanTime(long)":
+        description: "Sets the tldScanTime."
+        params:
+          - name: tldScanTime
+            type: long
+      "setTldValidation(boolean)":
+        description: "Sets the tldValidation."
+        params:
+          - name: tldValidation
+            type: boolean
+      "setUnloadDelay(long)":
+        description: "Set the value of the unloadDelay flag, which represents the amount of ms that the container will wait when unloading servlets. Setting this to a small value may cause more requests to fail to complete when stopping a web application."
+        params:
+          - name: unloadDelay
+            type: long
+      "setUnpackWAR(boolean)":
+        description: "Unpack WAR flag mutator."
+        params:
+          - name: unpackWAR
+            type: boolean
+      "setUseHttpOnly(boolean)":
+        description: "Sets the useHttpOnly."
+        params:
+          - name: useHttpOnly
+            type: boolean
+      "setUseNaming(boolean)":
+        description: "Enables or disables naming."
+        params:
+          - name: useNaming
+            type: boolean
+      "setUsePartitioned(boolean)":
+        description: "Sets the usePartitioned."
+        params:
+          - name: usePartitioned
+            type: boolean
+      "setUseRelativeRedirects(boolean)":
+        description: "Sets the useRelativeRedirects."
+        params:
+          - name: useRelativeRedirects
+            type: boolean
+      "setValidateClientProvidedNewSessionId(boolean)":
+        description: "Sets the validateClientProvidedNewSessionId."
+        params:
+          - name: validateClientProvidedNewSessionId
+            type: boolean
+      "setWebappVersion(java.lang.String)":
+        description: "Sets the webappVersion."
+        params:
+          - name: webappVersion
+            type: java.lang.String
+      "setWorkDir()":
+        description: "Sets the workDir."
+        return: "Return type: ."
+      "setWorkDir(java.lang.String)":
+        description: "Set the work directory for this Context."
+        params:
+          - name: workDir
+            type: java.lang.String
+      "setWrapperClass(java.lang.String)":
+        description: "Sets the wrapperClass."
+        params:
+          - name: wrapperClassName
+            type: java.lang.String
+      "setXmlBlockExternal(boolean)":
+        description: "Sets the xmlBlockExternal."
+        params:
+          - name: xmlBlockExternal
+            type: boolean
+      "setXmlNamespaceAware(boolean)":
+        description: "Sets the xmlNamespaceAware."
+        params:
+          - name: webXmlNamespaceAware
+            type: boolean
+      "setXmlValidation(boolean)":
+        description: "Sets the xmlValidation."
+        params:
+          - name: webXmlValidation
+            type: boolean
+      "unbind(boolean,java.lang.ClassLoader)":
+        description: "Invokes unbind."
+        params:
+          - name: usePrivilegedAction
+            type: boolean
+          - name: originalClassLoader
+            type: java.lang.ClassLoader
+      "unbind(java.lang.ClassLoader)":
+        description: "Invokes unbind."
+        params:
+          - name: originalClassLoader
+            type: java.lang.ClassLoader
+
+  - match:
+      objectName: "Catalina:type=Connector,port=*,address=*"
+      className: "org.apache.catalina.connector.Connector"
+    description: "Apache Tomcat protocol connector MBean."
+    attributes:
+      AllowBackslash:
+        description: "Returns the allowBackslash."
+      AllowTrace:
+        description: "Returns the allowTrace."
+      AsyncTimeout:
+        description: "Returns the asyncTimeout."
+      DiscardFacades:
+        description: "Returns the discardFacades."
+      DomainInternal:
+        description: "Returns the domainInternal."
+      EnableLookups:
+        description: "Returns the enableLookups."
+      EncodedReverseSolidusHandling:
+        description: "Returns the encodedReverseSolidusHandling."
+      EncodedReverseSolidusHandlingInternal:
+        description: "Returns the encodedReverseSolidusHandlingInternal."
+      EncodedSolidusHandling:
+        description: "Returns the encodedSolidusHandling."
+      EncodedSolidusHandlingInternal:
+        description: "Returns the encodedSolidusHandlingInternal."
+      EnforceEncodingInGetWriter:
+        description: "Returns the enforceEncodingInGetWriter."
+      ExecutorName:
+        description: "Returns the executorName."
+      LocalPort:
+        description: "Returns the localPort."
+      MaxCookieCount:
+        description: "Returns the maxCookieCount."
+      MaxParameterCount:
+        description: "Returns the maxParameterCount."
+      MaxPartCount:
+        description: "Returns the maxPartCount."
+      MaxPartHeaderSize:
+        description: "Returns the maxPartHeaderSize."
+      MaxPostSize:
+        description: "Returns the maxPostSize."
+      MaxSavePostSize:
+        description: "Returns the maxSavePostSize."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      ParseBodyMethods:
+        description: "Returns the parseBodyMethods."
+      Port:
+        description: "Returns the port."
+      PortOffset:
+        description: "Returns the portOffset."
+      PortWithOffset:
+        description: "Returns the portWithOffset."
+      Protocol:
+        description: "Returns the protocol."
+      ProtocolHandler:
+        description: "Returns the protocolHandler."
+      ProtocolHandlerClassName:
+        description: "Returns the protocolHandlerClassName."
+      ProxyName:
+        description: "Returns the proxyName."
+      ProxyPort:
+        description: "Returns the proxyPort."
+      RedirectPort:
+        description: "Returns the redirectPort."
+      RedirectPortWithOffset:
+        description: "Returns the redirectPortWithOffset."
+      RejectSuspiciousURIs:
+        description: "Returns the rejectSuspiciousURIs."
+      Scheme:
+        description: "Returns the scheme."
+      Secure:
+        description: "Returns the secure."
+      Service:
+        description: "Returns the service."
+      URICharset:
+        description: "Returns the uRICharset."
+      URIEncoding:
+        description: "Returns the uRIEncoding."
+      UseBodyEncodingForURI:
+        description: "Returns the useBodyEncodingForURI."
+      UseIPVHosts:
+        description: "Test if IP-based virtual hosting is enabled."
+      XpoweredBy:
+        description: "Indicates whether the generation of an X-Powered-By response header for Servlet-generated responses is enabled or disabled for this Connector."
+    operations:
+      "findSslHostConfigs()":
+        description: "Invokes findSslHostConfigs."
+        return: "Return type: public SSLHostConfig[]."
+      "findUpgradeProtocols()":
+        description: "Invokes findUpgradeProtocols."
+        return: "Return type: public UpgradeProtocol[]."
+      "getProperty(java.lang.String)":
+        description: "The Service we are associated with (if any)."
+        return: "Return type: Object."
+        params:
+          - name: name
+            type: java.lang.String
+      "isParseBodyMethod(java.lang.String)":
+        description: "Invokes isParseBodyMethod."
+        return: "Return type: protected boolean."
+        params:
+          - name: method
+            type: java.lang.String
+      "pause()":
+        description: "Pause the connector."
+      "resume()":
+        description: "Resume the connector."
+      "setAllowBackslash(boolean)":
+        description: "Set the allowBackslash flag."
+        params:
+          - name: allowBackslash
+            type: boolean
+      "setAllowTrace(boolean)":
+        description: "Set the allowTrace flag, to disable or enable the TRACE HTTP method."
+        params:
+          - name: allowTrace
+            type: boolean
+      "setAsyncTimeout(long)":
+        description: "Set the default timeout for async requests."
+        params:
+          - name: asyncTimeout
+            type: long
+      "setDiscardFacades(boolean)":
+        description: "Set the recycling strategy for the object facades."
+        params:
+          - name: discardFacades
+            type: boolean
+      "setEnableLookups(boolean)":
+        description: "Set the 'enable DNS lookups' flag."
+        params:
+          - name: enableLookups
+            type: boolean
+      "setEncodedReverseSolidusHandling(java.lang.String)":
+        description: "Sets the encodedReverseSolidusHandling."
+        params:
+          - name: encodedReverseSolidusHandling
+            type: java.lang.String
+      "setEncodedSolidusHandling(java.lang.String)":
+        description: "Sets the encodedSolidusHandling."
+        params:
+          - name: encodedSolidusHandling
+            type: java.lang.String
+      "setEnforceEncodingInGetWriter(boolean)":
+        description: "Set the enforceEncodingInGetWriter flag."
+        params:
+          - name: enforceEncodingInGetWriter
+            type: boolean
+      "setMaxCookieCount(int)":
+        description: "Sets the maxCookieCount."
+        params:
+          - name: maxCookieCount
+            type: int
+      "setMaxParameterCount(int)":
+        description: "Set the maximum number of parameters (GET plus POST) that will be automatically parsed by the container. A value of less than 0 means no limit."
+        params:
+          - name: maxParameterCount
+            type: int
+      "setMaxPartCount(int)":
+        description: "Sets the maxPartCount."
+        params:
+          - name: maxPartCount
+            type: int
+      "setMaxPartHeaderSize(int)":
+        description: "Sets the maxPartHeaderSize."
+        params:
+          - name: maxPartHeaderSize
+            type: int
+      "setMaxPostSize(int)":
+        description: "Set the maximum size of a POST which will be automatically parsed by the container."
+        params:
+          - name: maxPostSize
+            type: int
+      "setMaxSavePostSize(int)":
+        description: "Set the maximum size of a POST which will be saved by the container during authentication."
+        params:
+          - name: maxSavePostSize
+            type: int
+      "setParseBodyMethods(java.lang.String)":
+        description: "Set list of HTTP methods which should allow body parameter parsing. This defaults to POST ."
+        params:
+          - name: methods
+            type: java.lang.String
+      "setPort(int)":
+        description: "Set the port number on which we listen for requests."
+        params:
+          - name: port
+            type: int
+      "setPortOffset(int)":
+        description: "Sets the portOffset."
+        params:
+          - name: portOffset
+            type: int
+      "setProperty(java.lang.String,java.lang.String)":
+        description: "Set a property on the protocol handler."
+        return: "Return type: boolean."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: value
+            type: java.lang.String
+      "setProxyName(java.lang.String)":
+        description: "Set the proxy server name for this Connector."
+        params:
+          - name: proxyName
+            type: java.lang.String
+      "setProxyPort(int)":
+        description: "Set the proxy server port for this Connector."
+        params:
+          - name: proxyPort
+            type: int
+      "setRedirectPort(int)":
+        description: "Set the redirect port number."
+        params:
+          - name: redirectPort
+            type: int
+      "setRejectSuspiciousURIs(boolean)":
+        description: "Sets the rejectSuspiciousURIs."
+        params:
+          - name: rejectSuspiciousURIs
+            type: boolean
+      "setScheme(java.lang.String)":
+        description: "Set the scheme that will be assigned to requests received through this connector."
+        params:
+          - name: scheme
+            type: java.lang.String
+      "setSecure(boolean)":
+        description: "Set the secure connection flag that will be assigned to requests received through this connector."
+        params:
+          - name: secure
+            type: boolean
+      "setService(java.lang.Service)":
+        description: "Set the Service with which we are associated (if any)."
+        params:
+          - name: service
+            type: java.lang.Service
+      "setState()":
+        description: "Sets the state."
+        return: "Return type: ."
+      "setURIEncoding(java.lang.String)":
+        description: "Set the URI encoding to be used for the URI."
+        params:
+          - name: URIEncoding
+            type: java.lang.String
+      "setUseBodyEncodingForURI(boolean)":
+        description: "Set if the entity body encoding should be used for the URI."
+        params:
+          - name: useBodyEncodingForURI
+            type: boolean
+      "setUseIPVHosts(boolean)":
+        description: "Enable the use of IP-based virtual hosting."
+        params:
+          - name: useIPVHosts
+            type: boolean
+      "setXpoweredBy(boolean)":
+        description: "Enables or disables the generation of an X-Powered-By header (with value Servlet/2.5) for all servlet-generated responses returned by this Connector."
+        params:
+          - name: xpoweredBy
+            type: boolean
+
+  - match:
+      objectName: "Catalina:type=ThreadPool,name=*"
+      className: "org.apache.tomcat.util.net.NioEndpoint"
+    description: "Apache Tomcat NIO endpoint thread pool MBean."
+    attributes:
+      Id:
+        description: "Returns the id."
+      Inline:
+        description: "Tests whether inline."
+      KeepAliveCount:
+        description: "NIO endpoint."
+      LastRead:
+        description: "Returns the lastRead."
+      LastWrite:
+        description: "Returns the lastWrite."
+      Log:
+        description: "Returns the log."
+      LogCertificate:
+        description: "Returns the logCertificate."
+      NioChannels:
+        description: "Returns the nioChannels."
+      Poller:
+        description: "Returns the poller."
+      ReadyForRead:
+        description: "Tests whether readyForRead."
+      SendfileData:
+        description: "Returns the sendfileData."
+      ServerSocket:
+        description: "Returns the serverSocket."
+      SslSupport:
+        description: "Returns the sslSupport."
+      StopLatch:
+        description: "Returns the stopLatch."
+      UnixDomainSocketPath:
+        description: "Returns the unixDomainSocketPath."
+    operations:
+      "add(java.lang.NioSocketWrapper,int)":
+        description: "Add specified socket and associated pool to the poller. The socket will be added to a temporary array, and polled first after a maximum amount of time equal to pollTime (in most cases, latency will be much lower, however)."
+        params:
+          - name: socketWrapper
+            type: java.lang.NioSocketWrapper
+          - name: interestOps
+            type: int
+      "bind()":
+        description: "Initialize the endpoint."
+      "canWrite()":
+        description: "Invokes canWrite."
+        return: "Return type: boolean."
+      "doClientAuth(java.lang.SSLSupport)":
+        description: "Invokes doClientAuth."
+        params:
+          - name: sslSupport
+            type: java.lang.SSLSupport
+      "events()":
+        description: "Processes events in the event queue of the Poller."
+        return: "Return type: boolean."
+      "hasDataToWrite()":
+        description: "Invokes hasDataToWrite."
+        return: "Return type: boolean."
+      "read(boolean,byte[],int,int)":
+        description: "Invokes read."
+        return: "Return type: int."
+        params:
+          - name: block
+            type: boolean
+          - name: b
+            type: byte[]
+          - name: off
+            type: int
+          - name: len
+            type: int
+      "read(boolean,java.lang.ByteBuffer)":
+        description: "Invokes read."
+        return: "Return type: int."
+        params:
+          - name: block
+            type: boolean
+          - name: to
+            type: java.lang.ByteBuffer
+      "register(java.lang.final NioSocketWrapper)":
+        description: "Registers a newly created socket with the poller."
+        params:
+          - name: socketWrapper
+            type: java.lang.final NioSocketWrapper
+      "registerReadInterest()":
+        description: "Invokes registerReadInterest."
+      "registerWriteInterest()":
+        description: "Invokes registerWriteInterest."
+      "run()":
+        description: "The background thread that adds sockets to the Poller, checks the poller for triggered events and hands the associated socket off to an appropriate processor as events occur."
+      "setAppReadBufHandler(java.lang.ApplicationBufferHandler)":
+        description: "Sets the appReadBufHandler."
+        params:
+          - name: handler
+            type: java.lang.ApplicationBufferHandler
+      "setError()":
+        description: "Sets the error."
+        return: "Return type: ."
+      "setSendfileData(java.lang.SendfileData)":
+        description: "Sets the sendfileData."
+        params:
+          - name: sf
+            type: java.lang.SendfileData
+      "setSocketOptions(java.lang.SocketChannel)":
+        description: "Process the specified connection."
+        params:
+          - name: socket
+            type: java.lang.SocketChannel
+      "setStopLatch(java.lang.CountDownLatch)":
+        description: "Sets the stopLatch."
+        params:
+          - name: stopLatch
+            type: java.lang.CountDownLatch
+      "startInternal()":
+        description: "Start the NIO endpoint, creating acceptor, poller threads."
+      "stopInternal()":
+        description: "Stop the endpoint. This will cause all processing threads to stop."
+      "unbind()":
+        description: "Deallocate NIO memory pools, and close server socket."
+
+  - match:
+      objectName: "Catalina:type=GlobalRequestProcessor,name=*"
+      className: "org.apache.coyote.RequestGroupInfo"
+    description: "Apache Tomcat global request processor MBean."
+    attributes:
+      BytesReceived:
+        description: "Returns the bytesReceived."
+      BytesSent:
+        description: "Returns the bytesSent."
+      ErrorCount:
+        description: "Returns the errorCount."
+      MaxTime:
+        description: "Returns the maxTime."
+      ProcessingTime:
+        description: "Returns the processingTime."
+      RequestCount:
+        description: "Returns the requestCount."
+    operations:
+      "setBytesReceived(long)":
+        description: "Sets the bytesReceived."
+        params:
+          - name: bytesReceived
+            type: long
+      "setBytesSent(long)":
+        description: "Sets the bytesSent."
+        params:
+          - name: bytesSent
+            type: long
+      "setErrorCount(int)":
+        description: "Sets the errorCount."
+        params:
+          - name: errorCount
+            type: int
+      "setMaxTime(long)":
+        description: "Sets the maxTime."
+        params:
+          - name: maxTime
+            type: long
+      "setProcessingTime(long)":
+        description: "Sets the processingTime."
+        params:
+          - name: totalTime
+            type: long
+      "setRequestCount(int)":
+        description: "Sets the requestCount."
+        params:
+          - name: requestCount
+            type: int
+
+  - match:
+      objectName: "Catalina:type=RequestProcessor,worker=*,name=*"
+      className: "org.apache.coyote.RequestInfo"
+    description: "Apache Tomcat request processor MBean."
+    attributes:
+      BytesReceived:
+        description: "Returns the bytesReceived."
+      BytesSent:
+        description: "Returns the bytesSent."
+      ContentLength:
+        description: "Returns the contentLength."
+      ErrorCount:
+        description: "Returns the errorCount."
+      LastRequestProcessingTime:
+        description: "Returns the lastRequestProcessingTime."
+      MaxRequestUri:
+        description: "Returns the maxRequestUri."
+      MaxTime:
+        description: "Returns the maxTime."
+      ProcessingTime:
+        description: "Returns the processingTime."
+      RemoteAddr:
+        description: "Returns the remoteAddr."
+      RemoteAddrForwarded:
+        description: "Structure holding the Request and Response objects."
+      RequestBytesReceived:
+        description: "Returns the requestBytesReceived."
+      RequestBytesSent:
+        description: "Returns the requestBytesSent."
+      RequestCount:
+        description: "Returns the requestCount."
+      RequestProcessingTime:
+        description: "Returns the requestProcessingTime."
+      RpName:
+        description: "Returns the rpName."
+      Stage:
+        description: "Returns the stage."
+      WorkerThreadName:
+        description: "Returns the workerThreadName."
+    operations:
+      "setBytesReceived(long)":
+        description: "Sets the bytesReceived."
+        params:
+          - name: bytesReceived
+            type: long
+      "setBytesSent(long)":
+        description: "Sets the bytesSent."
+        params:
+          - name: bytesSent
+            type: long
+      "setErrorCount(int)":
+        description: "Sets the errorCount."
+        params:
+          - name: errorCount
+            type: int
+      "setLastRequestProcessingTime(long)":
+        description: "Sets the lastRequestProcessingTime."
+        params:
+          - name: lastRequestProcessingTime
+            type: long
+      "setMaxRequestUri(java.lang.String)":
+        description: "Sets the maxRequestUri."
+        params:
+          - name: maxRequestUri
+            type: java.lang.String
+      "setMaxTime(long)":
+        description: "Sets the maxTime."
+        params:
+          - name: maxTime
+            type: long
+      "setProcessingTime(long)":
+        description: "Sets the processingTime."
+        params:
+          - name: processingTime
+            type: long
+      "setRequestCount(int)":
+        description: "Sets the requestCount."
+        params:
+          - name: requestCount
+            type: int
+      "setRpName(javax.management.ObjectName)":
+        description: "Sets the rpName."
+        params:
+          - name: rpName
+            type: javax.management.ObjectName
+      "setStage(int)":
+        description: "Sets the stage."
+        params:
+          - name: stage
+            type: int
+      "setWorkerThreadName(java.lang.String)":
+        description: "Sets the workerThreadName."
+        params:
+          - name: workerThreadName
+            type: java.lang.String
+      "updateCounters()":
+        description: "Called by the processor before recycling the request. It'll collect statistic information."
+
+  - match:
+      objectName: "Catalina:type=Manager,context=*,host=*"
+      className: "org.apache.catalina.session.StandardManager"
+    description: "Apache Tomcat HTTP session manager MBean."
+    attributes:
+      Pathname:
+        description: "Standard implementation of the Manager interface that provides simple session persistence across restarts of this component (such as when the entire server is shut down and restarted, or when a particular web application is reloaded)."
+    operations:
+      "load()":
+        description: "Invokes load."
+      "setPathname(java.lang.String)":
+        description: "Set the session persistence pathname to the specified value. If no persistence support is desired, set the pathname to null ."
+        params:
+          - name: pathname
+            type: java.lang.String
+      "setState()":
+        description: "Sets the state."
+        return: "Return type: ."
+      "unload()":
+        description: "Invokes unload."
+
+  - match:
+      objectName: "Catalina:type=WebappClassLoader,context=*,host=*"
+      className: "org.apache.catalina.loader.ParallelWebappClassLoader"
+    description: "Apache Tomcat web application class loader MBean."
+    attributes:
+      ClearReferencesHttpClientKeepAliveThread:
+        description: "Returns the clearReferencesHttpClientKeepAliveThread."
+      ClearReferencesLogFactoryRelease:
+        description: "Returns the clearReferencesLogFactoryRelease."
+      ClearReferencesRmiTargets:
+        description: "Returns the clearReferencesRmiTargets."
+      ClearReferencesStopThreads:
+        description: "Returns the clearReferencesStopThreads."
+      ClearReferencesStopTimerThreads:
+        description: "Returns the clearReferencesStopTimerThreads."
+      ClearReferencesThreadLocals:
+        description: "Returns the clearReferencesThreadLocals."
+      ContextName:
+        description: "Returns the contextName."
+      CurrentModuleName:
+        description: "Returns the currentModuleName."
+      Delegate:
+        description: "Return the 'delegate first' flag for this class loader."
+      HostName:
+        description: "Returns the hostName."
+      JavaseClassLoader:
+        description: "Returns the javaseClassLoader."
+      ServiceName:
+        description: "Returns the serviceName."
+      SkipMemoryLeakChecksOnJvmShutdown:
+        description: "Returns the skipMemoryLeakChecksOnJvmShutdown."
+      State:
+        description: "Returns the state."
+      StateName:
+        description: "Returns the stateName."
+      Threads:
+        description: "Returns the threads."
+      URLs:
+        description: "{@inheritDoc} Note that list of URLs returned by this method may not be complete. The web application class loader accesses class loader resources via the {@link WebResourceRoot} which supports the arbitrary mapping of additional files, directories and contents of JAR files under WEB-INF/classes. Any such resources will not be included in the URLs returned here."
+      WebappName:
+        description: "Returns the webappName."
+    operations:
+      "addLifecycleListener(java.lang.LifecycleListener)":
+        description: "Invokes addLifecycleListener."
+        params:
+          - name: listener
+            type: java.lang.LifecycleListener
+      "addTransformer(java.lang.ClassFileTransformer)":
+        description: "Invokes addTransformer."
+        params:
+          - name: transformer
+            type: java.lang.ClassFileTransformer
+      "destroy()":
+        description: "Invokes destroy."
+      "findLifecycleListeners()":
+        description: "Invokes findLifecycleListeners."
+        return: "Return type: LifecycleListener[]."
+      "getExecutor(java.lang.Thread)":
+        description: "Invokes getExecutor."
+        return: "Return type: private Object."
+        params:
+          - name: thread
+            type: java.lang.Thread
+      "getPermissions(java.lang.CodeSource)":
+        description: "Get the Permissions for a CodeSource. If this instance of WebappClassLoaderBase is for a web application context, add read FilePermission for the appropriate resources."
+        return: "Return type: protected PermissionCollection."
+        params:
+          - name: codeSource
+            type: java.lang.CodeSource
+      "getPrettyClassName(java.lang.Class)":
+        description: "Invokes getPrettyClassName."
+        return: "Return type: private String."
+        params:
+          - name: clazz
+            type: java.lang.Class
+      "getResource(java.lang.String)":
+        description: "Find the resource with the given name."
+        return: "Return type: URL."
+        params:
+          - name: name
+            type: java.lang.String
+      "getResourceAsStream(java.lang.String)":
+        description: "Find the resource with the given name, and return an input stream that can be used for reading it. The search order is as described for getResource() , after checking to see if the resource data has been previously cached. If the resource cannot be found, return null ."
+        return: "Return type: InputStream."
+        params:
+          - name: name
+            type: java.lang.String
+      "getResources(java.lang.String)":
+        description: "Invokes getResources."
+        return: "Return type: Enumeration ."
+        params:
+          - name: name
+            type: java.lang.String
+      "getStackTrace(java.lang.Thread)":
+        description: "Invokes getStackTrace."
+        return: "Return type: private String."
+        params:
+          - name: thread
+            type: java.lang.Thread
+      "hasLoggingConfig()":
+        description: "Invokes hasLoggingConfig."
+        return: "Return type: boolean."
+      "hasMoreElements()":
+        description: "Invokes hasMoreElements."
+        return: "Return type: boolean."
+      "init()":
+        description: "Invokes init."
+      "isPackageSealed(java.lang.String,java.lang.Manifest)":
+        description: "Returns true if the specified package name is sealed according to the given manifest."
+        return: "Return type: protected boolean."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: man
+            type: java.lang.Manifest
+      "isRequestThread(java.lang.Thread)":
+        description: "Invokes isRequestThread."
+        return: "Return type: private boolean."
+        params:
+          - name: thread
+            type: java.lang.Thread
+      "modified()":
+        description: "Have one or more classes or resources been modified so that a reload is appropriate?."
+        return: "Return type: boolean."
+      "removeLifecycleListener(java.lang.LifecycleListener)":
+        description: "Invokes removeLifecycleListener."
+        params:
+          - name: listener
+            type: java.lang.LifecycleListener
+      "removeTransformer(java.lang.ClassFileTransformer)":
+        description: "Invokes removeTransformer."
+        params:
+          - name: transformer
+            type: java.lang.ClassFileTransformer
+      "setClearReferencesHttpClientKeepAliveThread(boolean)":
+        description: "Set the clearReferencesHttpClientKeepAliveThread feature for this Context."
+        params:
+          - name: clearReferencesHttpClientKeepAliveThread
+            type: boolean
+      "setClearReferencesLogFactoryRelease(boolean)":
+        description: "Set the clearReferencesLogFactoryRelease feature for this Context."
+        params:
+          - name: clearReferencesLogFactoryRelease
+            type: boolean
+      "setClearReferencesRmiTargets(boolean)":
+        description: "Sets the clearReferencesRmiTargets."
+        params:
+          - name: clearReferencesRmiTargets
+            type: boolean
+      "setClearReferencesStopThreads(boolean)":
+        description: "Set the clearReferencesStopThreads feature for this Context."
+        params:
+          - name: clearReferencesStopThreads
+            type: boolean
+      "setClearReferencesStopTimerThreads(boolean)":
+        description: "Set the clearReferencesStopTimerThreads feature for this Context."
+        params:
+          - name: clearReferencesStopTimerThreads
+            type: boolean
+      "setClearReferencesThreadLocals(boolean)":
+        description: "Sets the clearReferencesThreadLocals."
+        params:
+          - name: clearReferencesThreadLocals
+            type: boolean
+      "setDelegate(boolean)":
+        description: "Set the 'delegate first' flag for this class loader."
+        params:
+          - name: delegate
+            type: boolean
+      "setJavaseClassLoader(java.lang.ClassLoader)":
+        description: "Sets the javaseClassLoader."
+        params:
+          - name: classLoader
+            type: java.lang.ClassLoader
+      "setResources(java.lang.WebResourceRoot)":
+        description: "Associated web resources for this webapp."
+        params:
+          - name: resources
+            type: java.lang.WebResourceRoot
+      "setSkipMemoryLeakChecksOnJvmShutdown(boolean)":
+        description: "Sets the skipMemoryLeakChecksOnJvmShutdown."
+        params:
+          - name: skipMemoryLeakChecksOnJvmShutdown
+            type: boolean
+      "start()":
+        description: "Invokes start."
+      "stop()":
+        description: "Invokes stop."
+
+  - match:
+      objectName: "Catalina:j2eeType=Servlet,name=*,WebModule=*,J2EEApplication=*,J2EEServer=*"
+      className: "org.apache.catalina.core.StandardWrapper"
+    description: "Apache Tomcat servlet wrapper MBean."
+    attributes:
+      AsyncSupported:
+        description: "Tests whether asyncSupported."
+      ClassLoadTime:
+        description: "Returns the classLoadTime."
+      CountAllocated:
+        description: "The date and time at which this servlet will become available (in milliseconds since the epoch), or zero if the servlet is available."
+      Enabled:
+        description: "Tests whether enabled."
+      ErrorCount:
+        description: "Returns the number of requests processed by the wrapper that resulted in an error."
+      InitParameterNames:
+        description: "Returns the initParameterNames."
+      J2EEKeyProperties:
+        description: "Returns the j2EEKeyProperties."
+      LoadOnStartup:
+        description: "Returns the loadOnStartup."
+      LoadOnStartupString:
+        description: "Returns the loadOnStartupString."
+      LoadTime:
+        description: "Returns the loadTime."
+      MaxTime:
+        description: "Returns the maxTime."
+      MinTime:
+        description: "Returns the minTime."
+      MultipartConfigElement:
+        description: "Returns the multipartConfigElement."
+      Name:
+        description: "Returns the name."
+      NotificationInfo:
+        description: "Returns the notificationInfo."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      ProcessingTime:
+        description: "Returns the processingTime."
+      RequestCount:
+        description: "Returns the number of requests processed by the wrapper."
+      RunAs:
+        description: "Returns the runAs."
+      Servlet:
+        description: "Returns the servlet."
+      ServletClass:
+        description: "Returns the servletClass."
+      ServletContext:
+        description: "Returns the servletContext."
+      ServletMethods:
+        description: "Returns the servletMethods."
+      ServletName:
+        description: "Returns the servletName."
+      Unavailable:
+        description: "Tests whether unavailable."
+      WebModuleKeyProperties:
+        description: "Returns the webModuleKeyProperties."
+    operations:
+      "addChild(java.lang.Container)":
+        description: "Refuse to add a child Container, because Wrappers are the lowest level of the Container hierarchy."
+        params:
+          - name: child
+            type: java.lang.Container
+      "addInitParameter(java.lang.String,java.lang.String)":
+        description: "Invokes addInitParameter."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: value
+            type: java.lang.String
+      "addMapping(java.lang.String)":
+        description: "Invokes addMapping."
+        params:
+          - name: mapping
+            type: java.lang.String
+      "addNotificationListener(java.lang.NotificationListener,java.lang.NotificationFilter,java.lang.Object)":
+        description: "Invokes addNotificationListener."
+        params:
+          - name: listener
+            type: java.lang.NotificationListener
+          - name: filter
+            type: java.lang.NotificationFilter
+          - name: object
+            type: java.lang.Object
+      "addSecurityReference(java.lang.String,java.lang.String)":
+        description: "Invokes addSecurityReference."
+        params:
+          - name: name
+            type: java.lang.String
+          - name: link
+            type: java.lang.String
+      "backgroundProcess()":
+        description: "Invokes backgroundProcess."
+      "deallocate(java.lang.Servlet)":
+        description: "Invokes deallocate."
+        params:
+          - name: servlet
+            type: java.lang.Servlet
+      "findInitParameter(java.lang.String)":
+        description: "Invokes findInitParameter."
+        return: "Return type: String."
+        params:
+          - name: name
+            type: java.lang.String
+      "findInitParameters()":
+        description: "Invokes findInitParameters."
+        return: "Return type: String[]."
+      "findMappings()":
+        description: "Invokes findMappings."
+        return: "Return type: String[]."
+      "findSecurityReference(java.lang.String)":
+        description: "Invokes findSecurityReference."
+        return: "Return type: String."
+        params:
+          - name: name
+            type: java.lang.String
+      "findSecurityReferences()":
+        description: "Invokes findSecurityReferences."
+        return: "Return type: String[]."
+      "getAllDeclaredMethods(java.lang.Class)":
+        description: "Invokes getAllDeclaredMethods."
+        return: "Return type: protected Methods protected Method[]."
+        params:
+          - name: c
+            type: java.lang.Class
+      "getInitParameter(java.lang.String)":
+        description: "Invokes getInitParameter."
+        return: "Return type: String."
+        params:
+          - name: name
+            type: java.lang.String
+      "getRootCause(java.lang.ServletException)":
+        description: "Extract the root cause from a servlet exception."
+        return: "Return type: Throwable."
+        params:
+          - name: e
+            type: java.lang.ServletException
+      "incrementErrorCount()":
+        description: "Increment the error count used for monitoring."
+      "load()":
+        description: "{@inheritDoc} IMPLEMENTATION NOTE : Servlets whose classnames begin with org.apache.catalina. (so-called 'container' servlets) are loaded by the same classloader that loaded this class, rather than the classloader for the current web application. This gives such classes access to Catalina internals, which are prevented for classes loaded for web applications."
+      "removeInitParameter(java.lang.String)":
+        description: "Invokes removeInitParameter."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeMapping(java.lang.String)":
+        description: "Invokes removeMapping."
+        params:
+          - name: mapping
+            type: java.lang.String
+      "removeNotificationListener(java.lang.NotificationListener)":
+        description: "Invokes removeNotificationListener."
+        params:
+          - name: listener
+            type: java.lang.NotificationListener
+      "removeNotificationListener(java.lang.NotificationListener,java.lang.NotificationFilter,java.lang.Object)":
+        description: "Invokes removeNotificationListener."
+        params:
+          - name: listener
+            type: java.lang.NotificationListener
+          - name: filter
+            type: java.lang.NotificationFilter
+          - name: object
+            type: java.lang.Object
+      "removeSecurityReference(java.lang.String)":
+        description: "Invokes removeSecurityReference."
+        params:
+          - name: name
+            type: java.lang.String
+      "setAsyncSupported(boolean)":
+        description: "Sets the asyncSupported."
+        params:
+          - name: asyncSupported
+            type: boolean
+      "setAvailable()":
+        description: "Sets the available."
+        return: "Return type: ."
+      "setEnabled(boolean)":
+        description: "Sets the enabled."
+        params:
+          - name: enabled
+            type: boolean
+      "setLoadOnStartup()":
+        description: "Sets the loadOnStartup."
+        return: "Return type: ."
+      "setLoadOnStartup(int)":
+        description: "Sets the loadOnStartup."
+        params:
+          - name: value
+            type: int
+      "setLoadOnStartupString(java.lang.String)":
+        description: "Set the load-on-startup order value from a (possibly null) string. Per the specification, any missing or non-numeric value is converted to a zero, so that this servlet will still be loaded at startup time, but in an arbitrary order."
+        params:
+          - name: value
+            type: java.lang.String
+      "setMultipartConfigElement(java.lang.MultipartConfigElement)":
+        description: "Sets the multipartConfigElement."
+        params:
+          - name: multipartConfigElement
+            type: java.lang.MultipartConfigElement
+      "setName()":
+        description: "Sets the name."
+        return: "Return type: ."
+      "setParent(java.lang.Container)":
+        description: "Set the parent Container of this Wrapper, but only if it is a Context."
+        params:
+          - name: container
+            type: java.lang.Container
+      "setRunAs(java.lang.String)":
+        description: "Sets the runAs."
+        params:
+          - name: runAs
+            type: java.lang.String
+      "setServlet(java.lang.Servlet)":
+        description: "Sets the servlet."
+        params:
+          - name: servlet
+            type: java.lang.Servlet
+      "setServletClass(java.lang.String)":
+        description: "Sets the servletClass."
+        params:
+          - name: servletClass
+            type: java.lang.String
+      "setServletName(java.lang.String)":
+        description: "Set the name of this servlet. This is an alias for the normal Container.setName() method, and complements the getServletName() method required by the ServletConfig interface."
+        params:
+          - name: name
+            type: java.lang.String
+      "unavailable(java.lang.UnavailableException)":
+        description: "Invokes unavailable."
+        params:
+          - name: unavailable
+            type: java.lang.UnavailableException
+      "unload()":
+        description: "Invokes unload."
+
+  - match:
+      objectName: "Catalina:type=Valve,*"
+      className: "org.apache.catalina.valves.AccessLogValve"
+    description: "Apache Tomcat access log valve MBean."
+    attributes:
+      Buffered:
+        description: "Is the logging buffered. Usually buffering can increase performance."
+      CheckExists:
+        description: "Check for file existence before logging."
+      Directory:
+        description: "This is a concrete implementation of {@link AbstractAccessLogValve} that outputs the access log to a file."
+      DirectoryFile:
+        description: "Returns the directoryFile."
+      Encoding:
+        description: "Return the character set name that is used to write the log file."
+      FileDateFormat:
+        description: "Returns the fileDateFormat."
+      Prefix:
+        description: "Returns the prefix."
+      RenameOnRotate:
+        description: "Should we defer inclusion of the date stamp in the file name until rotate time."
+      Rotatable:
+        description: "Should we rotate the access log."
+      Suffix:
+        description: "Returns the suffix."
+    operations:
+      "backgroundProcess()":
+        description: "Provides support for access log rotation."
+      "getLogFile(boolean)":
+        description: "Create a File object based on the current log file name. Directories are created as needed but the underlying file is not created or opened."
+        return: "Return type: private File."
+        params:
+          - name: useDateStamp
+            type: boolean
+      "rotate()":
+        description: "Rotate the log file if necessary."
+      "rotate(java.lang.String)":
+        description: "Rename the existing log file to something else. Then open the old log file name up once again. Intended to be called by a JMX agent."
+        return: "Return type: boolean."
+        params:
+          - name: newFileName
+            type: java.lang.String
+      "setBuffered(boolean)":
+        description: "Set the value if the logging should be buffered."
+        params:
+          - name: buffered
+            type: boolean
+      "setCheckExists(boolean)":
+        description: "Set whether to check for log file existence before logging."
+        params:
+          - name: checkExists
+            type: boolean
+      "setDirectory(java.lang.String)":
+        description: "Set the directory in which we create log files."
+        params:
+          - name: directory
+            type: java.lang.String
+      "setEncoding(java.lang.String)":
+        description: "Set the character set that is used to write the log file."
+        params:
+          - name: encoding
+            type: java.lang.String
+      "setFileDateFormat(java.lang.String)":
+        description: "Set the date format date based log rotation."
+        params:
+          - name: fileDateFormat
+            type: java.lang.String
+      "setPrefix(java.lang.String)":
+        description: "Set the log file prefix."
+        params:
+          - name: prefix
+            type: java.lang.String
+      "setRenameOnRotate(boolean)":
+        description: "Set the value if we should defer inclusion of the date stamp in the file name until rotate time."
+        params:
+          - name: renameOnRotate
+            type: boolean
+      "setRotatable(boolean)":
+        description: "Configure whether the access log should be rotated."
+        params:
+          - name: rotatable
+            type: boolean
+      "setSuffix(java.lang.String)":
+        description: "Set the log file suffix."
+        params:
+          - name: suffix
+            type: java.lang.String
+
+  - match:
+      objectName: "Catalina:type=NamingResources,*"
+      className: "org.apache.catalina.deploy.NamingResourcesImpl"
+    description: "Apache Tomcat naming resources MBean."
+    attributes:
+      DomainInternal:
+        description: "Returns the domainInternal."
+      ObjectNameKeyProperties:
+        description: "Returns the objectNameKeyProperties."
+      Server:
+        description: "Returns the server."
+      Transaction:
+        description: "Returns the transaction."
+    operations:
+      "addEjb(java.lang.ContextEjb)":
+        description: "Add an EJB resource reference for this web application."
+        params:
+          - name: ejb
+            type: java.lang.ContextEjb
+      "addEnvironment(java.lang.ContextEnvironment)":
+        description: "Invokes addEnvironment."
+        params:
+          - name: environment
+            type: java.lang.ContextEnvironment
+      "addLocalEjb(java.lang.ContextLocalEjb)":
+        description: "Add a local EJB resource reference for this web application."
+        params:
+          - name: ejb
+            type: java.lang.ContextLocalEjb
+      "addMessageDestinationRef(java.lang.MessageDestinationRef)":
+        description: "Add a message destination reference for this web application."
+        params:
+          - name: mdr
+            type: java.lang.MessageDestinationRef
+      "addPropertyChangeListener(java.lang.PropertyChangeListener)":
+        description: "Add a property change listener to this component."
+        params:
+          - name: listener
+            type: java.lang.PropertyChangeListener
+      "addResource(java.lang.ContextResource)":
+        description: "Invokes addResource."
+        params:
+          - name: resource
+            type: java.lang.ContextResource
+      "addResourceEnvRef(java.lang.ContextResourceEnvRef)":
+        description: "Add a resource environment reference for this web application."
+        params:
+          - name: resource
+            type: java.lang.ContextResourceEnvRef
+      "addResourceLink(java.lang.ContextResourceLink)":
+        description: "Invokes addResourceLink."
+        params:
+          - name: resourceLink
+            type: java.lang.ContextResourceLink
+      "addService(java.lang.ContextService)":
+        description: "Add a web service reference for this web application."
+        params:
+          - name: service
+            type: java.lang.ContextService
+      "findEjbs()":
+        description: "Invokes findEjbs."
+        return: "Return type: ContextEjb[]."
+      "findEnvironments()":
+        description: "Invokes findEnvironments."
+        return: "Return type: ContextEnvironment[]."
+      "findLocalEjbs()":
+        description: "Invokes findLocalEjbs."
+        return: "Return type: ContextLocalEjb[]."
+      "findMessageDestinationRefs()":
+        description: "Invokes findMessageDestinationRefs."
+        return: "Return type: MessageDestinationRef[]."
+      "findResourceEnvRefs()":
+        description: "Invokes findResourceEnvRefs."
+        return: "Return type: ContextResourceEnvRef[]."
+      "findResourceLinks()":
+        description: "Invokes findResourceLinks."
+        return: "Return type: ContextResourceLink[]."
+      "findResources()":
+        description: "Invokes findResources."
+        return: "Return type: ContextResource[]."
+      "findServices()":
+        description: "Invokes findServices."
+        return: "Return type: ContextService[]."
+      "getCompatibleType(java.lang.Context,java.lang.ResourceBase,java.lang.Class)":
+        description: "Invokes getCompatibleType."
+        return: "Return type: private Class ."
+        params:
+          - name: context
+            type: java.lang.Context
+          - name: resource
+            type: java.lang.ResourceBase
+          - name: typeClass
+            type: java.lang.Class
+      "getFieldType(java.lang.Class,java.lang.String)":
+        description: "Invokes getFieldType."
+        return: "Return type: private Class ."
+        params:
+          - name: clazz
+            type: java.lang.Class
+          - name: name
+            type: java.lang.String
+      "getSetterType(java.lang.Class,java.lang.String)":
+        description: "Invokes getSetterType."
+        return: "Return type: private Class ."
+        params:
+          - name: clazz
+            type: java.lang.Class
+          - name: name
+            type: java.lang.String
+      "removeEjb(java.lang.String)":
+        description: "Remove any EJB resource reference with the specified name."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeEnvironment(java.lang.String)":
+        description: "Invokes removeEnvironment."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeLocalEjb(java.lang.String)":
+        description: "Remove any local EJB resource reference with the specified name."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeMessageDestinationRef(java.lang.String)":
+        description: "Remove any message destination reference with the specified name."
+        params:
+          - name: name
+            type: java.lang.String
+      "removePropertyChangeListener(java.lang.PropertyChangeListener)":
+        description: "Remove a property change listener from this component."
+        params:
+          - name: listener
+            type: java.lang.PropertyChangeListener
+      "removeResource(java.lang.String)":
+        description: "Invokes removeResource."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeResourceEnvRef(java.lang.String)":
+        description: "Remove any resource environment reference with the specified name."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeResourceLink(java.lang.String)":
+        description: "Invokes removeResourceLink."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeService(java.lang.String)":
+        description: "Remove any web service reference with the specified name."
+        params:
+          - name: name
+            type: java.lang.String
+      "setContainer(java.lang.Object)":
+        description: "Associated container object."
+        params:
+          - name: container
+            type: java.lang.Object
+      "setState()":
+        description: "Sets the state."
+        return: "Return type: ."
+      "setTransaction(java.lang.ContextTransaction)":
+        description: "Set the transaction object."
+        params:
+          - name: transaction
+            type: java.lang.ContextTransaction
+
+  - match:
+      objectName: "Catalina:type=MBeanFactory"
+      className: "org.apache.catalina.mbeans.MBeanFactory"
+    description: "Apache Tomcat MBean factory for runtime administration."
+    operations:
+      "createAjpConnector(java.lang.String,java.lang.String,int)":
+        description: "Create a new AjpConnector."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: address
+            type: java.lang.String
+          - name: port
+            type: int
+      "createDataSourceRealm(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)":
+        description: "Create a new DataSource Realm."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: dataSourceName
+            type: java.lang.String
+          - name: roleNameCol
+            type: java.lang.String
+          - name: userCredCol
+            type: java.lang.String
+          - name: userNameCol
+            type: java.lang.String
+          - name: userRoleTable
+            type: java.lang.String
+          - name: userTable
+            type: java.lang.String
+      "createHttpConnector(java.lang.String,java.lang.String,int)":
+        description: "Create a new HttpConnector."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: address
+            type: java.lang.String
+          - name: port
+            type: int
+      "createHttpsConnector(java.lang.String,java.lang.String,int)":
+        description: "Create a new HttpsConnector."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: address
+            type: java.lang.String
+          - name: port
+            type: int
+      "createJNDIRealm(java.lang.String)":
+        description: "Create a new JNDI Realm."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+      "createMemoryRealm(java.lang.String)":
+        description: "Create a new Memory Realm."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+      "createStandardContext(java.lang.String,java.lang.String,java.lang.String)":
+        description: "Create a new StandardContext."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: path
+            type: java.lang.String
+          - name: docBase
+            type: java.lang.String
+      "createStandardContext(java.lang.String,java.lang.String,java.lang.String,boolean,boolean)":
+        description: "Create a new StandardContext."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: path
+            type: java.lang.String
+          - name: docBase
+            type: java.lang.String
+          - name: xmlValidation
+            type: boolean
+          - name: xmlNamespaceAware
+            type: boolean
+      "createStandardHost(java.lang.String,java.lang.String,java.lang.String,boolean,boolean,boolean,boolean)":
+        description: "Create a new StandardHost."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: name
+            type: java.lang.String
+          - name: appBase
+            type: java.lang.String
+          - name: autoDeploy
+            type: boolean
+          - name: deployOnStartup
+            type: boolean
+          - name: deployXML
+            type: boolean
+          - name: unpackWARs
+            type: boolean
+      "createStandardManager(java.lang.String)":
+        description: "Create a new StandardManager."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+      "createStandardServiceEngine(java.lang.String,java.lang.String,java.lang.String)":
+        description: "Creates a new StandardService and StandardEngine."
+        return: "Return type: String."
+        params:
+          - name: domain
+            type: java.lang.String
+          - name: defaultHost
+            type: java.lang.String
+          - name: baseDir
+            type: java.lang.String
+      "createUserDatabaseRealm(java.lang.String,java.lang.String)":
+        description: "Create a new UserDatabaseRealm."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+          - name: resourceName
+            type: java.lang.String
+      "createValve(java.lang.String,java.lang.String)":
+        description: "Create a new Valve and associate it with a {@link Container}."
+        return: "Return type: String."
+        params:
+          - name: className
+            type: java.lang.String
+          - name: parent
+            type: java.lang.String
+      "createWebappLoader(java.lang.String)":
+        description: "Create a new Web Application Loader."
+        return: "Return type: String."
+        params:
+          - name: parent
+            type: java.lang.String
+      "getParentContainerFromChild(javax.management.ObjectName)":
+        description: "Get Parent ContainerBase to add its child component from child component's ObjectName as a String."
+        return: "Return type: private Container."
+        params:
+          - name: oname
+            type: javax.management.ObjectName
+      "getParentContainerFromParent(javax.management.ObjectName)":
+        description: "Get Parent Container to add its child component from parent's ObjectName."
+        return: "Return type: private Container."
+        params:
+          - name: pname
+            type: javax.management.ObjectName
+      "getPathStr(java.lang.String)":
+        description: "Little convenience method to remove redundant code when retrieving the path string."
+        return: "Return type: private String."
+        params:
+          - name: t
+            type: java.lang.String
+      "getService(javax.management.ObjectName)":
+        description: "Invokes getService."
+        return: "Return type: private Service."
+        params:
+          - name: oname
+            type: javax.management.ObjectName
+      "removeConnector(java.lang.String)":
+        description: "Remove an existing Connector."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeContext(java.lang.String)":
+        description: "Remove an existing Context."
+        params:
+          - name: contextName
+            type: java.lang.String
+      "removeHost(java.lang.String)":
+        description: "Remove an existing Host."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeLoader(java.lang.String)":
+        description: "Remove an existing Loader."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeManager(java.lang.String)":
+        description: "Remove an existing Manager."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeRealm(java.lang.String)":
+        description: "Remove an existing Realm."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeService(java.lang.String)":
+        description: "Remove an existing Service."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeValve(java.lang.String)":
+        description: "Remove an existing Valve."
+        params:
+          - name: name
+            type: java.lang.String
+      "setContainer(java.lang.Object)":
+        description: "The MBeanServer for this application. private static final MBeanServer mserver = MBeanUtils.createServer(); The container (Server/Service) for which this factory was created. private Object container; Set the container that this factory was created for."
+        params:
+          - name: container
+            type: java.lang.Object
+
+  - match:
+      objectName: "Users:type=UserDatabase,database=*"
+      className: "org.apache.catalina.users.MemoryUserDatabase"
+    description: "Apache Tomcat in-memory user database MBean."
+    attributes:
+      Pathname:
+        description: "The set of {@link Group}s defined in this database, keyed by group name."
+      Readonly:
+        description: "Returns the readonly."
+      Roles:
+        description: "Returns the roles."
+      Users:
+        description: "Returns the users."
+      WatchSource:
+        description: "Returns the watchSource."
+      Writable:
+        description: "Check for permissions to save this user database to persistent storage location."
+    operations:
+      "backgroundProcess()":
+        description: "Invokes backgroundProcess."
+      "close()":
+        description: "Invokes close."
+      "createObject(java.lang.Attributes)":
+        description: "Invokes createObject."
+        return: "Return type: Object."
+        params:
+          - name: attributes
+            type: java.lang.Attributes
+      "open()":
+        description: "Invokes open."
+      "removeGroup(java.lang.Group)":
+        description: "Invokes removeGroup."
+        params:
+          - name: group
+            type: java.lang.Group
+      "removeRole(java.lang.Role)":
+        description: "Invokes removeRole."
+        params:
+          - name: role
+            type: java.lang.Role
+      "removeUser(java.lang.User)":
+        description: "Invokes removeUser."
+        params:
+          - name: user
+            type: java.lang.User
+      "save()":
+        description: "Invokes save."
+      "setPathname(java.lang.String)":
+        description: "Set the relative or absolute pathname to the persistent storage file."
+        params:
+          - name: pathname
+            type: java.lang.String
+      "setReadonly(boolean)":
+        description: "Setting the readonly status of the user database."
+        params:
+          - name: readonly
+            type: boolean
+      "setWatchSource(boolean)":
+        description: "Sets the watchSource."
+        params:
+          - name: watchSource
+            type: boolean
+
+  - match:
+      objectName: "Catalina:type=DataSource,host=*,context=*,class=javax.sql.DataSource,name=*"
+      className: "org.apache.tomcat.jdbc.pool.jmx.ConnectionPoolMBean"
+    description: "Apache Tomcat JDBC connection pool MBean."
+    attributes:
+      AbandonWhenPercentageFull:
+        description: "Connections that have been abandoned (timed out) wont get closed and reported up unless the number of connections in use are above the percentage defined by abandonWhenPercentageFull. The value should be between 0-100. The default value is 0, which implies that connections are eligible for closure as soon as removeAbandonedTimeout has been reached."
+      AccessToUnderlyingConnectionAllowed:
+        description: "Property not used. Access is always allowed. Access can be achieved by calling unwrap on the pooled connection. see {@link javax.sql.DataSource} interface or call getConnection through reflection or cast the object as {@link javax.sql.PooledConnection}."
+      Active:
+        description: "Returns the active."
+      AlternateUsernameAllowed:
+        description: "Returns true if the call {@link DataSource#getConnection(String, String) getConnection(username,password)} is allowed. This is used for when the pool is used by an application accessing multiple schemas. There is a performance impact turning this option on."
+      BorrowedCount:
+        description: "Returns the borrowedCount."
+      CommitOnReturn:
+        description: "Returns the commitOnReturn."
+      ConnectionProperties:
+        description: "The connection properties that will be sent to the JDBC driver when establishing new connections. Format of the string is [propertyName=property;] NOTE - The 'user' and 'password' properties will be passed explicitly, so they do not need to be included here. The default value is null."
+      CreatedCount:
+        description: "Returns the createdCount."
+      DataSource:
+        description: "Returns a datasource, if one exists that is being used to create connections. This method will return null if the pool is using a {@link java.sql.Driver}."
+      DataSourceJNDI:
+        description: "Returns the JNDI string configured for data source usage."
+      DbProperties:
+        description: "Returns the database properties that are passed into the {@link java.sql.Driver#connect(String, Properties)} method."
+      DefaultAutoCommit:
+        description: "The default auto-commit state of connections created by this pool. If not set (null), default is JDBC driver default (If set to null then the {@link java.sql.Connection#setAutoCommit(boolean)} method will not be called.)."
+      DefaultCatalog:
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setCatalog(String)} will be called with the set value."
+      DefaultReadOnly:
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setReadOnly(boolean)} will be called with the set value."
+      DefaultTransactionIsolation:
+        description: "Returns the default transaction isolation level. If set to {@link DataSourceFactory#UNKNOWN_TRANSACTIONISOLATION} the method {@link java.sql.Connection#setTransactionIsolation(int)} will not be called during connection creation."
+      DriverClassName:
+        description: "The fully qualified Java class name of the JDBC driver to be used. The driver has to be accessible from the same classloader as tomcat-jdbc.jar."
+      FairQueue:
+        description: "Returns true if a fair queue is being used by the connection pool."
+      Idle:
+        description: "Returns the idle."
+      IgnoreExceptionOnPreLoad:
+        description: "Tests whether ignoreExceptionOnPreLoad."
+      InitSQL:
+        description: "A custom query to be run when a connection is first created. The default value is null. This query only runs once per connection, and that is when a new connection is established to the database. If this value is non null, it will replace the validation query during connection creation."
+      InitialSize:
+        description: "Returns the number of connections that will be established when the connection pool is started. Default value is 10."
+      JdbcInterceptors:
+        description: "A semicolon separated list of classnames extending {@link org."
+      JdbcInterceptorsAsArray:
+        description: "Returns the {@link #getJdbcInterceptors()} as an array of objects with properties and the classes."
+      JmxEnabled:
+        description: "If set to true, the connection pool creates a {@link org.apache.tomcat.jdbc.pool.jmx.ConnectionPoolMBean} object that can be registered with JMX to receive notifications and state about the pool. The ConnectionPool object doesn't register itself, as there is no way to keep a static non changing ObjectName across JVM restarts."
+      LogAbandoned:
+        description: "boolean flag to set if stack traces should be logged for application code which abandoned a Connection. Logging of abandoned Connections adds overhead for every Connection borrow because a stack trace has to be generated. The default value is false."
+      LogValidationErrors:
+        description: "Returns true if errors that happen during validation will be logged."
+      MaxActive:
+        description: "The maximum number of active connections that can be allocated from this pool at the same time. The default value is 100."
+      MaxAge:
+        description: "Time in milliseconds to keep this connection before reconnecting."
+      MaxIdle:
+        description: "The maximum number of connections that should be kept in the idle pool if {@link #isPoolSweeperEnabled()} returns false. If the If {@link #isPoolSweeperEnabled()} returns true, then the idle pool can grow up to {@link #getMaxActive} and will be shrunk according to {@link #getMinEvictableIdleTimeMillis()} setting. Default value is maxActive:100."
+      MaxWait:
+        description: "The maximum number of milliseconds that the pool will wait (when there are no available connections and the {@link #getMaxActive} has been reached) for a connection to be returned before throwing an exception. Default value is 30000 (30 seconds)."
+      MinEvictableIdleTimeMillis:
+        description: "The minimum amount of time an object must sit idle in the pool before it is eligible for eviction. The default value is 60000 (60 seconds)."
+      MinIdle:
+        description: "The minimum number of established connections that should be kept in the pool at all times."
+      Name:
+        description: "Returns the name of the connection pool. By default a JVM unique random name is assigned."
+      NumActive:
+        description: "Returns the numActive."
+      NumIdle:
+        description: "Returns the numIdle."
+      NumTestsPerEvictionRun:
+        description: "Property not used."
+      Password:
+        description: "Returns the password used when establishing connections to the database."
+      PoolName:
+        description: "Returns the poolName."
+      PoolSweeperEnabled:
+        description: "Returns true if the pool sweeper is enabled for the connection pool."
+      PropagateInterruptState:
+        description: "Returns true if the pool is configured to propagate interrupt state of a thread. A thread waiting for a connection, can have its wait interrupted, and by default will clear the interrupt flag and throw a {@link PoolExhaustedException}."
+      ReconnectedCount:
+        description: "Returns the reconnectedCount."
+      ReleasedCount:
+        description: "Returns the releasedCount."
+      ReleasedIdleCount:
+        description: "Returns the releasedIdleCount."
+      RemoveAbandoned:
+        description: "boolean flag to remove abandoned connections if they exceed the removeAbandonedTimeout."
+      RemoveAbandonedCount:
+        description: "Returns the removeAbandonedCount."
+      RemoveAbandonedTimeout:
+        description: "The time in seconds before a connection can be considered abandoned. The timer can be reset upon queries using an interceptor."
+      ReturnedCount:
+        description: "Returns the returnedCount."
+      RollbackOnReturn:
+        description: "Returns the rollbackOnReturn."
+      Size:
+        description: "Returns the size."
+      SuspectTimeout:
+        description: "Returns the time in seconds to pass before a connection is marked an abandoned suspect. Any value lesser than or equal to 0 means the check is disabled."
+      TestOnBorrow:
+        description: "The indication of whether objects will be validated before being borrowed from the pool."
+      TestOnConnect:
+        description: "Returns true if we should run the validation query when connecting to the database for the first time on a connection. Normally this is always set to false, unless one wants to use the validationQuery as an init query."
+      TestOnReturn:
+        description: "The indication of whether objects will be validated after being returned to the pool. If the object fails to validate, it will be dropped from the pool. NOTE - for a true value to have any effect, the validationQuery parameter must be set to a non-null string. Default value is false In order to have a more efficient validation, see {@link #setValidationInterval(long)}."
+      TestWhileIdle:
+        description: "Set to true if query validation should take place while the connection is idle."
+      TimeBetweenEvictionRunsMillis:
+        description: "The number of milliseconds to sleep between runs of the idle connection validation, abandoned cleaner and idle pool resizing. This value should not be set under 1 second. It dictates how often we check for idle, abandoned connections, and how often we validate idle connection and resize the idle pool. The default value is 5000 (5 seconds)."
+      Url:
+        description: "The URL used to connect to the database."
+      UseDisposableConnectionFacade:
+        description: "Returns true if this connection pool is configured to use a connection facade to prevent re-use of connection after {@link java.sql.Connection#close()} has been invoked."
+      UseEquals:
+        description: "Set to true if you wish the ProxyConnection class to use String.equals instead of == when comparing method names. This property does not apply to added interceptors as those are configured individually. The default value is false ."
+      UseLock:
+        description: "Return true if a lock should be used when operations are performed on the connection object. Should be set to false unless you plan to have a background thread of your own doing idle and abandon checking such as JMX clients. If the pool sweeper is enabled, then the lock will automatically be used regardless of this setting."
+      UseStatementFacade:
+        description: "Returns true if this connection pool is configured to wrap statements in order to enable equals() and hashCode() methods to be called on the closed statements if any statement proxy is set."
+      Username:
+        description: "Returns the username used to establish the connection with."
+      ValidationInterval:
+        description: "avoid excess validation, only run validation at most at this frequency - time in milliseconds. If a connection is due for validation, but has been validated previously within this interval, it will not be validated again. The default value is 3000 (3 seconds)."
+      ValidationQuery:
+        description: "The SQL query that will be used to validate connections from this pool before returning them to the caller or pool. If specified, this query does not have to return any data, it just can't throw an SQLException. The default value is null. Example values are SELECT 1(mysql), select 1 from dual(oracle), SELECT 1(MS Sql Server)."
+      ValidationQueryTimeout:
+        description: "The timeout in seconds before a connection validation queries fail. A value less than or equal to zero will disable this feature. Defaults to -1."
+      Validator:
+        description: "Returns the validator."
+      ValidatorClassName:
+        description: "Return the name of the optional validator class - may be null."
+      WaitCount:
+        description: "Returns the waitCount."
+    operations:
+      "checkAbandoned()":
+        description: "Invokes checkAbandoned."
+      "checkIdle()":
+        description: "Invokes checkIdle."
+      "purge()":
+        description: "Purges all connections in the pool. For connections currently in use, these connections will be purged when returned on the pool. This call also purges connections that are idle and in the pool To only purge used/active connections see {@link #purgeOnReturn()}."
+      "purgeOnReturn()":
+        description: "Purges connections when they are returned from the pool. This call does not purge idle connections until they are used. To purge idle connections see {@link #purge()}."
+      "resetStats()":
+        description: "reset the statistics of this pool."
+      "setAbandonWhenPercentageFull(int)":
+        description: "A list of properties that are configurable for a connection pool."
+        params:
+          - name: percentage
+            type: int
+      "setAccessToUnderlyingConnectionAllowed(boolean)":
+        description: "No-op."
+        params:
+          - name: accessToUnderlyingConnectionAllowed
+            type: boolean
+      "setAlternateUsernameAllowed(boolean)":
+        description: "Set to true if the call {@link DataSource#getConnection(String, String) getConnection(username,password)} is allowed and honored.. This is used for when the pool is used by an application accessing multiple schemas. There is a performance impact turning this option on, even when not used due to username checks."
+        params:
+          - name: alternateUsernameAllowed
+            type: boolean
+      "setCommitOnReturn(boolean)":
+        description: "Set to true if you want the connection pool to commit any pending transaction when a connection is returned. The default value is false, as this could result in committing data. This parameter is only looked at if the {@link #getDefaultAutoCommit()} returns false."
+        params:
+          - name: commitOnReturn
+            type: boolean
+      "setConnectionProperties(java.lang.String)":
+        description: "The properties that will be passed into {@link java.sql.Driver#connect(String, Properties)} method. Username and password do not need to be stored here, they will be passed into the properties right before the connection is established."
+        params:
+          - name: connectionProperties
+            type: java.lang.String
+      "setDataSource(java.lang.Object)":
+        description: "Injects a datasource that will be used to retrieve/create connections."
+        params:
+          - name: ds
+            type: java.lang.Object
+      "setDataSourceJNDI(java.lang.String)":
+        description: "Configure the connection pool to use a DataSource according to {@link PoolConfiguration#setDataSource(Object)} But instead of injecting the object, specify the JNDI location. After a successful JNDI look, the {@link PoolConfiguration#getDataSource()} will not return null."
+        params:
+          - name: jndiDS
+            type: java.lang.String
+      "setDbProperties(java.lang.Properties)":
+        description: "Overrides the database properties passed into the {@link java.sql.Driver#connect(String, Properties)} method."
+        params:
+          - name: dbProperties
+            type: java.lang.Properties
+      "setDefaultAutoCommit(java.lang.Boolean)":
+        description: "The default auto-commit state of connections created by this pool. If not set (null), default is JDBC driver default (If set to null then the {@link java.sql.Connection#setAutoCommit(boolean)} method will not be called.)."
+        params:
+          - name: defaultAutoCommit
+            type: java.lang.Boolean
+      "setDefaultCatalog(java.lang.String)":
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setCatalog(String)} will be called with the set value."
+        params:
+          - name: defaultCatalog
+            type: java.lang.String
+      "setDefaultReadOnly(java.lang.Boolean)":
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setReadOnly(boolean)} will be called with the set value."
+        params:
+          - name: defaultReadOnly
+            type: java.lang.Boolean
+      "setDefaultTransactionIsolation(int)":
+        description: "If set to {@link DataSourceFactory#UNKNOWN_TRANSACTIONISOLATION} the method {@link java.sql.Connection#setTransactionIsolation(int)} will not be called during connection creation. Otherwise the method will be called with the isolation level set by this property."
+        params:
+          - name: defaultTransactionIsolation
+            type: int
+      "setDriverClassName(java.lang.String)":
+        description: "The fully qualified Java class name of the JDBC driver to be used. The driver has to be accessible from the same classloader as tomcat-jdbc.jar."
+        params:
+          - name: driverClassName
+            type: java.lang.String
+      "setFairQueue(boolean)":
+        description: "Set to true if you wish that calls to getConnection should be treated fairly in a true FIFO fashion. This uses the {@link FairBlockingQueue} implementation for the list of the idle connections. The default value is true. This flag is required when you want to use asynchronous connection retrieval."
+        params:
+          - name: fairQueue
+            type: boolean
+      "setIgnoreExceptionOnPreLoad(boolean)":
+        description: "Set to true if you want to ignore error of connection creation while initializing the pool. Set to false if you want to fail the initialization of the pool by throwing exception."
+        params:
+          - name: ignoreExceptionOnPreLoad
+            type: boolean
+      "setInitSQL(java.lang.String)":
+        description: "A custom query to be run when a connection is first created. The default value is null. This query only runs once per connection, and that is when a new connection is established to the database. If this value is non null, it will replace the validation query during connection creation."
+        params:
+          - name: initSQL
+            type: java.lang.String
+      "setInitialSize(int)":
+        description: "Set the number of connections that will be established when the connection pool is started. Default value is 10. If this value exceeds {@link #setMaxActive(int)} it will automatically be lowered."
+        params:
+          - name: initialSize
+            type: int
+      "setJdbcInterceptors(java.lang.String)":
+        description: "A semicolon separated list of classnames extending {@link org."
+        params:
+          - name: jdbcInterceptors
+            type: java.lang.String
+      "setJmxEnabled(boolean)":
+        description: "If set to true, the connection pool creates a {@link org.apache.tomcat.jdbc.pool.jmx.ConnectionPoolMBean} object that can be registered with JMX to receive notifications and state about the pool. The ConnectionPool object doesn't register itself, as there is no way to keep a static non changing ObjectName across JVM restarts."
+        params:
+          - name: jmxEnabled
+            type: boolean
+      "setLogAbandoned(boolean)":
+        description: "boolean flag to set if stack traces should be logged for application code which abandoned a Connection. Logging of abandoned Connections adds overhead for every Connection borrow because a stack trace has to be generated. The default value is false."
+        params:
+          - name: logAbandoned
+            type: boolean
+      "setLogValidationErrors(boolean)":
+        description: "Set to true if you wish that errors from validation should be logged as error messages."
+        params:
+          - name: logValidationErrors
+            type: boolean
+      "setMaxActive(int)":
+        description: "The maximum number of active connections that can be allocated from this pool at the same time. The default value is 100."
+        params:
+          - name: maxActive
+            type: int
+      "setMaxAge(long)":
+        description: "Time in milliseconds to keep this connection before reconnecting."
+        params:
+          - name: maxAge
+            type: long
+      "setMaxIdle(int)":
+        description: "The maximum number of connections that should be kept in the idle pool if {@link #isPoolSweeperEnabled()} returns false. If the If {@link #isPoolSweeperEnabled()} returns true, then the idle pool can grow up to {@link #getMaxActive} and will be shrunk according to {@link #getMinEvictableIdleTimeMillis()} setting. Default value is maxActive:100."
+        params:
+          - name: maxIdle
+            type: int
+      "setMaxWait(int)":
+        description: "The maximum number of milliseconds that the pool will wait (when there are no available connections and the {@link #getMaxActive} has been reached) for a connection to be returned before throwing an exception. Default value is 30000 (30 seconds)."
+        params:
+          - name: maxWait
+            type: int
+      "setMinEvictableIdleTimeMillis(int)":
+        description: "The minimum amount of time an object must sit idle in the pool before it is eligible for eviction. The default value is 60000 (60 seconds)."
+        params:
+          - name: minEvictableIdleTimeMillis
+            type: int
+      "setMinIdle(int)":
+        description: "The minimum number of established connections that should be kept in the pool at all times."
+        params:
+          - name: minIdle
+            type: int
+      "setName(java.lang.String)":
+        description: "Sets the name of the connection pool."
+        params:
+          - name: name
+            type: java.lang.String
+      "setNumTestsPerEvictionRun(int)":
+        description: "Property not used."
+        params:
+          - name: numTestsPerEvictionRun
+            type: int
+      "setPassword(java.lang.String)":
+        description: "Sets the password to establish the connection with. The password will be included as a database property with the name 'password'."
+        params:
+          - name: password
+            type: java.lang.String
+      "setPropagateInterruptState(boolean)":
+        description: "Configure the pool to propagate interrupt state for interrupted threads waiting for a connection A thread waiting for a connection, can have its wait interrupted, and by default will clear the interrupt flag and throw a {@link PoolExhaustedException} If set to true, this behavior will change, while the {@link PoolExhaustedException} is still thrown, the threads interrupted state is still set."
+        params:
+          - name: propagateInterruptState
+            type: boolean
+      "setRemoveAbandoned(boolean)":
+        description: "boolean flag to remove abandoned connections if they exceed the removeAbandonedTimeout."
+        params:
+          - name: removeAbandoned
+            type: boolean
+      "setRemoveAbandonedTimeout(int)":
+        description: "The time in seconds before a connection can be considered abandoned. The timer can be reset upon queries using an interceptor."
+        params:
+          - name: removeAbandonedTimeout
+            type: int
+      "setRollbackOnReturn(boolean)":
+        description: "Set to true if you want the connection pool to rollback any pending transaction when a connection is returned. The default value is false, as this could result in committing data. This parameter is only looked at if the {@link #getDefaultAutoCommit()} returns false."
+        params:
+          - name: rollbackOnReturn
+            type: boolean
+      "setSuspectTimeout(int)":
+        description: "Similar to {@link #setRemoveAbandonedTimeout(int)} but instead of treating the connection as abandoned, and potentially closing the connection, this simply logs the warning if {@link #isLogAbandoned()} returns true."
+        params:
+          - name: seconds
+            type: int
+      "setTestOnBorrow(boolean)":
+        description: "The indication of whether objects will be validated before being borrowed from the pool."
+        params:
+          - name: testOnBorrow
+            type: boolean
+      "setTestOnConnect(boolean)":
+        description: "Set to true if we should run the validation query when connecting to the database for the first time on a connection. Normally this is always set to false, unless one wants to use the validationQuery as an init query. Setting an {@link #setInitSQL(String)} will override this setting, as the init SQL will be used instead of the validation query."
+        params:
+          - name: testOnConnect
+            type: boolean
+      "setTestOnReturn(boolean)":
+        description: "The indication of whether objects will be validated after being returned to the pool. If the object fails to validate, it will be dropped from the pool. NOTE - for a true value to have any effect, the validationQuery parameter must be set to a non-null string. Default value is false In order to have a more efficient validation, see {@link #setValidationInterval(long)}."
+        params:
+          - name: testOnReturn
+            type: boolean
+      "setTestWhileIdle(boolean)":
+        description: "Set to true if query validation should take place while the connection is idle."
+        params:
+          - name: testWhileIdle
+            type: boolean
+      "setTimeBetweenEvictionRunsMillis(int)":
+        description: "The number of milliseconds to sleep between runs of the idle connection validation, abandoned cleaner and idle pool resizing. This value should not be set under 1 second. It dictates how often we check for idle, abandoned connections, and how often we validate idle connection and resize the idle pool. The default value is 5000 (5 seconds)."
+        params:
+          - name: timeBetweenEvictionRunsMillis
+            type: int
+      "setUrl(java.lang.String)":
+        description: "Sets the URL used to connect to the database."
+        params:
+          - name: url
+            type: java.lang.String
+      "setUseDisposableConnectionFacade(boolean)":
+        description: "If set to true , the connection will be wrapped with facade that will disallow the connection to be used after {@link java.sql.Connection#close()} is called. If set to true , after {@link java.sql.Connection#close()} all calls except {@link java.sql.Connection#close()} and {@link java.sql.Connection#isClosed()} will throw an exception."
+        params:
+          - name: useDisposableConnectionFacade
+            type: boolean
+      "setUseEquals(boolean)":
+        description: "Set to true if you wish the ProxyConnection class to use String.equals instead of == when comparing method names. This property does not apply to added interceptors as those are configured individually. The default value is false ."
+        params:
+          - name: useEquals
+            type: boolean
+      "setUseLock(boolean)":
+        description: "Set to true if a lock should be used when operations are performed on the connection object. Should be set to false unless you plan to have a background thread of your own doing idle and abandon checking such as JMX clients. If the pool sweeper is enabled, then the lock will automatically be used regardless of this setting."
+        params:
+          - name: useLock
+            type: boolean
+      "setUseStatementFacade(boolean)":
+        description: "Set this to true if you wish to wrap statements in order to enable equals() and hashCode() methods to be called on the closed statements if any statement proxy is set."
+        params:
+          - name: useStatementFacade
+            type: boolean
+      "setUsername(java.lang.String)":
+        description: "Sets the username used to establish the connection with It will also be a property called 'user' in the database properties."
+        params:
+          - name: username
+            type: java.lang.String
+      "setValidationInterval(long)":
+        description: "avoid excess validation, only run validation at most at this frequency - time in milliseconds. If a connection is due for validation, but has been validated previously within this interval, it will not be validated again. The default value is 3000 (3 seconds)."
+        params:
+          - name: validationInterval
+            type: long
+      "setValidationQuery(java.lang.String)":
+        description: "The SQL query that will be used to validate connections from this pool before returning them to the caller or pool. If specified, this query does not have to return any data, it just can't throw an SQLException. The default value is null. Example values are SELECT 1(mysql), select 1 from dual(oracle), SELECT 1(MS Sql Server)."
+        params:
+          - name: validationQuery
+            type: java.lang.String
+      "setValidationQueryTimeout(int)":
+        description: "The timeout in seconds before a connection validation queries fail. A value less than or equal to zero will disable this feature. Defaults to -1."
+        params:
+          - name: validationQueryTimeout
+            type: int
+      "setValidator(java.lang.Validator)":
+        description: "Sets the validator object If this is a non null object, it will be used as a validator instead of the validationQuery If this is null, remove the usage of the validator."
+        params:
+          - name: validator
+            type: java.lang.Validator
+      "setValidatorClassName(java.lang.String)":
+        description: "Set the name for an optional validator class which will be used in place of test queries. If set to null, standard validation will be used."
+        params:
+          - name: className
+            type: java.lang.String
+      "testIdle()":
+        description: "Invokes testIdle."
+
+  - match:
+      objectName: "tomcat.jdbc:type=ConnectionPool,*"
+      className: "org.apache.tomcat.jdbc.pool.jmx.ConnectionPoolMBean"
+    description: "Apache Tomcat JDBC connection pool MBean."
+    attributes:
+      AbandonWhenPercentageFull:
+        description: "Connections that have been abandoned (timed out) wont get closed and reported up unless the number of connections in use are above the percentage defined by abandonWhenPercentageFull. The value should be between 0-100. The default value is 0, which implies that connections are eligible for closure as soon as removeAbandonedTimeout has been reached."
+      AccessToUnderlyingConnectionAllowed:
+        description: "Property not used. Access is always allowed. Access can be achieved by calling unwrap on the pooled connection. see {@link javax.sql.DataSource} interface or call getConnection through reflection or cast the object as {@link javax.sql.PooledConnection}."
+      Active:
+        description: "Returns the active."
+      AlternateUsernameAllowed:
+        description: "Returns true if the call {@link DataSource#getConnection(String, String) getConnection(username,password)} is allowed. This is used for when the pool is used by an application accessing multiple schemas. There is a performance impact turning this option on."
+      BorrowedCount:
+        description: "Returns the borrowedCount."
+      CommitOnReturn:
+        description: "Returns the commitOnReturn."
+      ConnectionProperties:
+        description: "The connection properties that will be sent to the JDBC driver when establishing new connections. Format of the string is [propertyName=property;] NOTE - The 'user' and 'password' properties will be passed explicitly, so they do not need to be included here. The default value is null."
+      CreatedCount:
+        description: "Returns the createdCount."
+      DataSource:
+        description: "Returns a datasource, if one exists that is being used to create connections. This method will return null if the pool is using a {@link java.sql.Driver}."
+      DataSourceJNDI:
+        description: "Returns the JNDI string configured for data source usage."
+      DbProperties:
+        description: "Returns the database properties that are passed into the {@link java.sql.Driver#connect(String, Properties)} method."
+      DefaultAutoCommit:
+        description: "The default auto-commit state of connections created by this pool. If not set (null), default is JDBC driver default (If set to null then the {@link java.sql.Connection#setAutoCommit(boolean)} method will not be called.)."
+      DefaultCatalog:
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setCatalog(String)} will be called with the set value."
+      DefaultReadOnly:
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setReadOnly(boolean)} will be called with the set value."
+      DefaultTransactionIsolation:
+        description: "Returns the default transaction isolation level. If set to {@link DataSourceFactory#UNKNOWN_TRANSACTIONISOLATION} the method {@link java.sql.Connection#setTransactionIsolation(int)} will not be called during connection creation."
+      DriverClassName:
+        description: "The fully qualified Java class name of the JDBC driver to be used. The driver has to be accessible from the same classloader as tomcat-jdbc.jar."
+      FairQueue:
+        description: "Returns true if a fair queue is being used by the connection pool."
+      Idle:
+        description: "Returns the idle."
+      IgnoreExceptionOnPreLoad:
+        description: "Tests whether ignoreExceptionOnPreLoad."
+      InitSQL:
+        description: "A custom query to be run when a connection is first created. The default value is null. This query only runs once per connection, and that is when a new connection is established to the database. If this value is non null, it will replace the validation query during connection creation."
+      InitialSize:
+        description: "Returns the number of connections that will be established when the connection pool is started. Default value is 10."
+      JdbcInterceptors:
+        description: "A semicolon separated list of classnames extending {@link org."
+      JdbcInterceptorsAsArray:
+        description: "Returns the {@link #getJdbcInterceptors()} as an array of objects with properties and the classes."
+      JmxEnabled:
+        description: "If set to true, the connection pool creates a {@link org.apache.tomcat.jdbc.pool.jmx.ConnectionPoolMBean} object that can be registered with JMX to receive notifications and state about the pool. The ConnectionPool object doesn't register itself, as there is no way to keep a static non changing ObjectName across JVM restarts."
+      LogAbandoned:
+        description: "boolean flag to set if stack traces should be logged for application code which abandoned a Connection. Logging of abandoned Connections adds overhead for every Connection borrow because a stack trace has to be generated. The default value is false."
+      LogValidationErrors:
+        description: "Returns true if errors that happen during validation will be logged."
+      MaxActive:
+        description: "The maximum number of active connections that can be allocated from this pool at the same time. The default value is 100."
+      MaxAge:
+        description: "Time in milliseconds to keep this connection before reconnecting."
+      MaxIdle:
+        description: "The maximum number of connections that should be kept in the idle pool if {@link #isPoolSweeperEnabled()} returns false. If the If {@link #isPoolSweeperEnabled()} returns true, then the idle pool can grow up to {@link #getMaxActive} and will be shrunk according to {@link #getMinEvictableIdleTimeMillis()} setting. Default value is maxActive:100."
+      MaxWait:
+        description: "The maximum number of milliseconds that the pool will wait (when there are no available connections and the {@link #getMaxActive} has been reached) for a connection to be returned before throwing an exception. Default value is 30000 (30 seconds)."
+      MinEvictableIdleTimeMillis:
+        description: "The minimum amount of time an object must sit idle in the pool before it is eligible for eviction. The default value is 60000 (60 seconds)."
+      MinIdle:
+        description: "The minimum number of established connections that should be kept in the pool at all times."
+      Name:
+        description: "Returns the name of the connection pool. By default a JVM unique random name is assigned."
+      NumActive:
+        description: "Returns the numActive."
+      NumIdle:
+        description: "Returns the numIdle."
+      NumTestsPerEvictionRun:
+        description: "Property not used."
+      Password:
+        description: "Returns the password used when establishing connections to the database."
+      PoolName:
+        description: "Returns the poolName."
+      PoolSweeperEnabled:
+        description: "Returns true if the pool sweeper is enabled for the connection pool."
+      PropagateInterruptState:
+        description: "Returns true if the pool is configured to propagate interrupt state of a thread. A thread waiting for a connection, can have its wait interrupted, and by default will clear the interrupt flag and throw a {@link PoolExhaustedException}."
+      ReconnectedCount:
+        description: "Returns the reconnectedCount."
+      ReleasedCount:
+        description: "Returns the releasedCount."
+      ReleasedIdleCount:
+        description: "Returns the releasedIdleCount."
+      RemoveAbandoned:
+        description: "boolean flag to remove abandoned connections if they exceed the removeAbandonedTimeout."
+      RemoveAbandonedCount:
+        description: "Returns the removeAbandonedCount."
+      RemoveAbandonedTimeout:
+        description: "The time in seconds before a connection can be considered abandoned. The timer can be reset upon queries using an interceptor."
+      ReturnedCount:
+        description: "Returns the returnedCount."
+      RollbackOnReturn:
+        description: "Returns the rollbackOnReturn."
+      Size:
+        description: "Returns the size."
+      SuspectTimeout:
+        description: "Returns the time in seconds to pass before a connection is marked an abandoned suspect. Any value lesser than or equal to 0 means the check is disabled."
+      TestOnBorrow:
+        description: "The indication of whether objects will be validated before being borrowed from the pool."
+      TestOnConnect:
+        description: "Returns true if we should run the validation query when connecting to the database for the first time on a connection. Normally this is always set to false, unless one wants to use the validationQuery as an init query."
+      TestOnReturn:
+        description: "The indication of whether objects will be validated after being returned to the pool. If the object fails to validate, it will be dropped from the pool. NOTE - for a true value to have any effect, the validationQuery parameter must be set to a non-null string. Default value is false In order to have a more efficient validation, see {@link #setValidationInterval(long)}."
+      TestWhileIdle:
+        description: "Set to true if query validation should take place while the connection is idle."
+      TimeBetweenEvictionRunsMillis:
+        description: "The number of milliseconds to sleep between runs of the idle connection validation, abandoned cleaner and idle pool resizing. This value should not be set under 1 second. It dictates how often we check for idle, abandoned connections, and how often we validate idle connection and resize the idle pool. The default value is 5000 (5 seconds)."
+      Url:
+        description: "The URL used to connect to the database."
+      UseDisposableConnectionFacade:
+        description: "Returns true if this connection pool is configured to use a connection facade to prevent re-use of connection after {@link java.sql.Connection#close()} has been invoked."
+      UseEquals:
+        description: "Set to true if you wish the ProxyConnection class to use String.equals instead of == when comparing method names. This property does not apply to added interceptors as those are configured individually. The default value is false ."
+      UseLock:
+        description: "Return true if a lock should be used when operations are performed on the connection object. Should be set to false unless you plan to have a background thread of your own doing idle and abandon checking such as JMX clients. If the pool sweeper is enabled, then the lock will automatically be used regardless of this setting."
+      UseStatementFacade:
+        description: "Returns true if this connection pool is configured to wrap statements in order to enable equals() and hashCode() methods to be called on the closed statements if any statement proxy is set."
+      Username:
+        description: "Returns the username used to establish the connection with."
+      ValidationInterval:
+        description: "avoid excess validation, only run validation at most at this frequency - time in milliseconds. If a connection is due for validation, but has been validated previously within this interval, it will not be validated again. The default value is 3000 (3 seconds)."
+      ValidationQuery:
+        description: "The SQL query that will be used to validate connections from this pool before returning them to the caller or pool. If specified, this query does not have to return any data, it just can't throw an SQLException. The default value is null. Example values are SELECT 1(mysql), select 1 from dual(oracle), SELECT 1(MS Sql Server)."
+      ValidationQueryTimeout:
+        description: "The timeout in seconds before a connection validation queries fail. A value less than or equal to zero will disable this feature. Defaults to -1."
+      Validator:
+        description: "Returns the validator."
+      ValidatorClassName:
+        description: "Return the name of the optional validator class - may be null."
+      WaitCount:
+        description: "Returns the waitCount."
+    operations:
+      "checkAbandoned()":
+        description: "Invokes checkAbandoned."
+      "checkIdle()":
+        description: "Invokes checkIdle."
+      "purge()":
+        description: "Purges all connections in the pool. For connections currently in use, these connections will be purged when returned on the pool. This call also purges connections that are idle and in the pool To only purge used/active connections see {@link #purgeOnReturn()}."
+      "purgeOnReturn()":
+        description: "Purges connections when they are returned from the pool. This call does not purge idle connections until they are used. To purge idle connections see {@link #purge()}."
+      "resetStats()":
+        description: "reset the statistics of this pool."
+      "setAbandonWhenPercentageFull(int)":
+        description: "A list of properties that are configurable for a connection pool."
+        params:
+          - name: percentage
+            type: int
+      "setAccessToUnderlyingConnectionAllowed(boolean)":
+        description: "No-op."
+        params:
+          - name: accessToUnderlyingConnectionAllowed
+            type: boolean
+      "setAlternateUsernameAllowed(boolean)":
+        description: "Set to true if the call {@link DataSource#getConnection(String, String) getConnection(username,password)} is allowed and honored.. This is used for when the pool is used by an application accessing multiple schemas. There is a performance impact turning this option on, even when not used due to username checks."
+        params:
+          - name: alternateUsernameAllowed
+            type: boolean
+      "setCommitOnReturn(boolean)":
+        description: "Set to true if you want the connection pool to commit any pending transaction when a connection is returned. The default value is false, as this could result in committing data. This parameter is only looked at if the {@link #getDefaultAutoCommit()} returns false."
+        params:
+          - name: commitOnReturn
+            type: boolean
+      "setConnectionProperties(java.lang.String)":
+        description: "The properties that will be passed into {@link java.sql.Driver#connect(String, Properties)} method. Username and password do not need to be stored here, they will be passed into the properties right before the connection is established."
+        params:
+          - name: connectionProperties
+            type: java.lang.String
+      "setDataSource(java.lang.Object)":
+        description: "Injects a datasource that will be used to retrieve/create connections."
+        params:
+          - name: ds
+            type: java.lang.Object
+      "setDataSourceJNDI(java.lang.String)":
+        description: "Configure the connection pool to use a DataSource according to {@link PoolConfiguration#setDataSource(Object)} But instead of injecting the object, specify the JNDI location. After a successful JNDI look, the {@link PoolConfiguration#getDataSource()} will not return null."
+        params:
+          - name: jndiDS
+            type: java.lang.String
+      "setDbProperties(java.lang.Properties)":
+        description: "Overrides the database properties passed into the {@link java.sql.Driver#connect(String, Properties)} method."
+        params:
+          - name: dbProperties
+            type: java.lang.Properties
+      "setDefaultAutoCommit(java.lang.Boolean)":
+        description: "The default auto-commit state of connections created by this pool. If not set (null), default is JDBC driver default (If set to null then the {@link java.sql.Connection#setAutoCommit(boolean)} method will not be called.)."
+        params:
+          - name: defaultAutoCommit
+            type: java.lang.Boolean
+      "setDefaultCatalog(java.lang.String)":
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setCatalog(String)} will be called with the set value."
+        params:
+          - name: defaultCatalog
+            type: java.lang.String
+      "setDefaultReadOnly(java.lang.Boolean)":
+        description: "If non null, during connection creation the method {@link java.sql.Connection#setReadOnly(boolean)} will be called with the set value."
+        params:
+          - name: defaultReadOnly
+            type: java.lang.Boolean
+      "setDefaultTransactionIsolation(int)":
+        description: "If set to {@link DataSourceFactory#UNKNOWN_TRANSACTIONISOLATION} the method {@link java.sql.Connection#setTransactionIsolation(int)} will not be called during connection creation. Otherwise the method will be called with the isolation level set by this property."
+        params:
+          - name: defaultTransactionIsolation
+            type: int
+      "setDriverClassName(java.lang.String)":
+        description: "The fully qualified Java class name of the JDBC driver to be used. The driver has to be accessible from the same classloader as tomcat-jdbc.jar."
+        params:
+          - name: driverClassName
+            type: java.lang.String
+      "setFairQueue(boolean)":
+        description: "Set to true if you wish that calls to getConnection should be treated fairly in a true FIFO fashion. This uses the {@link FairBlockingQueue} implementation for the list of the idle connections. The default value is true. This flag is required when you want to use asynchronous connection retrieval."
+        params:
+          - name: fairQueue
+            type: boolean
+      "setIgnoreExceptionOnPreLoad(boolean)":
+        description: "Set to true if you want to ignore error of connection creation while initializing the pool. Set to false if you want to fail the initialization of the pool by throwing exception."
+        params:
+          - name: ignoreExceptionOnPreLoad
+            type: boolean
+      "setInitSQL(java.lang.String)":
+        description: "A custom query to be run when a connection is first created. The default value is null. This query only runs once per connection, and that is when a new connection is established to the database. If this value is non null, it will replace the validation query during connection creation."
+        params:
+          - name: initSQL
+            type: java.lang.String
+      "setInitialSize(int)":
+        description: "Set the number of connections that will be established when the connection pool is started. Default value is 10. If this value exceeds {@link #setMaxActive(int)} it will automatically be lowered."
+        params:
+          - name: initialSize
+            type: int
+      "setJdbcInterceptors(java.lang.String)":
+        description: "A semicolon separated list of classnames extending {@link org."
+        params:
+          - name: jdbcInterceptors
+            type: java.lang.String
+      "setJmxEnabled(boolean)":
+        description: "If set to true, the connection pool creates a {@link org.apache.tomcat.jdbc.pool.jmx.ConnectionPoolMBean} object that can be registered with JMX to receive notifications and state about the pool. The ConnectionPool object doesn't register itself, as there is no way to keep a static non changing ObjectName across JVM restarts."
+        params:
+          - name: jmxEnabled
+            type: boolean
+      "setLogAbandoned(boolean)":
+        description: "boolean flag to set if stack traces should be logged for application code which abandoned a Connection. Logging of abandoned Connections adds overhead for every Connection borrow because a stack trace has to be generated. The default value is false."
+        params:
+          - name: logAbandoned
+            type: boolean
+      "setLogValidationErrors(boolean)":
+        description: "Set to true if you wish that errors from validation should be logged as error messages."
+        params:
+          - name: logValidationErrors
+            type: boolean
+      "setMaxActive(int)":
+        description: "The maximum number of active connections that can be allocated from this pool at the same time. The default value is 100."
+        params:
+          - name: maxActive
+            type: int
+      "setMaxAge(long)":
+        description: "Time in milliseconds to keep this connection before reconnecting."
+        params:
+          - name: maxAge
+            type: long
+      "setMaxIdle(int)":
+        description: "The maximum number of connections that should be kept in the idle pool if {@link #isPoolSweeperEnabled()} returns false. If the If {@link #isPoolSweeperEnabled()} returns true, then the idle pool can grow up to {@link #getMaxActive} and will be shrunk according to {@link #getMinEvictableIdleTimeMillis()} setting. Default value is maxActive:100."
+        params:
+          - name: maxIdle
+            type: int
+      "setMaxWait(int)":
+        description: "The maximum number of milliseconds that the pool will wait (when there are no available connections and the {@link #getMaxActive} has been reached) for a connection to be returned before throwing an exception. Default value is 30000 (30 seconds)."
+        params:
+          - name: maxWait
+            type: int
+      "setMinEvictableIdleTimeMillis(int)":
+        description: "The minimum amount of time an object must sit idle in the pool before it is eligible for eviction. The default value is 60000 (60 seconds)."
+        params:
+          - name: minEvictableIdleTimeMillis
+            type: int
+      "setMinIdle(int)":
+        description: "The minimum number of established connections that should be kept in the pool at all times."
+        params:
+          - name: minIdle
+            type: int
+      "setName(java.lang.String)":
+        description: "Sets the name of the connection pool."
+        params:
+          - name: name
+            type: java.lang.String
+      "setNumTestsPerEvictionRun(int)":
+        description: "Property not used."
+        params:
+          - name: numTestsPerEvictionRun
+            type: int
+      "setPassword(java.lang.String)":
+        description: "Sets the password to establish the connection with. The password will be included as a database property with the name 'password'."
+        params:
+          - name: password
+            type: java.lang.String
+      "setPropagateInterruptState(boolean)":
+        description: "Configure the pool to propagate interrupt state for interrupted threads waiting for a connection A thread waiting for a connection, can have its wait interrupted, and by default will clear the interrupt flag and throw a {@link PoolExhaustedException} If set to true, this behavior will change, while the {@link PoolExhaustedException} is still thrown, the threads interrupted state is still set."
+        params:
+          - name: propagateInterruptState
+            type: boolean
+      "setRemoveAbandoned(boolean)":
+        description: "boolean flag to remove abandoned connections if they exceed the removeAbandonedTimeout."
+        params:
+          - name: removeAbandoned
+            type: boolean
+      "setRemoveAbandonedTimeout(int)":
+        description: "The time in seconds before a connection can be considered abandoned. The timer can be reset upon queries using an interceptor."
+        params:
+          - name: removeAbandonedTimeout
+            type: int
+      "setRollbackOnReturn(boolean)":
+        description: "Set to true if you want the connection pool to rollback any pending transaction when a connection is returned. The default value is false, as this could result in committing data. This parameter is only looked at if the {@link #getDefaultAutoCommit()} returns false."
+        params:
+          - name: rollbackOnReturn
+            type: boolean
+      "setSuspectTimeout(int)":
+        description: "Similar to {@link #setRemoveAbandonedTimeout(int)} but instead of treating the connection as abandoned, and potentially closing the connection, this simply logs the warning if {@link #isLogAbandoned()} returns true."
+        params:
+          - name: seconds
+            type: int
+      "setTestOnBorrow(boolean)":
+        description: "The indication of whether objects will be validated before being borrowed from the pool."
+        params:
+          - name: testOnBorrow
+            type: boolean
+      "setTestOnConnect(boolean)":
+        description: "Set to true if we should run the validation query when connecting to the database for the first time on a connection. Normally this is always set to false, unless one wants to use the validationQuery as an init query. Setting an {@link #setInitSQL(String)} will override this setting, as the init SQL will be used instead of the validation query."
+        params:
+          - name: testOnConnect
+            type: boolean
+      "setTestOnReturn(boolean)":
+        description: "The indication of whether objects will be validated after being returned to the pool. If the object fails to validate, it will be dropped from the pool. NOTE - for a true value to have any effect, the validationQuery parameter must be set to a non-null string. Default value is false In order to have a more efficient validation, see {@link #setValidationInterval(long)}."
+        params:
+          - name: testOnReturn
+            type: boolean
+      "setTestWhileIdle(boolean)":
+        description: "Set to true if query validation should take place while the connection is idle."
+        params:
+          - name: testWhileIdle
+            type: boolean
+      "setTimeBetweenEvictionRunsMillis(int)":
+        description: "The number of milliseconds to sleep between runs of the idle connection validation, abandoned cleaner and idle pool resizing. This value should not be set under 1 second. It dictates how often we check for idle, abandoned connections, and how often we validate idle connection and resize the idle pool. The default value is 5000 (5 seconds)."
+        params:
+          - name: timeBetweenEvictionRunsMillis
+            type: int
+      "setUrl(java.lang.String)":
+        description: "Sets the URL used to connect to the database."
+        params:
+          - name: url
+            type: java.lang.String
+      "setUseDisposableConnectionFacade(boolean)":
+        description: "If set to true , the connection will be wrapped with facade that will disallow the connection to be used after {@link java.sql.Connection#close()} is called. If set to true , after {@link java.sql.Connection#close()} all calls except {@link java.sql.Connection#close()} and {@link java.sql.Connection#isClosed()} will throw an exception."
+        params:
+          - name: useDisposableConnectionFacade
+            type: boolean
+      "setUseEquals(boolean)":
+        description: "Set to true if you wish the ProxyConnection class to use String.equals instead of == when comparing method names. This property does not apply to added interceptors as those are configured individually. The default value is false ."
+        params:
+          - name: useEquals
+            type: boolean
+      "setUseLock(boolean)":
+        description: "Set to true if a lock should be used when operations are performed on the connection object. Should be set to false unless you plan to have a background thread of your own doing idle and abandon checking such as JMX clients. If the pool sweeper is enabled, then the lock will automatically be used regardless of this setting."
+        params:
+          - name: useLock
+            type: boolean
+      "setUseStatementFacade(boolean)":
+        description: "Set this to true if you wish to wrap statements in order to enable equals() and hashCode() methods to be called on the closed statements if any statement proxy is set."
+        params:
+          - name: useStatementFacade
+            type: boolean
+      "setUsername(java.lang.String)":
+        description: "Sets the username used to establish the connection with It will also be a property called 'user' in the database properties."
+        params:
+          - name: username
+            type: java.lang.String
+      "setValidationInterval(long)":
+        description: "avoid excess validation, only run validation at most at this frequency - time in milliseconds. If a connection is due for validation, but has been validated previously within this interval, it will not be validated again. The default value is 3000 (3 seconds)."
+        params:
+          - name: validationInterval
+            type: long
+      "setValidationQuery(java.lang.String)":
+        description: "The SQL query that will be used to validate connections from this pool before returning them to the caller or pool. If specified, this query does not have to return any data, it just can't throw an SQLException. The default value is null. Example values are SELECT 1(mysql), select 1 from dual(oracle), SELECT 1(MS Sql Server)."
+        params:
+          - name: validationQuery
+            type: java.lang.String
+      "setValidationQueryTimeout(int)":
+        description: "The timeout in seconds before a connection validation queries fail. A value less than or equal to zero will disable this feature. Defaults to -1."
+        params:
+          - name: validationQueryTimeout
+            type: int
+      "setValidator(java.lang.Validator)":
+        description: "Sets the validator object If this is a non null object, it will be used as a validator instead of the validationQuery If this is null, remove the usage of the validator."
+        params:
+          - name: validator
+            type: java.lang.Validator
+      "setValidatorClassName(java.lang.String)":
+        description: "Set the name for an optional validator class which will be used in place of test queries. If set to null, standard validation will be used."
+        params:
+          - name: className
+            type: java.lang.String
+      "testIdle()":
+        description: "Invokes testIdle."

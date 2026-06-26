@@ -3,6 +3,10 @@ package dal.tool.trace.jmxer.cli.data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Tree의 노드(부모·첫 자식·형제 링크)
+ *
+ */
 public class TreeNode<E> {
 
 	private E data;

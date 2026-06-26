@@ -2,6 +2,11 @@ package dal.tool.cli;
 
 import dal.tool.cli.Logger.Level;
 
+/**
+ * CLI 공통 환경설정(로그 레벨, 프롬프트 표시 옵션 등)
+ * @author 권영달
+ *
+ */
 public class Settings {
 
 	private Level logLevel = Level.INFO;

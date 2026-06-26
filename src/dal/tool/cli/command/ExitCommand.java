@@ -4,6 +4,11 @@ import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Logger;
 
 
+/**
+ * 프롬프트 루프를 종료하는 EXIT/QUIT 명령
+ * @author 권영달
+ *
+ */
 public class ExitCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(ExitCommand.class, "EXIT", "Q[UIT]", "BY[E]");

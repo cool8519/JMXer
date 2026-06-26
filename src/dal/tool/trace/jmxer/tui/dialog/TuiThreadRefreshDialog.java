@@ -16,9 +16,11 @@ import com.googlecode.lanterna.gui2.dialogs.DialogWindow;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialogButton;
 
 import dal.tool.trace.jmxer.tui.support.TuiThreadUiKeys;
+import dal.tool.trace.jmxer.tui.widget.TuiDialogInputBox;
 
 /**
- * Thread UI mode refresh-interval dialog when switching from manual to auto refresh.
+ * Thread UI 모드에서 수동→자동 갱신 전환 시 갱신 주기를 입력하는 다이얼로그.
+ *
  */
 public final class TuiThreadRefreshDialog extends DialogWindow {
 
@@ -26,9 +28,9 @@ public final class TuiThreadRefreshDialog extends DialogWindow {
 	private final WindowBasedTextGUI gui;
 	private final TextBox intervalInput;
 
-	private TuiThreadRefreshDialog(WindowBasedTextGUI gui, int initialIntervalSeconds) {
+	private TuiThreadRefreshDialog(WindowBasedTextGUI textGUI, int initialIntervalSeconds) {
 		super(TuiThreadUiKeys.REFRESH_DIALOG_TITLE);
-		this.gui = gui;
+		this.gui = textGUI;
 		enableCenteredHint();
 
 		Panel fieldsPanel = new Panel();
@@ -36,7 +38,7 @@ public final class TuiThreadRefreshDialog extends DialogWindow {
 		TuiDialogLayout.addFormDescription(fieldsPanel, TuiThreadUiKeys.REFRESH_DIALOG_DESCRIPTION);
 
 		fieldsPanel.addComponent(new Label("Interval (seconds):"));
-		intervalInput = new TextBox(new TerminalSize(8, 1));
+		intervalInput = new TuiDialogInputBox(new TerminalSize(8, 1));
 		intervalInput.setText(String.valueOf(initialIntervalSeconds));
 		fieldsPanel.addComponent(intervalInput);
 
@@ -46,7 +48,7 @@ public final class TuiThreadRefreshDialog extends DialogWindow {
 				Integer parsed = parseIntervalSeconds(intervalInput.getText());
 				if(parsed == null) {
 					TuiDialogs.showMessageDialog(
-						gui,
+						TuiThreadRefreshDialog.this.gui,
 						TuiThreadUiKeys.REFRESH_DIALOG_VALIDATION_TITLE,
 						TuiThreadUiKeys.REFRESH_DIALOG_VALIDATION_MESSAGE,
 						MessageDialogButton.OK
@@ -80,9 +82,6 @@ public final class TuiThreadRefreshDialog extends DialogWindow {
 		TuiDialogEscFocus.install(this);
 	}
 
-	/**
-	 * @return chosen interval in seconds, or {@code null} when cancelled (stay manual)
-	 */
 	public static Integer show(WindowBasedTextGUI gui, int initialIntervalSeconds) {
 		if(gui == null) {
 			return null;

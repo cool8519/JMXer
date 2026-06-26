@@ -6,7 +6,8 @@ import javax.management.MBeanParameterInfo;
 import dal.tool.trace.jmxer.cli.JmxCallInputValidator;
 
 /**
- * TUI entry point for CALL input validation (delegates to {@link JmxCallInputValidator}).
+ * TUI에서 CALL 입력 검증 진입점(JmxCallInputValidator에 위임).
+ *
  */
 public final class TuiJmxInputValidator {
 

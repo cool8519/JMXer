@@ -2,6 +2,10 @@ package dal.tool.trace.jmxer.cli.data;
 
 import java.io.Serializable;
 
+/**
+ * RECORD 샘플 한 시점의 스레드 정보(스택·상태·구간 시각)
+ *
+ */
 public class RecordThreadInfo implements Serializable {
 
 	private static final long serialVersionUID = 8911427849221446844L;
@@ -19,6 +23,7 @@ public class RecordThreadInfo implements Serializable {
 	public boolean suspended;
 	public String threadState;
 	public StackTraceElement[] stackTrace;
+	/** 레거시 수집 시점 분류값; 뷰에서는 stackTrace로 재분류하며 무시한다. */
 	public RecordThreadSampleState sampleState;
 	public long recordStartTime;
 	public long recordEndTime;

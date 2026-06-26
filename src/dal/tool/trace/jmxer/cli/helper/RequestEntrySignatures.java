@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 내장 HTTP/서블릿 request-entry 시그니처 화이트리스트
+ *
+ */
 public class RequestEntrySignatures {
 
 	private static final Set<String> ENTRY_SIGNATURES = new HashSet<String>(Arrays.asList(

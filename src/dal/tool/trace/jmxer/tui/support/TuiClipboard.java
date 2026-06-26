@@ -6,7 +6,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 
 /**
- * Reads the OS clipboard for TUI paste (desktop JVM only; returns null when headless or unavailable).
+ * TUI 붙여넣기용 OS 클립보드 읽기(데스크톱 JVM; headless·불가 시 null).
+ *
  */
 public final class TuiClipboard {
 
@@ -26,7 +27,6 @@ public final class TuiClipboard {
 				return (String) data;
 			}
 		} catch(Exception e) {
-			// HeadlessException, UnsupportedFlavorException, SecurityException, etc.
 		}
 		return null;
 	}

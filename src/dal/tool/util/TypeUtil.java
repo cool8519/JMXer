@@ -114,10 +114,9 @@ public class TypeUtil {
 	 * @exception Exception 변환 과정에서 발생한 모든 Exception
 	 */
 	public static String typesToDesc(String methodTypes) throws Exception {
-		// "(int,int,boolean[],java/lang/String)void" -> "(II[ZLjava/lang/String;)V"
 		StringBuffer sb = new StringBuffer();
-		String argType = methodTypes.substring(1, methodTypes.indexOf(')')).trim(); // int,int,boolean[],java/lang/String
-		String retType = methodTypes.substring(methodTypes.indexOf(')')+1).trim();  // void
+		String argType = methodTypes.substring(1, methodTypes.indexOf(')')).trim();
+		String retType = methodTypes.substring(methodTypes.indexOf(')')+1).trim();
 		StringTokenizer st = new StringTokenizer(argType,",");
 		sb.append("(");
 		while(st.hasMoreTokens()) {
@@ -138,7 +137,6 @@ public class TypeUtil {
 	 * @exception Exception 변환 과정에서 발생한 모든 Exception
 	 */
 	public static String typeToBinaryName(String classType) throws Exception {
-		// "java/lang/String[]" -> "[Ljava/lang/String;"
 		if(classType == null) {
 			throw new Exception("ClassType cannot be null.");
 		}
@@ -168,9 +166,8 @@ public class TypeUtil {
 	 * @exception Exception 변환 과정에서 발생한 모든 Exception
 	 */
 	public static String descToTypes(String methodDesc) throws Exception {
-		// "(II[ZLjava/lang/String;)V" -> "(int,int,boolean[],java/lang/String)void"
-		String argDesc = methodDesc.substring(1, methodDesc.indexOf(')')); // II[ZLjava/lang/String;
-		String retDesc = methodDesc.substring(methodDesc.indexOf(')')+1);  // V
+		String argDesc = methodDesc.substring(1, methodDesc.indexOf(')'));
+		String retDesc = methodDesc.substring(methodDesc.indexOf(')')+1);
 		int length = argDesc.length();
 		String[] binaryNameList = new String[length];
 		int arrIdx = 0;
@@ -236,7 +233,6 @@ public class TypeUtil {
 	 * @exception Exception 변환 과정에서 발생한 모든 Exception
 	 */
 	public static String binaryNameToType(String binaryName) throws Exception {
-		// "[Ljava/lang/String;" -> "java/lang/String[]"
 		if(binaryName == null) {
 			throw new Exception("BinaryName cannot be null.");
 		}

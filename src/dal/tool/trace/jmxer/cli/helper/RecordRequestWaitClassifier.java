@@ -4,6 +4,10 @@ import java.util.Set;
 
 import dal.tool.trace.jmxer.cli.data.RecordThreadSampleState;
 
+/**
+ * RECORD 샘플 스택에서 요청 처리 활성/대기 상태를 분류한다.
+ *
+ */
 public class RecordRequestWaitClassifier {
 
 	private RecordRequestWaitClassifier() {}
@@ -46,7 +50,6 @@ public class RecordRequestWaitClassifier {
 		return false;
 	}
 
-	/** Thread STACKTRACE_TARGET=ACTIVE: whitelist only (no application-frame heuristic). */
 	public static boolean hasWhitelistedRequestEntry(StackTraceElement[] stackTrace) {
 		return hasWhitelistedRequestEntry(stackTrace, null);
 	}

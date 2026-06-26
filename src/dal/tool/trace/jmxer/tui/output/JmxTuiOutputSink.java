@@ -12,7 +12,8 @@ import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import dal.tool.cli.Logger;
 
 /**
- * Routes Logger output to the TUI Output pane during user-initiated command sessions.
+ * 사용자 명령 세션 동안 Logger 출력을 TUI Output 패널로 보낸다.
+ *
  */
 public final class JmxTuiOutputSink implements Logger.OutputSink {
 	public static final String EMPTY_OUTPUT_PLACEHOLDER = "There is no output to display.";
@@ -33,9 +34,11 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 	private volatile boolean truncationNoticePending;
 	private volatile int captureSessionLinesDropped;
 	private volatile boolean suppressEmptyOutputPlaceholder;
+	private boolean capturePreambleCommitted;
 	private boolean batchAppendActive;
 	private final List<String> sessionFullLines = new ArrayList<String>();
 	private final Object sessionFullLinesLock = new Object();
+	private OutputTextBox sessionFullLinesOwner;
 
 	public JmxTuiOutputSink(WindowBasedTextGUI gui, OutputTextBox output, JmxTuiOutputHost host) {
 		this.gui = gui;
@@ -55,28 +58,40 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 		this.output = output;
 	}
 
-	/** Clears the full-result buffer used by Ctrl+S (invoked when the Output pane is cleared). */
 	public void resetSessionFullLines() {
 		synchronized(sessionFullLinesLock) {
 			sessionFullLines.clear();
 		}
+		sessionFullLinesOwner = null;
 	}
 
 	/**
-	 * Lines to write when saving Output (Ctrl+S). Returns the complete captured command output when
-	 * available; otherwise the lines currently shown in the pane.
+	 * Output 저장 시 쓸 줄 목록. 전체 캡처가 있으면 그것을, 없으면 패널에 보이는 줄을 반환한다.
 	 */
 	public List<String> getSaveableLogicalLines(OutputTextBox pane) {
 		synchronized(sessionFullLinesLock) {
-			if(!sessionFullLines.isEmpty()) {
-				return new ArrayList<String>(sessionFullLines);
+			if(!sessionFullLines.isEmpty() && sessionFullLinesOwner == pane) {
+				return copyWithoutTruncationNotice(sessionFullLines);
 			}
 		}
 		if(pane == null) {
 			return new ArrayList<String>();
 		}
-		List<String> shown = pane.getLogicalLines();
-		return new ArrayList<String>(shown);
+		return copyWithoutTruncationNotice(pane.getLogicalLines());
+	}
+
+	private static List<String> copyWithoutTruncationNotice(List<String> lines) {
+		if(lines == null || lines.isEmpty()) {
+			return new ArrayList<String>();
+		}
+		List<String> out = new ArrayList<String>(lines.size());
+		for(int i = 0; i < lines.size(); i++) {
+			String line = lines.get(i);
+			if(!TuiOutputConstant.isTruncationNoticeLine(line)) {
+				out.add(line);
+			}
+		}
+		return out;
 	}
 
 	public void shutdown() {
@@ -107,7 +122,10 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 		captureSessionLinesEmitted = 0;
 		truncationNoticePending = false;
 		captureSessionLinesDropped = 0;
+		capturePreambleCommitted = false;
 		pendingCommandLine = commandLine;
+		resetSessionFullLines();
+		sessionFullLinesOwner = output;
 		Logger.setTuiPanelCapture(true);
 		if(output != null) {
 			output.beginBatchAppend();
@@ -116,29 +134,35 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 	}
 
 	/**
-	 * Clears Output for a new command, then writes {@code > command} preamble.
-	 * Invoked only after {@code beforeExecute} (and mutating-call confirmation) succeed.
+	 * Output을 비운 뒤 "> command" 프리앰블을 쓴다.
+	 * beforeExecute(및 변경 CALL 확인) 성공 후에만 호출된다.
 	 */
 	public void commitUserCapturePreamble() {
 		if(captureSessionAborted || !Logger.isTuiPanelCapture()) {
 			return;
 		}
+		if(capturePreambleCommitted) {
+			return;
+		}
+		capturePreambleCommitted = true;
 		captureBaselineLineCount = 0;
 		captureHadSubstantiveLine = false;
+		sessionFullLinesOwner = output;
 		if(!suppressEmptyOutputPlaceholder) {
 			writeRequestPreamble(pendingCommandLine);
 		}
 		pendingCommandLine = null;
+		refreshCaptureDisplayIfBatching();
 	}
 
 	/**
-	 * User cancelled before the command produced output (e.g. mutating CALL declined).
-	 * Removes preamble/output from this session and skips {@link #endUserCaptureSession} placeholder.
+	 * 출력 전에 사용자가 취소한 경우(예: 변경 CALL 거부). 이번 세션 프리앰블·출력을 제거하고 빈 Output 플레이스홀더를 건너뛴다.
 	 */
 	public void abortUserCaptureSession() {
 		captureSessionAborted = true;
 		captureEpoch++;
 		pendingCommandLine = null;
+		capturePreambleCommitted = false;
 		Logger.setTuiPanelCapture(false);
 		clearPartialLine();
 		captureHadSubstantiveLine = false;
@@ -190,12 +214,16 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 									host.refreshOutputPaneBorderTime();
 								}
 								endBatchOnGuiIfNeeded();
+								if(captureHadSubstantiveLine || !tail.isEmpty()) {
+									output.scrollDisplayToEnd();
+								}
 							}
 						} finally {
 							if(epoch == captureEpoch) {
 								Logger.setTuiPanelCapture(false);
 								captureHadSubstantiveLine = false;
 								suppressEmptyOutputPlaceholder = false;
+								capturePreambleCommitted = false;
 								clearPartialLine();
 								captureSessionLinesEmitted = 0;
 								truncationNoticePending = false;
@@ -211,6 +239,47 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 	public void clearPartialLine() {
 		synchronized(currentLine) {
 			currentLine.setLength(0);
+		}
+	}
+
+	@Override
+	public void appendInlineFragment(final String fragment) {
+		if(output == null || fragment == null || fragment.length() == 0) {
+			return;
+		}
+		if(!Logger.isTuiPanelCapture() && !shouldPassthroughWithoutCapture(fragment)) {
+			return;
+		}
+		final int epoch = captureEpoch;
+		gui.getGUIThread().invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if(epoch != captureEpoch || output == null) {
+					return;
+				}
+				output.appendToLastLogicalLine(fragment);
+				appendSessionFullLineSuffix(fragment);
+				captureHadSubstantiveLine = true;
+				host.refreshOutputPaneBorderTime();
+			}
+		});
+	}
+
+	public void appendStdinResponseToLastLine(String response) {
+		if(response == null || response.length() == 0) {
+			return;
+		}
+		appendInlineFragment(response);
+	}
+
+	private void appendSessionFullLineSuffix(String suffix) {
+		synchronized(sessionFullLinesLock) {
+			if(sessionFullLines.isEmpty()) {
+				sessionFullLines.add(suffix);
+			} else {
+				int last = sessionFullLines.size() - 1;
+				sessionFullLines.set(last, sessionFullLines.get(last) + suffix);
+			}
 		}
 	}
 
@@ -264,7 +333,13 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 	}
 
 	private void collectEmitLine(String line, List<String> displayOut, boolean capture) {
-		if(shouldSkipTuiOutputLine(line)) {
+		if(line == null) {
+			return;
+		}
+		if(line.trim().isEmpty()) {
+			// 의도적 빈 줄 유지(CLI와 동일한 간격; Logger.logBlankLine 참고).
+			line = "\u00a0";
+		} else if(shouldSkipTuiOutputLine(line)) {
 			return;
 		}
 		if(capture) {
@@ -292,16 +367,50 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 		captureHadSubstantiveLine = true;
 		output.appendLogicalLines(lines);
 		host.refreshOutputPaneBorderTime();
+		refreshCaptureDisplayIfBatching();
 	}
 
 	private List<String> buildSessionTailLines() {
 		List<String> tail = new ArrayList<String>();
-		if(truncationNoticePending && captureSessionLinesDropped > 0) {
+		if(hasTruncationNoticeLine()) {
+			return tail;
+		}
+		int dropped = captureSessionLinesDropped;
+		if(dropped <= 0) {
+			dropped = estimateDroppedLinesFromSessionBuffer();
+		}
+		if(dropped > 0 || truncationNoticePending) {
+			if(dropped <= 0) {
+				dropped = 1;
+			}
 			tail.add(String.format(TuiOutputConstant.OUTPUT_TRUNCATED_MESSAGE,
-					Integer.valueOf(captureSessionLinesDropped)));
+					Integer.valueOf(dropped)));
 			captureHadSubstantiveLine = true;
 		}
 		return tail;
+	}
+
+	private boolean hasTruncationNoticeLine() {
+		if(output == null) {
+			return false;
+		}
+		List<String> logical = output.getLogicalLines();
+		if(logical.isEmpty()) {
+			return false;
+		}
+		return TuiOutputConstant.isTruncationNoticeLine(logical.get(logical.size() - 1));
+	}
+
+	private int estimateDroppedLinesFromSessionBuffer() {
+		if(output == null) {
+			return 0;
+		}
+		int shown = output.getLogicalLines().size();
+		synchronized(sessionFullLinesLock) {
+			int full = sessionFullLines.size();
+			int extra = full - shown;
+			return extra > 0 ? extra : 0;
+		}
 	}
 
 	private void writeRequestPreamble(String commandLine) {
@@ -324,6 +433,7 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 				sessionFullLines.clear();
 				sessionFullLines.addAll(preamble);
 			}
+			sessionFullLinesOwner = output;
 			output.appendLogicalLines(preamble);
 			host.refreshOutputPaneBorderTime();
 		} catch(Exception e) {}
@@ -335,6 +445,36 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 		}
 		output.endBatchAppend();
 		batchAppendActive = false;
+	}
+
+	private void refreshCaptureDisplayIfBatching() {
+		if(output != null && batchAppendActive) {
+			output.reflowDisplayScrollToEnd();
+		}
+	}
+
+	/**
+	 * SCRIPT 캡처 중 진행 대화상자가 열린 채로도 결과가 보이도록 매 스크립트 줄마다 Output 패널을 재배치한다.
+	 */
+	public void refreshLiveCaptureDisplay() {
+		final int epoch = captureEpoch;
+		outputPrepareExecutor.execute(new Runnable() {
+			@Override
+			public void run() {
+				gui.getGUIThread().invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if(epoch != captureEpoch || output == null) {
+							return;
+						}
+						refreshCaptureDisplayIfBatching();
+						if(!batchAppendActive) {
+							output.scrollDisplayToEnd();
+						}
+					}
+				});
+			}
+		});
 	}
 
 	private static boolean shouldPassthroughWithoutCapture(Object msg) {
@@ -353,9 +493,6 @@ public final class JmxTuiOutputSink implements Logger.OutputSink {
 
 	private static boolean shouldSkipTuiOutputLine(String line) {
 		if(line == null) {
-			return true;
-		}
-		if(line.trim().isEmpty()) {
 			return true;
 		}
 		String t = line.trim();

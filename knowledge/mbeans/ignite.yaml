@@ -1,0 +1,180 @@
+entries:
+  - match:
+      objectName: "org.apache:group=Kernal,name=IgniteKernal"
+      className: "org.apache.ignite.mxbean.IgniteMXBean"
+    description: "Apache Ignite kernel management interface."
+    attributes:
+      CheckpointSpiFormatted:
+        description: "Formatted instance of configured checkpoint SPI implementation."
+      CollisionSpiFormatted:
+        description: "Formatted instance of configured collision SPI implementations."
+      CommunicationSpiFormatted:
+        description: "Formatted instance of fully configured SPI communication"
+      Copyright:
+        description: "Copyright statement for Ignite product."
+      CurrentCoordinatorFormatted:
+        description: "Formatted properties of current coordinator."
+      DeploymentSpiFormatted:
+        description: "Formatted instance of fully configured deployment SPI"
+      DiscoverySpiFormatted:
+        description: "Formatted instance of configured discovery SPI implementation."
+      EventStorageSpiFormatted:
+        description: "Formatted instance of fully configured event SPI implementation."
+      ExecutorServiceFormatted:
+        description: "Formatted instance of fully configured thread pool"
+      FailoverSpiFormatted:
+        description: "Formatted instance of fully configured failover SPI implementations."
+      FullVersion:
+        description: "String presentation of the Ignite version."
+      GridLoggerFormatted:
+        description: "Formatted instance of logger that is in grid."
+      IgniteHome:
+        description: "Ignite installation home folder."
+      InstanceName:
+        description: "Optional kernal instance name."
+      JdkInformation:
+        description: "JDK information."
+      LifecycleBeansFormatted:
+        description: "String representation of lifecycle beans."
+      LoadBalancingSpiFormatted:
+        description: "Formatted instance of fully configured load balancing SPI"
+      LocalNodeId:
+        description: "Unique identifier for this node within grid."
+      LongJVMPauseLastEvents:
+        description: "Long JVM pause last events."
+      LongJVMPausesCount:
+        description: "Long JVM pauses count."
+      LongJVMPausesTotalDuration:
+        description: "Long JVM pauses total duration."
+      MBeanServerFormatted:
+        description: "Formatted instance of MBean server instance."
+      NodeInBaseline:
+        description: "Baseline node flag."
+      OsInformation:
+        description: "OS information."
+      OsUser:
+        description: "OS user name."
+      PeerClassLoadingEnabled:
+        description: "Whether or not peer class loading"
+      RebalanceEnabled:
+        description: "Rebalance enabled flag."
+      StartTimestamp:
+        description: "Start timestamp of the kernal."
+      StartTimestampFormatted:
+        description: "Start timestamp of the kernal."
+      UpTime:
+        description: "Up-time of the kernal."
+      UpTimeFormatted:
+        description: "String presentation of up-time for the kernal."
+      UserAttributesFormatted:
+        description: "Collection of formatted user-defined attributes added to this node."
+      VmName:
+        description: "VM name."
+    operations:
+      "active()":
+        description: "Checks Ignite grid is active or is not active."
+        return: "Return type: boolean."
+      "active(boolean)":
+        description: "This method allows manually remove the checkpoint with given key."
+        params:
+          - name: active
+            type: boolean
+      "clearNodeLocalMap()":
+        description: "Clears local node map."
+      "clusterState()":
+        description: "Checks cluster state."
+        return: "Return type: String."
+      "dumpDebugInfo()":
+        description: "Dumps debug information for the current node."
+      "lastClusterStateChangeTime()":
+        description: "Unix time of last cluster state change operation."
+        return: "Return type: long."
+      "printLastErrors()":
+        description: "Prints last suppressed errors."
+      "rebalanceEnabled(boolean)":
+        description: "Enable or disable cache partition rebalance per node."
+        params:
+          - name: rebalanceEnabled
+            type: boolean
+
+  - match:
+      objectName: "org.apache:group=Kernal,name=Ignition"
+      className: "org.apache.ignite.mxbean.IgnitionMXBean"
+    description: "Apache Ignite ignition management interface."
+    attributes:
+      State:
+        description: "State of default grid instance."
+
+  - match:
+      objectName: "org.apache:group=Transactions,name=*"
+      className: "org.apache.ignite.mxbean.TransactionsMXBean"
+    description: "Apache Ignite transactions management interface."
+    attributes:
+      LongOperationsDumpTimeout:
+        description: "Returns the longOperationsDumpTimeout."
+      TransactionTimeDumpSamplesCoefficient:
+        description: "Sets if dump requests from local node to near node are allowed, when long running transaction is found. If allowed, the compute request to near node will be made to get thread dump of transaction owner thread."
+      TransactionTimeDumpSamplesPerSecondLimit:
+        description: "Sets the coefficient for samples of completed transactions that will be dumped in log."
+      TxKeyCollisionsInterval:
+        description: "Returns the txKeyCollisionsInterval."
+      TxOwnerDumpRequestsAllowed:
+        description: "Sets transaction timeout on partition map exchange. If not set, default value is {@link TransactionConfiguration#TX_TIMEOUT_ON_PARTITION_MAP_EXCHANGE} which means transactions will never be rolled back on partition map exchange. ."
+      TxTimeoutOnPartitionMapExchange:
+        description: "Returns transaction timeout on partition map exchange in milliseconds."
+    operations:
+      "setTxKeyCollisionsInterval(int)":
+        description: "Sets the txKeyCollisionsInterval."
+        params:
+          - name: timeout
+            type: int
+
+  - match:
+      objectName: "org.apache:group=Kernal,name=FailureHandlingMxBean"
+      className: "org.apache.ignite.mxbean.FailureHandlingMxBean"
+    description: "Apache Ignite failure handling management interface."
+    attributes:
+      CheckpointReadLockTimeout:
+        description: "Returns the checkpointReadLockTimeout."
+      LivenessCheckEnabled:
+        description: "Enable/disable critical workers liveness checking."
+      SystemWorkerBlockedTimeout:
+        description: "Returns the systemWorkerBlockedTimeout."
+    operations:
+      "setCheckpointReadLockTimeout(long)":
+        description: "Sets the checkpointReadLockTimeout."
+        params:
+          - name: val
+            type: long
+      "setLivenessCheckEnabled(boolean)":
+        description: "Sets the livenessCheckEnabled."
+        params:
+          - name: val
+            type: boolean
+      "setSystemWorkerBlockedTimeout(long)":
+        description: "Sets the systemWorkerBlockedTimeout."
+        params:
+          - name: val
+            type: long
+
+  - match:
+      objectName: "org.apache:group=Workers,name=WorkersControlMXBean"
+      className: "org.apache.ignite.mxbean.WorkersControlMXBean"
+    description: "Apache Ignite worker threads control management interface."
+    attributes:
+      WorkerNames:
+        description: "Names of registered workers."
+
+  - match:
+      objectName: "org.apache:group=Baseline,name=BaselineAutoAdjustMXBean"
+      className: "org.apache.ignite.mxbean.BaselineAutoAdjustMXBean"
+    description: "Apache Ignite baseline auto-adjust management interface."
+    attributes:
+      AutoAdjustmentEnabled:
+        description: "Whether baseline autoadjustment is enabled ot not."
+      AutoAdjustmentTimeout:
+        description: "Baseline autoadjustment timeout value."
+      TaskState:
+        description: "Returns the taskState."
+      TimeUntilAutoAdjust:
+        description: "Time until baseline will be adjusted automatically."

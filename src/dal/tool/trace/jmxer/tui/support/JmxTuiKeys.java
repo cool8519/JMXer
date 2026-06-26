@@ -5,18 +5,17 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 
 /**
- * Global and list-navigation key detection for the TUI.
+ * TUI 전역·목록 탐색 키 입력 판별.
+ *
  */
 public final class JmxTuiKeys {
 	private JmxTuiKeys() {}
 
-	/** ASCII ETX — Ctrl+C. */
 	private static final char CTRL_C_CHAR = 3;
-	/** ASCII SUB — Ctrl+Z (must not be treated as exit). */
 	private static final char CTRL_Z_CHAR = 26;
 
 	/**
-	 * Ctrl+Z / suspend. Must be swallowed so the process is not backgrounded (Unix) or mistaken for exit (EOF on Windows).
+	 * Ctrl+Z/일시 중지 키. Unix에서 프로세스가 백그라운드로 가거나 Windows에서 EOF로 오인되는 것을 막기 위해 삼킨다.
 	 */
 	public static boolean isCtrlSuspend(KeyStroke key) {
 		if(key == null) {
@@ -25,7 +24,11 @@ public final class JmxTuiKeys {
 		KeyType type = key.getKeyType();
 		if(type == KeyType.EOF) {
 			Character ch = key.getCharacter();
-			return ch != null && ch.charValue() == CTRL_Z_CHAR;
+			// Windows에서 Ctrl+Z가 character 없는 EOF로 오는 경우가 많다.
+			if(ch == null) {
+				return true;
+			}
+			return ch.charValue() == CTRL_Z_CHAR;
 		}
 		if(type == KeyType.Character) {
 			Character ch = key.getCharacter();
@@ -42,8 +45,7 @@ public final class JmxTuiKeys {
 	}
 
 	/**
-	 * Detect Ctrl+C across platforms. Windows native console delivers it as KeyType.Character
-	 * with isCtrlDown=true, but some environments translate the 0x03 byte into KeyType.EOF.
+	 * 플랫폼별 Ctrl+C 감지. Windows 네이티브 콘솔은 Character+Ctrl이지만, 일부 환경은 0x03을 EOF로 넘긴다.
 	 */
 	public static boolean isExitKey(KeyStroke key) {
 		if(key == null || isCtrlSuspend(key)) {
@@ -53,8 +55,7 @@ public final class JmxTuiKeys {
 		if(type == KeyType.EOF) {
 			Character ch = key.getCharacter();
 			if(ch == null) {
-				// Legacy: bare EOF without a control byte — treat as Ctrl+C.
-				return true;
+				return false;
 			}
 			return ch.charValue() == CTRL_C_CHAR;
 		}
@@ -71,8 +72,8 @@ public final class JmxTuiKeys {
 	}
 
 	/**
-	 * Shortcuts handled for every pane before input reaches the focused component
-	 * (see {@link dal.tool.trace.jmxer.tui.app.JmxTuiWindow}). Tab / Shift+Tab are not listed here: they follow default focus traversal.
+	 * 포커스된 컴포넌트보다 먼저 처리하는 전역 단축키.
+	 * JmxTuiWindow에서 선처리한다. Tab/Shift+Tab은 기본 포커스 이동이므로 여기에 포함하지 않는다.
 	 */
 	public static boolean isGlobalShortcut(KeyStroke key) {
 		if(key == null) {
@@ -81,10 +82,16 @@ public final class JmxTuiKeys {
 		if(key.getKeyType() == KeyType.F1) {
 			return true;
 		}
-		if(key.getKeyType() == KeyType.F2) {
+		if(TuiKeyBindings.current().matches(TuiKeyAction.INFO, key)) {
 			return true;
 		}
 		if(key.getKeyType() == KeyType.F3) {
+			return true;
+		}
+		if(TuiKeyBindings.current().matches(TuiKeyAction.RECORD_VIEW_TYPE_TOGGLE, key)) {
+			return true;
+		}
+		if(isKeyRemapDialogKey(key)) {
 			return true;
 		}
 		if(isCtrlToggleThreadRefresh(key)) {
@@ -96,6 +103,9 @@ public final class JmxTuiKeys {
 		if(isCtrlFeaturesToggle(key)) {
 			return true;
 		}
+		if(isCtrlToggleShowEmptyThread(key)) {
+			return true;
+		}
 		if(isCtrlToggleOutputPane(key)) {
 			return true;
 		}
@@ -105,7 +115,6 @@ public final class JmxTuiKeys {
 		return false;
 	}
 
-	/** Shift+arrow — resize resizable panes between Status and Command (see {@link dal.tool.trace.jmxer.tui.app.JmxTuiApp}). */
 	public static boolean isPaneResizeKey(KeyStroke key) {
 		if(key == null || !key.isShiftDown()) {
 			return false;
@@ -131,150 +140,145 @@ public final class JmxTuiKeys {
 		return type == KeyType.ArrowUp || type == KeyType.ArrowDown;
 	}
 
+	public static boolean isInfoKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.INFO, key);
+	}
+
 	public static boolean isF2Key(KeyStroke key) {
-		return key != null && key.getKeyType() == KeyType.F2;
+		return isInfoKey(key);
 	}
 
-	/** F3 — global: cycle UI modes. */
 	public static boolean isF3Key(KeyStroke key) {
-		return key != null && key.getKeyType() == KeyType.F3;
+		return key != null && key.getKeyType() == KeyType.F3 && !key.isShiftDown();
 	}
 
-	/** F4 — Thread UI mode: edit thread selection via ThreadList expression. */
 	public static boolean isF4Key(KeyStroke key) {
-		return key != null && key.getKeyType() == KeyType.F4;
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_VIEW_TYPE_TOGGLE, key);
 	}
 
-	/** F5 — Thread pane: force thread list refresh. */
 	public static boolean isF5Key(KeyStroke key) {
-		return key != null && key.getKeyType() == KeyType.F5;
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_FORCE_REFRESH, key);
 	}
 
-	/** Ctrl+R — Thread UI mode: toggle auto/manual refresh policy. */
+	public static boolean isRecordSampleKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_SAMPLE, key);
+	}
+
+	public static boolean isRecordSampleSelectedKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_SAMPLE_SELECTED, key);
+	}
+
+	public static boolean isThreadSortKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_SORT, key);
+	}
+
+	public static boolean isF7Key(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_DUMP_LOAD, key);
+	}
+
+	public static boolean isF8Key(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_DUMP_SAVE, key);
+	}
+
+	public static boolean isF9Key(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_DUMP_INFO, key);
+	}
+
+	public static boolean isF10Key(KeyStroke key) {
+		return key != null && key.getKeyType() == KeyType.F10;
+	}
+
+	public static boolean isF12Key(KeyStroke key) {
+		return key != null && key.getKeyType() == KeyType.F12;
+	}
+
+	public static boolean isKeyRemapDialogKey(KeyStroke key) {
+		return isF12Key(key) && !key.isShiftDown() && !key.isCtrlDown() && !key.isAltDown();
+	}
+
+	public static boolean isShiftRecordViewMethod(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_VIEW_METHOD, key);
+	}
+
+	public static boolean isShiftRecordViewThread(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_VIEW_THREAD, key);
+	}
+
+	public static boolean isShiftRecordViewStack(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_VIEW_STACK, key);
+	}
+
+	public static boolean isShiftRecordViewSearch(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_VIEW_SEARCH, key);
+	}
+
+	public static boolean isF1HelpKey(KeyStroke key) {
+		return key != null && key.getKeyType() == KeyType.F1 && !key.isShiftDown();
+	}
+
 	public static boolean isCtrlToggleThreadRefresh(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'r' || c == 'R';
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_AUTO_REFRESH, key);
 	}
 
-	/** Ctrl+Shift+Enter — Thread UI mode: stacktrace for all selected threads (with confirmation). */
-	public static boolean isCtrlShiftEnter(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || !key.isShiftDown()) {
-			return false;
-		}
-		return key.getKeyType() == KeyType.Enter;
+	public static boolean isThreadBulkStacktraceKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_BULK_STACKTRACE, key);
 	}
 
-	/** Ctrl+T — Thread UI mode: toggle {@code STACKTRACE_TARGET}; shortcut shown on status line 3. */
+	public static boolean isThreadPrimaryActionKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_PRIMARY_ACTION, key);
+	}
+
+	public static boolean isMbeanSetDefaultKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.MBEAN_SET_DEFAULT, key);
+	}
+
+	public static boolean isFeatureInvokeKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.FEATURE_INVOKE, key);
+	}
+
 	public static boolean isCtrlToggleStacktraceTarget(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 't' || c == 'T';
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_STACKTRACE_TARGET, key);
 	}
 
-	/** Ctrl+E — Thread UI mode (ACTIVE): edit {@code REQUEST_ENTRY_FILE}; shortcut shown on status line 3. */
-	public static boolean isCtrlEditReqEntryFile(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'e' || c == 'E';
+	public static boolean isCtrlEditThreadSelection(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_EDIT_SELECTION, key);
 	}
 
-	/** Ctrl+P — MBean UI mode (Online): toggle {@code PRETTY_PRINT}; shortcut shown on status line 3. */
+	public static boolean isCtrlEditRequestEntryFile(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_REQUEST_ENTRY_FILE, key);
+	}
+
 	public static boolean isCtrlTogglePrettyPrint(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'p' || c == 'P';
+		return TuiKeyBindings.current().matches(TuiKeyAction.OUTPUT_PRETTY_PRINT, key);
 	}
 
 	public static boolean isCtrlFeaturesToggle(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'f' || c == 'F';
+		return TuiKeyBindings.current().matches(TuiKeyAction.FEATURES_PANE_TOGGLE, key);
 	}
 
-	/** Ctrl+O — global: toggle Output pane show/hide. */
+	public static boolean isCtrlToggleShowEmptyThread(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.RECORD_SHOW_EMPTY_THREAD_TOGGLE, key);
+	}
+
 	public static boolean isCtrlToggleOutputPane(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'o' || c == 'O';
+		return TuiKeyBindings.current().matches(TuiKeyAction.OUTPUT_PANE_TOGGLE, key);
 	}
 
-	/** Ctrl+L — local to the Output pane: toggle wrap vs single-line display. */
 	public static boolean isCtrlToggleOutputWrap(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'l' || c == 'L';
+		return TuiKeyBindings.current().matches(TuiKeyAction.OUTPUT_WRAP, key);
 	}
 
-	/** Ctrl+S — local to the Output pane only: save all output to a file. */
-	public static boolean isCtrlSaveOutput(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 's' || c == 'S';
+	public static boolean isSaveOutputKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.OUTPUT_SAVE, key);
 	}
 
-	/** Ctrl+V — paste from the system clipboard into a text input (Command pane). */
 	public static boolean isCtrlPaste(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'v' || c == 'V';
+		return TuiKeyBindings.current().matches(TuiKeyAction.COMMAND_PASTE, key);
 	}
 
-	/** Plain space (no modifiers). Lanterna {@code ActionListBox} treats it like Enter; callers must handle it explicitly. */
+	/**
+	 * 수정자 없는 Space. Lanterna ActionListBox가 Enter처럼 처리하므로 호출 측에서 별도 처리해야 한다.
+	 */
 	public static boolean isPlainSpaceKey(KeyStroke key) {
 		if(key == null || key.getKeyType() != KeyType.Character) {
 			return false;
@@ -286,42 +290,16 @@ public final class JmxTuiKeys {
 		return ch != null && ch.charValue() == ' ';
 	}
 
-	/** Ctrl+Shift+Space — Thread pane: select all displayed threads. */
-	public static boolean isCtrlShiftSpace(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || !key.isShiftDown()) {
-			return false;
-		}
-		if(key.getKeyType() == KeyType.Character) {
-			Character ch = key.getCharacter();
-			return ch != null && ch.charValue() == ' ';
-		}
-		return false;
+	public static boolean isThreadToggleCurrentKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_TOGGLE_CURRENT, key);
 	}
 
-	/** Ctrl+Shift+A — Thread UI: toggle all displayed threads (Thread or Search pane; fallback when Ctrl+Shift+Space is not delivered by the terminal). */
-	public static boolean isCtrlShiftA(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || !key.isShiftDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'a' || c == 'A';
+	public static boolean isThreadToggleAllKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_TOGGLE_ALL, key);
 	}
 
-	/** Ctrl+Shift+D — Thread UI: clear all thread selections (Thread or Search pane). */
-	public static boolean isCtrlShiftD(KeyStroke key) {
-		if(key == null || !key.isCtrlDown() || !key.isShiftDown() || key.getKeyType() != KeyType.Character) {
-			return false;
-		}
-		Character ch = key.getCharacter();
-		if(ch == null) {
-			return false;
-		}
-		char c = ch.charValue();
-		return c == 'd' || c == 'D';
+	public static boolean isThreadClearSelectedKey(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_CLEAR_SELECTED, key);
 	}
 
 	public static boolean isFocusTraversalFromListNavigation(KeyStroke keyStroke, Interactable.Result r) {

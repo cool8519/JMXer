@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dal.tool.cli.Logger.Level;
+import dal.tool.cli.ScriptUiHooks;
 import dal.tool.cli.command.ClearCommand;
 import dal.tool.cli.command.Command;
 import dal.tool.cli.command.CommandMeta;
@@ -185,7 +186,26 @@ public abstract class CommandExecutor {
 	 * @return EXIT/QUIT 등으로 세션 종료가 필요하면 true
 	 */
 	public boolean processCommandForTui(String commandLine) {
+		if(isEditCommandLine(commandLine)) {
+			logln(Level.ERROR, EditCommand.TUI_NOT_AVAILABLE_MESSAGE);
+			return false;
+		}
 		return processCommandCore(commandLine);
+	}
+
+	private static boolean isEditCommandLine(String commandLine) {
+		if(commandLine == null) {
+			return false;
+		}
+		String trimmed = commandLine.trim();
+		if(trimmed.isEmpty()) {
+			return false;
+		}
+		String first = trimmed.split(" ")[0];
+		if(first.endsWith(";")) {
+			first = first.substring(0, first.length() - 1).trim();
+		}
+		return EditCommand.commandMeta.isMatchCommand(first);
 	}
 
 	private boolean processCommandCore(String commandLine) {
@@ -244,6 +264,7 @@ public abstract class CommandExecutor {
 	    		} catch(Exception e) {
 	    			logln(Level.ERROR, "Error occurred during executing command : " + command.toString());
 	    		}
+	    		ScriptUiHooks.flushOutputCapture();
 	    		if(command.isStopPrompt()) {
 	    			return;
 	    		}
@@ -265,13 +286,22 @@ public abstract class CommandExecutor {
 	 */
     public boolean processScriptCommand(String scriptFileName, List<String> scriptCommandLines) {        
         for(String cmdLine : scriptCommandLines) {
+        	if(ScriptUiHooks.isCancelRequested()) {
+        		return false;
+        	}
             String tm = settings.showTimeInPrompt() ? (IOUtil.getCurrentTime()+" ") : "";
-            logln(tm + prompt + ".SCRIPT@'" + scriptFileName + "'> " + cmdLine);
+            String displayLine = tm + prompt + ".SCRIPT@'" + scriptFileName + "'> " + cmdLine;
+            ScriptUiHooks.setCurrentCommand(scriptFileName, cmdLine);
+            logln(displayLine);
             Command command = getCommandInternal(cmdLine);
     		try {
     			command.execute();
     		} catch(Exception e) {
     			logln(Level.ERROR, "Error occurred during executing command : " + command.toString());
+    		}
+    		ScriptUiHooks.flushOutputCapture();
+    		if(ScriptUiHooks.isCancelRequested()) {
+    			return false;
     		}
     		if(command.isStopPrompt()) {
     			return false;
@@ -345,6 +375,8 @@ public abstract class CommandExecutor {
 		}
 		if(command instanceof NoopCommand) {
 			return true;
+		} else if(command instanceof HelpCommand) {
+			return true;
 		} else if(command instanceof ScriptCommand) {
 			return true;
 		} else if(command instanceof MultiCommand) {
@@ -370,20 +402,11 @@ public abstract class CommandExecutor {
 	}
 	
 	
-    /**
-     * 로그를 기록한다. 마지막에 newline 문자를 추가한다.
-     * @param msg 로그 메시지
-     */
     protected void logln(Object msg) {
     	Logger.logln(Level.RESULT, msg);
     }
 
 
-    /**
-     * 로그를 기록한다. 마지막에 newline 문자를 추가한다.
-     * @param level 로그 레벨
-     * @param msg 로그 메시지
-     */
     protected void logln(Level level, Object msg) {
     	Logger.logln(level, msg);
     }

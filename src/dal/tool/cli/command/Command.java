@@ -6,9 +6,15 @@ import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.ListArguments;
 import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
+import dal.tool.cli.ScriptCommandPolicy;
 import dal.tool.cli.Settings;
 
 
+/**
+ * CLI 명령 추상 기본 클래스
+ * @author 권영달
+ *
+ */
 public abstract class Command {
 
 	protected String commandLine = null;
@@ -46,11 +52,6 @@ public abstract class Command {
 	public abstract boolean saveToHistory();
 	
 	
-	/**
-	 * 명령어 객체를 생성한다.
-	 * @param commandLine 명령어
-	 * @param commandExecutor 수행한 CommandExecutor 구현 객체
-	 */
 	protected Command(String commandLine, CommandExecutor commandExecutor) {
     	this.commandLine = commandLine;
     	this.commandExecutor = commandExecutor;
@@ -103,47 +104,27 @@ public abstract class Command {
 	}
 	
 	
-	/**
-	 * 명령어 문자열을 리턴한다.
-	 * @return 멸령어 문자열
-	 */
 	public String getCommandLine() {
 		return commandLine;
 	}
 	
 	
-	/**
-	 * 명령어 문자열을 저장한다.
-	 * @param commandLine 명령어 문자열
-	 */
 	public void setCommandLine(String commandLine) {
 		this.commandLine = commandLine;
 		this.needToParse = true;
 	}
 	
 	
-	/**
-	 * 명령어 수행기 객체를 가져온다.
-	 * @return CommandExecutor 구현 객체
-	 */
 	public CommandExecutor getCommandExecutor() {
 		return commandExecutor;
 	}
 	
 	
-	/**
-	 * 프롬프트 환경설정을 가져온다.
-	 * @return 환경설정 객체
-	 */
 	public Settings getSettings() {
 		return commandExecutor.getSettings();
 	}
 	
 	
-	/**
-	 * 명령어 수행기를 설정한다.
-	 * @param commandExecutor CommandExecutor 구현 객체
-	 */
 	public void setCommandExecutor(CommandExecutor commandExecutor) {
 		this.commandExecutor = commandExecutor;
 	}
@@ -174,12 +155,17 @@ public abstract class Command {
 		}
 		
         if(isStopCommand()) return;
+
+        if(ScriptCommandPolicy.shouldReject(this)) {
+        	logln(Logger.Level.ERROR, ScriptCommandPolicy.getBlockedMessage(this));
+        	return;
+        }
         
         try {
         	if(!this.beforeExecute()) {
         		return;
         	}
-        	if(Logger.isTuiPanelCapture()) {
+        	if(Logger.isTuiPanelCapture() && !ScriptCommand.isNestedScriptExecution()) {
         		Logger.commitTuiUserCapturePreamble();
         	}
         } catch(Exception e) {
@@ -211,39 +197,23 @@ public abstract class Command {
         	logln(Level.ERROR, "Error occurred during afterExecute.");
         }
 	}
-
 	
-	/**
-	 * 명령어 수행 후 프롬프트를 중지할 지 여부를 설정한다.
-	 * @param flag 프롬프트를 중지하려면 true.
-	 */
+	
 	public void setStopPrompt(boolean flag) {
 		this.stopPrompt = flag;
 	}
 	
 	
-	/**
-	 * 명령어 수행 후 프롬프트를 중지할 지 여부를 확인한다.
-	 * @return 프롬프트가 중지 되어야 하면 true.
-	 */
 	public boolean isStopPrompt() {
 		return stopPrompt;
 	}
 	
 
-	/**
-	 * 명령어 수행을 중지할 지 여부를 설정한다.
-	 * @param flag 명령어를 중지하려면 true.
-	 */
 	public void setStopCommand(boolean flag) {
 		this.stopCommand = flag;
 	}
 	
 	
-	/**
-	 * 명령어 수행을 중지할 지 여부를 확인한다.
-	 * @return 명령어가 중지 되어야 하면 true.  
-	 */
 	public boolean isStopCommand() {
 		return stopCommand;
 	}
@@ -262,38 +232,21 @@ public abstract class Command {
 	}
 	
 	
-	/**
-	 * 명령어 수행 전에 호출된다.
-	 * @return 수행에 성공하면 true. false이면 명령어를 수행하지 않는다.
-	 */
 	public boolean beforeExecute() throws Exception {
 		return true;
 	}
 
 	
-	/**
-	 * 명령어 수행 후에 호출된다.
-	 * @return 수행에 성공하면 true.
-	 */
 	public boolean afterExecute() throws Exception {
 		return true;
 	}
 
 	
-    /**
-     * 로그를 기록한다. 마지막에 newline 문자를 추가한다.
-     * @param msg 로그 메시지
-     */
     protected void logln(Object msg) {
     	Logger.logln(dal.tool.cli.Logger.Level.RESULT, msg);
     }
 
 
-    /**
-     * 로그를 기록한다. 마지막에 newline 문자를 추가한다.
-     * @param level 로그 레벨
-     * @param msg 로그 메시지
-     */
     protected void logln(Level level, Object msg) {
     	Logger.logln(level, msg);
     }

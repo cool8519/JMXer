@@ -8,11 +8,10 @@ import com.googlecode.lanterna.gui2.Window;
 import com.googlecode.lanterna.input.KeyStroke;
 
 /**
- * Main TUI window: installs a {@link BasePaneListener} so global shortcuts are handled
- * before the focused pane (see {@link JmxTuiApp#consumeGlobalShortcut(KeyStroke)}).
+ * TUI 메인 윈도우. BasePaneListener로 전역 단축키를 포커스 패널보다 먼저 처리한다.
+ *
  */
 public class JmxTuiWindow extends BasicWindow {
-	/** Return true if the key was fully handled (focused pane must not see it). */
 	public interface GlobalShortcutHandler {
 		boolean consumeGlobalShortcut(KeyStroke keyStroke);
 	}
@@ -32,7 +31,6 @@ public class JmxTuiWindow extends BasicWindow {
 
 			@Override
 			public void onUnhandledInput(Window pane, KeyStroke keyStroke, AtomicBoolean consumeEvent) {
-				// no-op
 			}
 		});
 	}

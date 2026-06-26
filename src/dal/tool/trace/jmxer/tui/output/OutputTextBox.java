@@ -17,8 +17,9 @@ import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
 import dal.tool.trace.jmxer.tui.support.TuiF2Handler;
 
 /**
- * Read-only Output pane: stores logical result lines and reflows them for display.
- * Ctrl+L toggles wrap (multi-line within pane width) vs single-line (horizontal scroll) without re-fetching results.
+ * 읽기 전용 Output 패널. 논리 결과 줄을 저장하고 표시용으로 재배치한다.
+ * Output Wrap 단축키로 줄바꿈(패널 너비 내 여러 줄)과 한 줄(가로 스크롤) 모드를 전환한다.
+ *
  */
 public final class OutputTextBox extends TextBox implements TuiF2Handler {
 
@@ -38,7 +39,7 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		this.pane = pane;
 		this.host = host;
 		setVerticalFocusSwitching(false);
-		// Never move focus to other panes via arrow keys. In non-wrap mode, left/right are used for horizontal scroll.
+		// 화살표로 다른 패널로 포커스가 넘어가지 않게 한다. 비줄바꿈 모드에서는 좌/우가 가로 스크롤에 쓰인다.
 		setHorizontalFocusSwitching(false);
 	}
 
@@ -84,6 +85,14 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		}
 		batchAppendDepth--;
 		if(batchAppendDepth == 0) {
+			scrollToEndAfterReflow = true;
+			reflowDisplay();
+		}
+	}
+
+	public void scrollDisplayToEnd() {
+		scrollToEndAfterReflow = true;
+		if(batchAppendDepth == 0) {
 			reflowDisplay();
 		}
 	}
@@ -126,6 +135,20 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		reflowDisplay();
 	}
 
+	void appendToLastLogicalLine(String suffix) {
+		if(suffix == null || suffix.length() == 0) {
+			return;
+		}
+		if(logicalLines.isEmpty()) {
+			logicalLines.add(suffix);
+		} else {
+			int last = logicalLines.size() - 1;
+			logicalLines.set(last, logicalLines.get(last) + suffix);
+		}
+		scrollToEndAfterReflow = true;
+		reflowDisplay();
+	}
+
 	void toggleWrapMode() {
 		wrapMode = !wrapMode;
 		applyWrapModeNavigation();
@@ -136,7 +159,14 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		}
 	}
 
-	/** Rebuild TextBox lines from {@link #logicalLines} using the current pane width and wrap mode. */
+	void reflowDisplayScrollToEnd() {
+		scrollToEndAfterReflow = true;
+		reflowDisplay();
+	}
+
+	/**
+	 * 현재 패널 너비와 줄바꿈 모드로 logicalLines에서 TextBox 표시 줄을 다시 만든다.
+	 */
 	public void reflowDisplay() {
 		int paneCols = host == null ? 80 : host.getOutputInnerColumnsAtWrite();
 		int paneRows = getPaneRows();
@@ -162,8 +192,8 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 	}
 
 	/**
-	 * Replace all visible lines via {@link #setText(String)} so Lanterna recalculates {@code longestRow}.
-	 * {@link #removeLine(int)} does not shrink {@code longestRow}, which would leave horizontal scroll stuck.
+	 * setText로 전체 표시 줄을 교체해 Lanterna longestRow를 다시 계산한다.
+	 * removeLine은 longestRow를 줄이지 않아 가로 스크롤이 남을 수 있다.
 	 */
 	private void replaceDisplayLines(List<String> display) {
 		if(display == null || display.isEmpty()) {
@@ -192,11 +222,9 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 	}
 
 	private void applyWrapModeNavigation() {
-		// Keep focus switching disabled regardless of wrap mode.
 		setHorizontalFocusSwitching(false);
 	}
 
-	/** Scroll so the last display line is visible (e.g. after new ERROR output during reconnect). */
 	private void scrollViewToEnd() {
 		TextBox.TextBoxRenderer renderer = getRenderer();
 		if(!(renderer instanceof TextBox.DefaultTextBoxRenderer)) {
@@ -214,13 +242,12 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		setCaretPosition(0, lastLine);
 	}
 
-	/** Reset view offset and caret after content changes; keep Lanterna scrollbars enabled for vertical scroll. */
 	private void resetOutputScrollState() {
 		TextBox.TextBoxRenderer renderer = getRenderer();
 		if(renderer instanceof TextBox.DefaultTextBoxRenderer) {
 			TextBox.DefaultTextBoxRenderer defaultRenderer = (TextBox.DefaultTextBoxRenderer)renderer;
-			// Do not hide scrollbars in wrap mode: Lanterna hides both axes; horizontal overflow is
-			// prevented by OutputTextLayout column budget and left/right key handling instead.
+			// 줄바꿈 모드에서도 스크롤바를 숨기지 않는다. Lanterna는 양축을 함께 숨기며,
+			// 가로 넘침은 OutputTextLayout 열 예산과 좌/우 키 처리로 막는다.
 			defaultRenderer.setHideScrollBars(false);
 			defaultRenderer.setViewTopLeft(TerminalPosition.TOP_LEFT_CORNER);
 		}
@@ -229,7 +256,6 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		}
 	}
 
-	/** Resize dash lines under echoed {@code > command} preambles to the current pane width. */
 	private void resyncRequestSeparators(int columns) {
 		for(int i = 1; i < logicalLines.size(); i++) {
 			String prev = logicalLines.get(i - 1);
@@ -277,7 +303,7 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 		if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
 			return Interactable.Result.HANDLED;
 		}
-		if(JmxTuiKeys.isCtrlSaveOutput(keyStroke)) {
+		if(JmxTuiKeys.isSaveOutputKey(keyStroke)) {
 			Runnable action = saveOutputAction;
 			if(action != null) {
 				action.run();
@@ -319,8 +345,8 @@ public final class OutputTextBox extends TextBox implements TuiF2Handler {
 	}
 
 	/**
-	 * Read-only Lanterna {@link TextBox} scroll uses full pane rows; when a horizontal scrollbar is shown the
-	 * content area is one row shorter, so End/PageDown can leave the last line (e.g. truncation notice) off-screen.
+	 * 읽기 전용 TextBox 스크롤은 전체 패널 행을 쓴다. 가로 스크롤바가 있으면 콘텐츠 영역이 한 줄 줄어
+	 * End/PageDown만으로는 마지막 줄(예: 잘림 안내)이 화면 밖에 남을 수 있다.
 	 */
 	private Interactable.Result handleViewportScrollKey(KeyStroke keyStroke) {
 		if(keyStroke == null) {

@@ -6,6 +6,11 @@ import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Logger.Level;
 import dal.tool.util.StringUtil;
 
+/**
+ * 도움말을 출력하는 HELP 명령
+ * @author 권영달
+ *
+ */
 public class HelpCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(HelpCommand.class, "HELP");

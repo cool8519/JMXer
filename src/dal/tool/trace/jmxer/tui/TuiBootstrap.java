@@ -15,6 +15,9 @@ import com.googlecode.lanterna.terminal.TerminalResizeListener;
 
 import dal.tool.cli.ExternalUiHooks;
 import dal.tool.cli.Logger;
+import dal.tool.cli.ScriptUiHooks;
+import dal.tool.cli.SleepUiHooks;
+import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxMutatingCallConfirmation;
 import dal.tool.trace.jmxer.cli.JmxTuiConnectionLossHandler;
@@ -22,9 +25,18 @@ import dal.tool.trace.jmxer.tui.app.JmxTuiApp;
 import dal.tool.trace.jmxer.tui.app.JmxTuiWindow;
 import dal.tool.trace.jmxer.tui.output.JmxTuiOutputSink;
 import dal.tool.trace.jmxer.tui.dialog.TuiDialogs;
+import dal.tool.trace.jmxer.tui.support.TuiCommandStdin;
+import dal.tool.trace.jmxer.tui.support.TuiGuiThread;
+import dal.tool.trace.jmxer.tui.support.TuiSleepProgress;
+import dal.tool.trace.jmxer.tui.support.TuiScriptProgress;
 import dal.tool.trace.jmxer.tui.support.TuiStdioRedirect;
+import dal.tool.trace.jmxer.tui.support.TuiGuiThread.GuiCallable;
 import dal.tool.util.jmx.MBeanConnector;
 
+/**
+ * TUI 세션 부트스트랩. Lanterna 터미널·GUI·JmxTuiApp을 초기화하고 종료 시 리소스를 정리한다.
+ *
+ */
 public class TuiBootstrap {
 	private TuiBootstrap() {}
 
@@ -32,12 +44,13 @@ public class TuiBootstrap {
 		Screen screen = null;
 		Terminal terminal = null;
 		TuiStdioRedirect stdioRedirect = null;
+		java.io.InputStream prevIn = null;
+		TuiCommandStdin commandStdin = null;
+		JmxTuiApp app = null;
 		try {
-			// Windows default console can start with a very small buffer/window.
-			// Lanterna respects the initial terminal size as a "preferred" size.
+			// Windows 콘솔은 초기 버퍼가 작을 수 있어 Lanterna 선호 크기를 명시한다.
 			DefaultTerminalFactory factory = new DefaultTerminalFactory();
-			// On Unix-like terminals, Ctrl+C might otherwise kill the JVM (SIGINT) before we can show a confirmation dialog.
-			// Try to configure Lanterna to trap Ctrl+C and deliver it as a normal keystroke instead.
+			// Unix 계열에서 Ctrl+C가 확인 대화상자 전에 SIGINT로 JVM을 종료하지 않도록 트랩한다.
 			try {
 				try {
 					Class<?> ctrlEnum = Class.forName("com.googlecode.lanterna.terminal.ansi.UnixLikeTerminal$CtrlCBehaviour");
@@ -71,7 +84,6 @@ public class TuiBootstrap {
 
 			final JmxTuiWindow window = new JmxTuiWindow();
 			window.setTitle("");
-			// Avoid outer window decorations (border) artifacts; keep inner boxed layout only.
 			window.setHints(Arrays.asList(Window.Hint.FULL_SCREEN, Window.Hint.NO_DECORATIONS));
 
 			final Runnable closeAction = new Runnable() {
@@ -83,15 +95,20 @@ public class TuiBootstrap {
 				}
 			};
 
-			JmxTuiApp app = new JmxTuiApp(gui, executor, prompt, closeAction);
+			app = new JmxTuiApp(gui, executor, prompt, closeAction);
+			final JmxTuiApp tuiApp = app;
+			commandStdin = app.getCommandStdin();
+			prevIn = System.in;
+			System.setIn(commandStdin);
 			window.setGlobalShortcutHandler(new JmxTuiWindow.GlobalShortcutHandler() {
 				@Override
 				public boolean consumeGlobalShortcut(com.googlecode.lanterna.input.KeyStroke keyStroke) {
-					return app.consumeGlobalShortcut(keyStroke);
+					return tuiApp.consumeGlobalShortcut(keyStroke);
 				}
 			});
 			Logger.setTuiActive(true);
 			stdioRedirect = new TuiStdioRedirect();
+			final TuiStdioRedirect stdioRedirectForExternal = stdioRedirect;
 			stdioRedirect.install();
 
 			Logger.setOutputSink(app.getOutputSink());
@@ -102,60 +119,145 @@ public class TuiBootstrap {
 			final MultiWindowTextGUI guiForConfirm = gui;
 			JmxMutatingCallConfirmation.setHandler(new JmxMutatingCallConfirmation.Handler() {
 				@Override
-				public boolean confirm(String title, String message) {
-					MessageDialogButton b = TuiDialogs.showMessageDialog(
-						guiForConfirm,
-						title,
-						message,
-						MessageDialogButton.Yes,
-						MessageDialogButton.No
-					);
-					return b != null && b == MessageDialogButton.Yes;
+				public boolean confirm(final String title, final String message) {
+					ScriptUiHooks.suspendForUserInput();
+					try {
+						MessageDialogButton b = TuiGuiThread.callOnGuiThread(guiForConfirm,
+							new TuiGuiThread.GuiCallable<MessageDialogButton>() {
+								@Override
+								public MessageDialogButton call() {
+									return TuiDialogs.showMessageDialog(
+										guiForConfirm,
+										title,
+										message,
+										MessageDialogButton.Yes,
+										MessageDialogButton.No
+									);
+								}
+							});
+						return b != null && b == MessageDialogButton.Yes;
+					} finally {
+						ScriptUiHooks.resumeAfterUserInput();
+					}
+				}
+			});
+
+			final MultiWindowTextGUI guiForSleep = gui;
+			SleepUiHooks.setHandler(new SleepUiHooks.Handler() {
+				@Override
+				public boolean waitForSleep(long sleepMs) {
+					return TuiSleepProgress.waitForSleep(guiForSleep, sleepMs);
+				}
+			});
+
+			final JmxTuiApp tuiAppForScript = app;
+			ScriptUiHooks.setHandler(new ScriptUiHooks.Handler() {
+				@Override
+				public boolean confirmBeforeScript(String scriptFilesDisplay) {
+					return TuiScriptProgress.confirmBeforeScript(guiForSleep, scriptFilesDisplay);
+				}
+
+				@Override
+				public void beginScript(String rootCommandLine) {
+					TuiScriptProgress.begin(guiForSleep, rootCommandLine);
+				}
+
+				@Override
+				public void setCurrentCommand(String scriptFileName, String scriptCommandLine) {
+					TuiScriptProgress.setCurrentCommand(guiForSleep, scriptFileName, scriptCommandLine);
+				}
+
+				@Override
+				public void flushOutputCapture() {
+					tuiAppForScript.refreshLiveScriptCaptureDisplay();
+				}
+
+				@Override
+				public void suspendForUserInput() {
+					TuiScriptProgress.suspend(guiForSleep);
+				}
+
+				@Override
+				public void resumeAfterUserInput() {
+					TuiScriptProgress.resume(guiForSleep);
+				}
+
+				@Override
+				public void finishScript(boolean completedSuccessfully, boolean cancelled) {
+					TuiScriptProgress.finish(guiForSleep, completedSuccessfully, cancelled);
 				}
 			});
 
 			JmxTuiConnectionLossHandler.setHandler(new JmxTuiConnectionLossHandler.Handler() {
 				@Override
 				public void onConnectionLoss(String message) {
-					app.handleConnectionLoss(message);
+					tuiApp.handleConnectionLoss(message);
 				}
 			});
 
+			final Logger.OutputSink[] savedOutputSinkForExternal = new Logger.OutputSink[1];
+			final boolean[] savedPanelCaptureForExternal = new boolean[1];
 			ExternalUiHooks.beforeBlockingExternalProcess = new Runnable() {
 				@Override
 				public void run() {
-					try {
-						finalScreen.stopScreen();
-					} catch(IOException e) {}
+					TuiGuiThread.callOnGuiThread(gui, new GuiCallable<Void>() {
+						@Override
+						public Void call() {
+							try {
+								finalScreen.stopScreen();
+							} catch(IOException e) {}
+							return null;
+						}
+					});
+					stdioRedirectForExternal.restore();
+					savedOutputSinkForExternal[0] = Logger.getOutputSink();
+					savedPanelCaptureForExternal[0] = Logger.isTuiPanelCapture();
+					Logger.setTuiPanelCapture(false);
+					Logger.setOutputSink(null);
 				}
 			};
 			ExternalUiHooks.afterBlockingExternalProcess = new Runnable() {
 				@Override
 				public void run() {
-					try {
-						finalScreen.startScreen();
-						finalScreen.setCursorPosition(null);
-					} catch(IOException e) {}
+					Logger.setOutputSink(savedOutputSinkForExternal[0]);
+					Logger.setTuiPanelCapture(savedPanelCaptureForExternal[0]);
+					stdioRedirectForExternal.install();
+					TuiGuiThread.callOnGuiThread(gui, new GuiCallable<Void>() {
+						@Override
+						public Void call() {
+							try {
+								finalScreen.startScreen();
+								finalScreen.setCursorPosition(null);
+								finalScreen.doResizeIfNecessary();
+							} catch(IOException e) {}
+							try {
+								tuiApp.applyTerminalSize(finalScreen.getTerminalSize());
+							} catch(Exception e) {}
+							window.invalidate();
+							return null;
+						}
+					});
 				}
 			};
 
 			if(initialCommandLine != null && initialCommandLine.trim().length() > 0) {
 				executor.processCommandInNonPrompt(initialCommandLine.trim());
 			}
+			if(JMXControl.isOfflineSession) {
+				app.finishOfflineSessionBootstrap();
+			}
 
 			window.setComponent(app.getRoot());
 
-			// Ensure Ctrl+C works reliably on Windows where it can be delivered as SIGINT instead of a key stroke.
-			installSigIntHandler(gui, app);
-			// Ctrl+Z must not suspend the JVM on Unix-like terminals.
+			// Windows에서 Ctrl+C가 키 입력 대신 SIGINT로 올 수 있어 별도 핸들러를 둔다.
+			installSigIntHandler(gui, tuiApp);
+			// Unix 계열에서 Ctrl+Z가 JVM을 일시 정지시키지 않도록 한다.
 			installIgnoredSignal("TSTP");
 
-			// Initial sizing (prefer output to expand, header fixed at 4 lines inside app)
 			try {
 				app.applyTerminalSize(screen.getTerminalSize());
 			} catch(Exception e) {}
 
-			// Resize handling: recompute preferred sizes and relayout
 			if(terminal != null) {
 				terminal.addResizeListener(new TerminalResizeListener() {
 					@Override
@@ -167,7 +269,7 @@ public class TuiBootstrap {
 									finalScreen.doResizeIfNecessary();
 								} catch(Exception e) {}
 								try {
-									app.applyTerminalSize(newSize);
+									tuiApp.applyTerminalSize(newSize);
 									window.invalidate();
 								} catch(Exception e) {}
 							}
@@ -178,10 +280,23 @@ public class TuiBootstrap {
 
 			gui.addWindowAndWait(window);
 
-			((JmxTuiOutputSink) app.getOutputSink()).shutdown();
+			if(app != null) {
+				app.shutdownCommandWorker();
+			}
+			if(commandStdin != null) {
+				commandStdin.closeBridge();
+			}
+			if(prevIn != null) {
+				System.setIn(prevIn);
+			}
+			if(app != null) {
+				((JmxTuiOutputSink) app.getOutputSink()).shutdown();
+			}
 			Logger.setTuiPanelCapture(false);
 			Logger.setTuiActive(false);
 			JmxMutatingCallConfirmation.clearHandler();
+			SleepUiHooks.clearHandler();
+			ScriptUiHooks.clearHandler();
 			JmxTuiConnectionLossHandler.clearHandler();
 			if(stdioRedirect != null) {
 				stdioRedirect.restore();
@@ -194,11 +309,28 @@ public class TuiBootstrap {
 			ExternalUiHooks.afterBlockingExternalProcess = null;
 		} finally {
 			try {
+				if(app != null) {
+					app.shutdownCommandWorker();
+				}
+			} catch(Exception e) {}
+			if(commandStdin != null) {
+				try {
+					commandStdin.closeBridge();
+				} catch(Exception e) {}
+			}
+			if(prevIn != null) {
+				try {
+					System.setIn(prevIn);
+				} catch(Exception e) {}
+			}
+			try {
 				if(Logger.getOutputSink() instanceof JmxTuiOutputSink) {
 					((JmxTuiOutputSink) Logger.getOutputSink()).shutdown();
 				}
 			} catch(Exception e) {}
 			JmxMutatingCallConfirmation.clearHandler();
+			SleepUiHooks.clearHandler();
+			ScriptUiHooks.clearHandler();
 			JmxTuiConnectionLossHandler.clearHandler();
 			Logger.setTuiAbortUserCaptureRunnable(null);
 			Logger.setTuiCommitCapturePreambleRunnable(null);
@@ -214,7 +346,7 @@ public class TuiBootstrap {
 	}
 
 	/**
-	 * Ignore a signal (e.g. SIGTSTP from Ctrl+Z). Uses reflection when {@code sun.misc.Signal} is available.
+	 * 지정 신호를 무시한다(예: Ctrl+Z의 SIGTSTP). sun.misc.Signal이 있을 때만 리플렉션으로 등록한다.
 	 */
 	private static void installIgnoredSignal(String signalName) {
 		if(signalName == null || signalName.length() == 0) {
@@ -226,14 +358,11 @@ public class TuiBootstrap {
 			final java.lang.reflect.Method handleMethod = signalClass.getMethod("handle", signalClass, handlerClass);
 			Object sigIgn = handlerClass.getField("SIG_IGN").get(null);
 			handleMethod.invoke(null, signalClass.getConstructor(String.class).newInstance(signalName), sigIgn);
-		} catch(Throwable t) {
-			// Ignore: keystroke handling may still swallow Ctrl+Z.
-		}
+		} catch(Throwable t) {}
 	}
 
 	/**
-	 * Best-effort SIGINT handler (Ctrl+C). Uses reflection to avoid compile/runtime issues on
-	 * environments where sun.misc.Signal is unavailable.
+	 * SIGINT(Ctrl+C) 핸들러를 최대한 등록한다. sun.misc.Signal이 없는 환경에서는 조용히 건너뛴다.
 	 */
 	private static void installSigIntHandler(final MultiWindowTextGUI gui, final JmxTuiApp app) {
 		try {
@@ -247,7 +376,6 @@ public class TuiBootstrap {
 				new java.lang.reflect.InvocationHandler() {
 					@Override
 					public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable {
-						// method name is usually "handle(Signal)".
 						try {
 							gui.getGUIThread().invokeLater(new Runnable() {
 								@Override
@@ -262,9 +390,7 @@ public class TuiBootstrap {
 			);
 
 			handleMethod.invoke(null, signalClass.getConstructor(String.class).newInstance("INT"), handler);
-		} catch(Throwable t) {
-			// Ignore: Ctrl+C might still be handled as a key stroke by Lanterna.
-		}
+		} catch(Throwable t) {}
 	}
 }
 

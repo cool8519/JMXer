@@ -1,16 +1,18 @@
 package dal.tool.trace.jmxer.tui.dialog;
 
 /**
- * Consistent body text for TUI popups (MessageDialog, ListSelectDialog, TextInputDialog, {@link TuiDetailDialog}).
+ * TUI 팝업 본문 텍스트 서식을 통일하는 유틸.
+ *
  */
 final class TuiDialogText {
 
 	private TuiDialogText() {}
 
 	/**
-	 * Prefixes one blank line before body content so the first message line sits below the title row.
-	 * Strips any leading line breaks from {@code text} first (CLI capture often starts with {@code logln("")}
-	 * and may use {@code \r\n} on Windows) so the dialog shows exactly one blank line, not two.
+	 * 본문 앞에 빈 줄을 하나 붙여 제목 행 아래에 첫 메시지가 오도록 한다.<br>
+	 * CLI 출력이 선행 줄바꿈(\r\n 포함)으로 시작하는 경우가 많아, 중복 빈 줄 없이 하나만 남기도록 선행 줄바꿈을 제거한다.
+	 * @param text 원본 본문 텍스트
+	 * @return 서식된 본문 텍스트
 	 */
 	static String body(String text) {
 		if(text == null || text.isEmpty()) {

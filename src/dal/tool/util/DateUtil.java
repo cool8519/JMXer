@@ -51,13 +51,7 @@ public class DateUtil {
 			return format.format(dt);
 		}
 	}
-
-	/**
-	 * Date 객체를 형식패턴에 맞게 변환한 문자열을 리턴한다. 
-	 * @param format_str 날짜/시간을 표현하는 DateFormat 객체
-	 * @param dt Date 객체
-	 * @return 날짜/시간을 나타내는 문자열
-	 */
+	
 	public static String dateToString(DateFormat format, Date dt) {
 		if(format == null || dt == null) {
 			return null;

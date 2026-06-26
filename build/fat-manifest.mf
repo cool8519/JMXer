@@ -1,2 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: dal.tool.trace.jmxer.JMXControl
+Main-Class: dal.tool.trace.jmxer.JmxLauncher
+JMXer-Min-Runtime: 17
+JMXer-Alt-Jar: JMXer-java8.jar

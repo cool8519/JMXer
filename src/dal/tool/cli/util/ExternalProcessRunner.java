@@ -31,9 +31,9 @@ public final class ExternalProcessRunner {
 	 * 셸에 한 줄로 전달되는 사용자 명령을 실행하고 종료 코드를 반환한다.
 	 *
 	 * @param shellCommandLine 토큰을 공백으로 이은 명령 문자열(이미 파싱된 인자 경계 보존)
-	 * @param unix {@code File.separatorChar == '/'}
+	 * @param unix Unix 경로 구분자('/') 사용 여부
 	 * @param sink 출력 수신
-	 * @return 프로세스 종료 코드(부모가 기다린 최상위 프로세스; {@code script} 래핑 시 그 코드)
+	 * @return 프로세스 종료 코드(부모가 기다린 최상위 프로세스; script 래핑 시 그 코드)
 	 * @throws IOException 프로세스 시작 실패
 	 * @throws InterruptedException 대기 중 인터럽트
 	 */
@@ -43,12 +43,14 @@ public final class ExternalProcessRunner {
 		}
 		List<String> command = buildCommand(shellCommandLine, unix);
 		ProcessBuilder pb = new ProcessBuilder(command);
+		pb.redirectInput(ProcessBuilder.Redirect.PIPE);
+		pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+		pb.redirectError(ProcessBuilder.Redirect.PIPE);
 		pb.redirectErrorStream(false);
 		Process p = pb.start();
 		try {
 			p.getOutputStream().close();
 		} catch (IOException e) {
-			// ignore
 		}
 		Charset cs = Charset.defaultCharset();
 		CountDownLatch latch = new CountDownLatch(2);

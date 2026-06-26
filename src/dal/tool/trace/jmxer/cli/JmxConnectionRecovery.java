@@ -8,8 +8,8 @@ import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.util.jmx.MBeanConnector;
 
 /**
- * Reconnects to the target JVM after a JMX disconnect. In TUI online sessions the user is prompted
- * (no automatic {@link MBeanConnector#connect()} before the dialog — attach reconnect can abort the JVM).
+ * JMX 연결 끊김 후 대상 JVM 재연결을 처리한다.
+ * TUI 온라인 세션에서는 대화상자 전에 connect()를 자동 호출하지 않는다(attach 재연결이 JVM을 종료할 수 있음).
  */
 public final class JmxConnectionRecovery {
 
@@ -66,9 +66,8 @@ public final class JmxConnectionRecovery {
 	}
 
 	/**
-	 * Marks the connector stale and shows the TUI Connection Lost dialog when {@code failure} is a disconnect.
-	 *
-	 * @param suppressPrompt {@code true} while already handling a disconnect (avoids duplicate dialogs)
+	 * 연결 끊김으로 판단되면 커넥터를 stale로 표시하고 TUI 연결 끊김 대화상자를 연다.
+	 * @param suppressPrompt 이미 끊김 처리 중이면 true(중복 대화상자 방지)
 	 */
 	public static void handleTuiDisconnect(MBeanConnector connector, Throwable failure, boolean suppressPrompt) {
 		IOException disconnectCause = asDisconnectIOException(failure);
@@ -89,7 +88,8 @@ public final class JmxConnectionRecovery {
 	}
 
 	/**
-	 * @throws Exception the reconnect failure, or {@code disconnectCause} when reconnect is not applicable
+	 * CLI에서는 connect()로 재연결을 시도하고, TUI에서는 끊김 대화상자만 연다.
+	 * @throws Exception 재연결 실패 또는 재연결 대상이 아닐 때 원인 예외
 	 */
 	public static void reconnectOrThrow(MBeanConnector connector, IOException disconnectCause) throws Exception {
 		if(connector == null || JMXControl.isOfflineSession) {

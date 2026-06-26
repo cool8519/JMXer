@@ -6,6 +6,7 @@ import java.util.List;
 
 import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
+import dal.tool.cli.ListArguments;
 import dal.tool.cli.command.CommandMeta;
 import dal.tool.cli.util.IOUtil;
 import dal.tool.trace.jmxer.JMXControl;
@@ -13,19 +14,29 @@ import dal.tool.trace.jmxer.JMXerConstant;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.data.RecordResult;
 import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
-import dal.tool.trace.jmxer.cli.helper.RequestEntryUserSignatures;
 import dal.tool.trace.jmxer.cli.helper.ResourceRecordThread;
 import dal.tool.trace.jmxer.cli.helper.StackRecordThread;
 import dal.tool.util.NumberUtil;
 import dal.tool.util.StringUtil;
 
+/**
+ * JMXer RECORD 명령(스택·리소스 샘플링 및 dump 저장·조회)
+ *
+ */
 public class JmxRecordCommand extends JmxCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(JmxRecordCommand.class, "REC[ORD]");
 
 	private static RecordResult lastRecordResult = null;
-	
-	
+
+	public static RecordResult getLastRecordResult() {
+		return lastRecordResult;
+	}
+
+	public static void setLastRecordResult(RecordResult result) {
+		lastRecordResult = result;
+	}
+
 	public JmxRecordCommand(String commandLine, JmxCommandExecutor commandExecutor) {
 		super(commandLine, commandExecutor);
 	}
@@ -59,7 +70,7 @@ public class JmxRecordCommand extends JmxCommand {
         logln("     RESOURCE    - record resource usage of threads for a while.");
         logln("     STACKTRACE  - record stacktrace sample of threads for a while.");
         logln("     VIEW        - display the result of the last recorded stacktrace sample data.");
-        logln("                   * follows SET RECORD_VIEW_MODE (default: NO_REQUEST_WAIT)");
+        logln("                   * follows SET DUMP_STACK_FILTER (default: NO_REQUEST_WAIT)");
         logln("     SAVE        - save the last recorded stacktrace sample data to a file.");
         logln("     LOAD        - load stacktrace sample data from a file.");
         logln("");
@@ -155,7 +166,7 @@ public class JmxRecordCommand extends JmxCommand {
 					ResourceRecordThread recordThread = new ResourceRecordThread(getMBeanConnection(), threadIds);
 					recordThread.startRecording(interval_ms, time_ms);
 					if(time_ms == 0) {
-						IOUtil.readLine("Press enter key to stop recording.\n", Logger.Level.RESULT);
+						IOUtil.readLine("Press enter key to stop recording\n", Logger.Level.RESULT);
 						recordThread.stopRecording();
 					}
 					recordThread.printResult();
@@ -199,20 +210,10 @@ public class JmxRecordCommand extends JmxCommand {
 					}
 				}
 				if("Y".equals(yn)) {
-					RequestEntryUserSignatures loaded = RequestEntryUserSignatures.load(getSettings().getReqEntryFile());
-					if(loaded.isReadError()) {
-						logln(Level.WARNING,
-							"Could not read user-defined request-entry file '"
-							+ loaded.getResolvedPath()
-							+ "'; ignoring user-defined entry signatures.");
-					} else {
-						loaded.logLoadSummaryIfRead();
-					}
 					StackRecordThread recordThread = new StackRecordThread(getMBeanConnection(), threadIds);
-					recordThread.setUserEntrySignatures(loaded.getSignatures());
 					recordThread.startRecording(interval_ms, time_ms);
 					if(time_ms == 0) {
-						IOUtil.readLine("Press enter key to stop recording.\n", Logger.Level.RESULT);
+						IOUtil.readLine("Press enter key to stop recording\n", Logger.Level.RESULT);
 						recordThread.stopRecording();
 					}
 					recordThread.printResult();
@@ -225,8 +226,15 @@ public class JmxRecordCommand extends JmxCommand {
 			}			
 		} else {
 			if(arg.equalsIgnoreCase("view")) {
-				commandArgs.setArguments(ListArgumentsHelper.concatSpaceWithQuotes(commandArgs, '"'));
-				if(!checkArgument(2, 4)) {
+				List<String> viewArgList = new ArrayList<String>();
+				while(commandArgs.hasMoreArgument()) {
+					viewArgList.add(commandArgs.nextArgument());
+				}
+				viewArgList = ListArgumentsHelper.concatSpaceWithQuotes(
+					new ListArguments(viewArgList, commandLine), '"');
+				commandArgs.setArguments(viewArgList);
+				commandArgs.toFirstIndex();
+				if(!checkArgument(1, 4)) {
 					logln("  Usage) REC[ORD] VIEW ViewType [ViewTypeArgs...]");					
 					return;
 				}
@@ -234,11 +242,8 @@ public class JmxRecordCommand extends JmxCommand {
 					logln("No record result in memory. Please record a stacktrace or load a dump file.");
 					return;
 				}
-				List<String> viewArgs = new ArrayList<String>();
-				while(commandArgs.hasMoreArgument()) {
-					viewArgs.add(commandArgs.nextArgument());
-				}					
-				lastRecordResult.printResult(viewArgs, getSettings().getRecordViewMode(), getSettings().showEmptyThreadInRecordView());
+				lastRecordResult.printResult(viewArgList, getSettings().getDumpStackFilter(),
+					getSettings().showEmptyThreadInRecordView(), getSettings().getReqEntryFile());
 			} else if(arg.equalsIgnoreCase("save")) {
 				commandArgs.setArguments(ListArgumentsHelper.stripQuotes(commandArgs, new char[]{'"','\''}));
 				if(!checkArgument(1, 2)) {

@@ -32,13 +32,14 @@ import dal.tool.trace.jmxer.tui.support.TuiStatusText;
 import dal.tool.trace.jmxer.tui.widget.ArrowListItemRenderer;
 import dal.tool.trace.jmxer.tui.widget.CommandInputBox;
 import dal.tool.trace.jmxer.tui.widget.FocusActionListBox;
+import dal.tool.trace.jmxer.tui.support.ThreadPaneSortSettings;
 import dal.tool.trace.jmxer.tui.widget.HighlightArrowListItemRenderer;
 import dal.tool.trace.jmxer.tui.widget.MbeanSearchInputBox;
 import dal.tool.trace.jmxer.tui.widget.ThreadSelectListItemRenderer;
 
 /**
- * Per-UI-mode pane and widget instances. Panes with the same border title in different modes
- * are independent objects so selection, scroll, filter, and output content do not leak across modes.
+ * UI Mode별 패널·위젯 인스턴스. 동일 테두리 제목이라도 모드마다 별도 객체로 두어 선택·스크롤·필터·출력이 모드 간에 섞이지 않게 한다.
+ *
  */
 public final class JmxTuiModeContext {
 	public static final String SEARCH_PROMPT_LABEL = "Filter> ";
@@ -63,7 +64,12 @@ public final class JmxTuiModeContext {
 	private final ThreadSelectListItemRenderer threadListRenderer;
 	private final Label threadHeaderLabel;
 	private final boolean threadMode;
+	private final boolean recordMode;
+	private final boolean hasThreadPane;
 	private final boolean mbeanUiMode;
+
+	private RecordViewState recordViewState = RecordViewState.LIVE;
+	private boolean recordSamplingInProgress;
 
 	private final Map<Long, Long> prevThreadCpuNanos = new HashMap<Long, Long>();
 	private final Map<Long, Long> prevThreadAllocatedBytes = new HashMap<Long, Long>();
@@ -77,6 +83,7 @@ public final class JmxTuiModeContext {
 	private int lastDestroyedThreadCount;
 	private boolean threadAutoRefreshEnabled = true;
 	private int threadRefreshIntervalSeconds = 5;
+	private ThreadPaneSortSettings threadSortSettings = ThreadPaneSortSettings.DEFAULT;
 	private int threadHeaderCols;
 	private String threadHeaderFullText;
 
@@ -105,6 +112,8 @@ public final class JmxTuiModeContext {
 
 	public JmxTuiModeContext(WindowBasedTextGUI gui, BoxFocusManager focusManager, JmxTuiApp app, JmxTuiUiMode mode) {
 		this.threadMode = mode != null && ThreadUiMode.ID.equals(mode.getId());
+		this.recordMode = mode != null && RecordUiMode.ID.equals(mode.getId());
+		this.hasThreadPane = threadMode || recordMode;
 		this.mbeanUiMode = mode != null && MBeanUiMode.ID.equals(mode.getId());
 		this.mbeanSearchInner = new Panel(new LinearLayout(Direction.VERTICAL));
 		this.mbeansInner = new Panel(new LinearLayout(Direction.VERTICAL));
@@ -113,7 +122,7 @@ public final class JmxTuiModeContext {
 		this.listsPanel = new Panel(new LinearLayout(Direction.HORIZONTAL).setSpacing(1));
 		this.mbeansColumnPanel = new Panel(new LinearLayout(Direction.VERTICAL));
 
-		if(threadMode) {
+		if(hasThreadPane) {
 			this.mbeanList = new FocusActionListBox(gui, focusManager, mbeansInner, THREAD_LIST_BORDER_TITLE);
 			this.mbeanListRenderer = null;
 			this.threadListRenderer = new ThreadSelectListItemRenderer();
@@ -151,7 +160,7 @@ public final class JmxTuiModeContext {
 		this.outputInner.addComponent(this.output, LinearLayout.createLayoutData(Alignment.Fill, GrowPolicy.CanGrow));
 
 		this.mbeanSearchBordered = mbeanSearchInner.withBorder(Borders.singleLine("Search"));
-		this.mbeansListBordered = mbeansInner.withBorder(Borders.singleLine(threadMode ? THREAD_LIST_BORDER_TITLE : "MBeans"));
+		this.mbeansListBordered = mbeansInner.withBorder(Borders.singleLine(hasThreadPane ? THREAD_LIST_BORDER_TITLE : "MBeans"));
 		this.featuresBordered = featuresInner.withBorder(Borders.singleLine("Features"));
 		this.outputPaneBorder = outputInner.withBorder(Borders.singleLine("Output"));
 
@@ -235,8 +244,32 @@ public final class JmxTuiModeContext {
 		return threadMode;
 	}
 
+	public boolean isRecordMode() {
+		return recordMode;
+	}
+
+	public boolean hasThreadPane() {
+		return hasThreadPane;
+	}
+
 	public boolean isMbeanUiMode() {
 		return mbeanUiMode;
+	}
+
+	public RecordViewState getRecordViewState() {
+		return recordViewState == null ? RecordViewState.LIVE : recordViewState;
+	}
+
+	public void setRecordViewState(RecordViewState recordViewState) {
+		this.recordViewState = recordViewState == null ? RecordViewState.LIVE : recordViewState;
+	}
+
+	public boolean isRecordSamplingInProgress() {
+		return recordSamplingInProgress;
+	}
+
+	public void setRecordSamplingInProgress(boolean recordSamplingInProgress) {
+		this.recordSamplingInProgress = recordSamplingInProgress;
 	}
 
 	public List<ThreadSnapshotEntry> getAllThreadEntries() {
@@ -325,7 +358,6 @@ public final class JmxTuiModeContext {
 		this.selectedExpression = selectedExpression == null ? "" : selectedExpression;
 	}
 
-	/** Saves current thread selection and clears visible selection for STACKTRACE_TARGET=ACTIVE. */
 	public void stashThreadSelectionForActiveMode() {
 		activeModePreservedThreadIds.clear();
 		activeModePreservedThreadIds.addAll(selectedThreadIds);
@@ -378,6 +410,14 @@ public final class JmxTuiModeContext {
 		this.threadRefreshIntervalSeconds = threadRefreshIntervalSeconds;
 	}
 
+	public ThreadPaneSortSettings getThreadSortSettings() {
+		return threadSortSettings == null ? ThreadPaneSortSettings.DEFAULT : threadSortSettings;
+	}
+
+	public void setThreadSortSettings(ThreadPaneSortSettings threadSortSettings) {
+		this.threadSortSettings = threadSortSettings == null ? ThreadPaneSortSettings.DEFAULT : threadSortSettings;
+	}
+
 	public void setThreadHeaderCols(int cols) {
 		threadHeaderCols = cols < 0 ? 0 : cols;
 		applyThreadHeaderLabelText();
@@ -401,14 +441,23 @@ public final class JmxTuiModeContext {
 	}
 
 	public void refreshThreadTableHeader(List<ThreadSnapshotEntry> entries) {
+		refreshThreadTableHeader(entries, false);
+	}
+
+	public void refreshThreadTableHeader(List<ThreadSnapshotEntry> entries, boolean dumpView) {
 		int tidWidth = ThreadPaneTableFormat.computeTidWidth(entries);
 		int cpuWidth = ThreadPaneTableFormat.computeCpuWidth(entries);
 		int memWidth = ThreadPaneTableFormat.computeMemWidth(entries);
-		setThreadHeaderFullText(ThreadPaneTableFormat.buildHeaderLine(tidWidth, cpuWidth, memWidth));
+		setThreadHeaderFullText(ThreadPaneTableFormat.buildHeaderLine(tidWidth, cpuWidth, memWidth, dumpView));
 	}
 
 	public void setMbeansListBordered(Component bordered) {
 		this.mbeansListBordered = bordered;
+	}
+
+	public enum RecordViewState {
+		LIVE,
+		DUMP
 	}
 
 	public enum ThreadRowState {

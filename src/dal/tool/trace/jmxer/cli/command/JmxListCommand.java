@@ -15,6 +15,10 @@ import dal.tool.trace.jmxer.util.JMXPrintUtil;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * JMXer LIST 명령(MBean ObjectName·속성·오퍼레이션 목록)
+ *
+ */
 public class JmxListCommand extends JmxCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(JmxListCommand.class, "LS", "LIST");

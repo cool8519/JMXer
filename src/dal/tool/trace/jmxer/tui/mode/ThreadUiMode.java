@@ -7,6 +7,9 @@ import java.util.Set;
 
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.Label;
+import com.googlecode.lanterna.gui2.LinearLayout;
+import com.googlecode.lanterna.gui2.LinearLayout.Alignment;
+import com.googlecode.lanterna.gui2.LinearLayout.GrowPolicy;
 import com.googlecode.lanterna.gui2.Panel;
 
 import dal.tool.trace.jmxer.cli.JmxSettings;
@@ -14,14 +17,19 @@ import dal.tool.trace.jmxer.cli.JmxSettings.StacktraceTarget;
 import dal.tool.trace.jmxer.cli.helper.ThreadListExpressionBuilder;
 import dal.tool.trace.jmxer.tui.app.JmxTuiApp;
 import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
+import dal.tool.trace.jmxer.tui.support.TuiKeyAction;
+import dal.tool.trace.jmxer.tui.support.TuiKeyBindings;
+import dal.tool.trace.jmxer.tui.support.TuiKeyRemapCatalog;
 import dal.tool.trace.jmxer.tui.support.TuiPaneKeysHint;
 import dal.tool.trace.jmxer.tui.support.TuiStatusSegmentLabel;
 import dal.tool.trace.jmxer.tui.support.TuiStatusText;
-import dal.tool.trace.jmxer.tui.support.TuiThreadUiKeys;
 
+/**
+ * Thread UI Mode. 스레드 검색·목록·자동 새로고침 UI를 구성한다.
+ *
+ */
 public final class ThreadUiMode extends JmxTuiUiMode {
 	public static final String ID = "THREAD";
-	/** Left (Search+Thread) vs right (Output) default split: 1:1. */
 	private static final int DEFAULT_HORIZONTAL_LEFT_SHARE_NUMERATOR = 1;
 	private static final int DEFAULT_HORIZONTAL_LEFT_SHARE_DENOMINATOR = 2;
 	private static final ThreadUiMode INSTANCE = new ThreadUiMode();
@@ -69,7 +77,10 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 
 	@Override
 	public void buildBody(JmxTuiApp app, Panel root) {
-		root.addComponent(app.getListsPanel());
+		root.addComponent(
+			app.getListsPanel(),
+			LinearLayout.createLayoutData(Alignment.Fill, GrowPolicy.CanGrow)
+		);
 	}
 
 	@Override
@@ -83,7 +94,7 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 		segments.add(new TuiStatusSegmentLabel.Segment("   - Threads:" + total, null));
 		appendDeltaSegments(segments, created, destroyed);
 		if(s == null || s.getStacktraceTarget() != StacktraceTarget.ACTIVE) {
-			String tail = " | Selected(" + TuiThreadUiKeys.EDIT_SELECTION_KEY_LABEL + "):" + selected;
+			String tail = " | Selected(" + TuiKeyBindings.label(TuiKeyAction.THREAD_EDIT_SELECTION) + "):" + selected;
 			if(selected > 0) {
 				String expr = buildSelectedThreadsExpression(context);
 				if(expr != null && expr.length() > 0) {
@@ -101,32 +112,40 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 	public void renderStatusDetailLine(Label header3, JmxSettings s, JmxTuiModeContext context, int statusInnerCols) {
 		String refreshPart;
 		if(context != null && context.isThreadAutoRefreshEnabled()) {
-			refreshPart = "REFRESH(" + TuiThreadUiKeys.REFRESH_TOGGLE_KEY_LABEL + "):AUTO["
+			refreshPart = "REFRESH(" + TuiKeyBindings.label(TuiKeyAction.THREAD_AUTO_REFRESH) + "):AUTO["
 				+ context.getThreadRefreshIntervalSeconds() + "s]";
 		} else {
-			refreshPart = "REFRESH(" + TuiThreadUiKeys.REFRESH_TOGGLE_KEY_LABEL + "):MANUAL";
+			refreshPart = "REFRESH(" + TuiKeyBindings.label(TuiKeyAction.THREAD_AUTO_REFRESH) + "):MANUAL";
 		}
 		String targetValue = (s == null) ? StacktraceTarget.SELECTED.name() : s.getStacktraceTarget().name();
 		String detail = "   - " + refreshPart + ", STACKTRACE_TARGET("
-			+ TuiThreadUiKeys.STACKTRACE_TARGET_TOGGLE_KEY_LABEL + "):" + targetValue;
+			+ TuiKeyBindings.label(TuiKeyAction.THREAD_STACKTRACE_TARGET) + "):" + targetValue;
 		if(s != null && s.getStacktraceTarget() == StacktraceTarget.ACTIVE) {
 			String reqEntryFile = s.getReqEntryFile();
 			if(reqEntryFile == null) {
 				reqEntryFile = "";
 			}
-			detail += ", REQUEST_ENTRY_FILE(" + TuiThreadUiKeys.REQUEST_ENTRY_FILE_EDIT_KEY_LABEL + "):\"" + reqEntryFile + "\"";
+			detail += ", REQUEST_ENTRY_FILE("
+				+ TuiKeyBindings.label(TuiKeyAction.THREAD_REQUEST_ENTRY_FILE) + "):\""
+				+ reqEntryFile + "\"";
 		}
 		header3.setText(TuiStatusText.fitSingleLine(detail, statusInnerCols));
 	}
 
 	@Override
-	public String getPaneKeysHint(JmxTuiModeFocusPane focusedPane, boolean wrapOn, JmxSettings settings) {
+	public String getPaneKeysHint(
+		JmxTuiModeFocusPane focusedPane,
+		boolean wrapOn,
+		JmxSettings settings,
+		JmxTuiModeContext context
+	) {
 		if(focusedPane == null) {
 			focusedPane = JmxTuiModeFocusPane.SEARCH;
 		}
 		if(focusedPane == JmxTuiModeFocusPane.MBEANS) {
-			boolean selectionKeysEnabled = settings == null || settings.getStacktraceTarget() != StacktraceTarget.ACTIVE;
-			return TuiPaneKeysHint.threadList(selectionKeysEnabled);
+			boolean stacktraceTargetActive = settings != null && settings.getStacktraceTarget() == StacktraceTarget.ACTIVE;
+			boolean selectionKeysEnabled = !stacktraceTargetActive;
+			return TuiPaneKeysHint.threadList(selectionKeysEnabled, stacktraceTargetActive);
 		}
 		if(focusedPane == JmxTuiModeFocusPane.OUTPUT) {
 			return TuiPaneKeysHint.output(wrapOn);
@@ -134,8 +153,38 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 		if(focusedPane == JmxTuiModeFocusPane.COMMAND) {
 			return TuiPaneKeysHint.command();
 		}
-		boolean selectionKeysEnabled = settings == null || settings.getStacktraceTarget() != StacktraceTarget.ACTIVE;
-		return TuiPaneKeysHint.threadSearch(selectionKeysEnabled);
+		boolean stacktraceTargetActive = settings != null && settings.getStacktraceTarget() == StacktraceTarget.ACTIVE;
+		boolean selectionKeysEnabled = !stacktraceTargetActive;
+		return TuiPaneKeysHint.threadSearch(selectionKeysEnabled, stacktraceTargetActive);
+	}
+
+	@Override
+	public void collectRemappableWindowActions(
+			List<TuiKeyAction> out,
+			JmxTuiModeFocusPane focusedPane,
+			JmxSettings settings,
+			JmxTuiModeContext context) {
+		if(out == null) {
+			return;
+		}
+		if(focusedPane == null) {
+			focusedPane = JmxTuiModeFocusPane.SEARCH;
+		}
+		boolean stacktraceTargetActive = settings != null && settings.getStacktraceTarget() == StacktraceTarget.ACTIVE;
+		boolean selectionKeysEnabled = !stacktraceTargetActive;
+		if(focusedPane == JmxTuiModeFocusPane.MBEANS) {
+			TuiPaneKeysHint.collectThreadList(out, selectionKeysEnabled);
+			return;
+		}
+		if(focusedPane == JmxTuiModeFocusPane.OUTPUT) {
+			TuiPaneKeysHint.collectOutput(out);
+			return;
+		}
+		if(focusedPane == JmxTuiModeFocusPane.COMMAND) {
+			TuiPaneKeysHint.collectCommand(out);
+			return;
+		}
+		TuiPaneKeysHint.collectThreadSearch(out, selectionKeysEnabled);
 	}
 
 	public static Map<Long, String> buildThreadMap(JmxTuiModeContext context) {
@@ -155,7 +204,7 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 	}
 
 	public static String buildSelectedThreadsExpression(JmxTuiModeContext context) {
-		if(context == null || !context.isThreadMode()) {
+		if(context == null || !context.hasThreadPane() || context.isRecordMode()) {
 			return "";
 		}
 		Set<Long> selected = context.getSelectedThreadIds();

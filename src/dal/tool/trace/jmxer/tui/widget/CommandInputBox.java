@@ -13,7 +13,8 @@ import dal.tool.trace.jmxer.tui.support.TuiF2Handler;
 import dal.tool.trace.jmxer.tui.support.TuiTextPaste;
 
 /**
- * Command-line TextBox with focus theme and optional {@link CommandInputKeyHandler}.
+ * 포커스 테마와 선택적 CommandInputKeyHandler를 갖는 명령줄 TextBox.
+ *
  */
 public final class CommandInputBox extends TextBox implements TuiF2Handler {
 	private volatile CommandInputKeyHandler handler;
@@ -33,6 +34,11 @@ public final class CommandInputBox extends TextBox implements TuiF2Handler {
 	@Override
 	public boolean onF2Key() {
 		return false;
+	}
+
+	@Override
+	protected TextBoxRenderer createDefaultRenderer() {
+		return new JmxTextBoxRenderer();
 	}
 
 	@Override
@@ -60,10 +66,10 @@ public final class CommandInputBox extends TextBox implements TuiF2Handler {
 		if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
 			return Interactable.Result.HANDLED;
 		}
-		if(JmxTuiKeys.isCtrlSaveOutput(keyStroke) || JmxTuiKeys.isCtrlToggleOutputWrap(keyStroke)
+		if(JmxTuiKeys.isSaveOutputKey(keyStroke) || JmxTuiKeys.isCtrlToggleOutputWrap(keyStroke)
 				|| JmxTuiKeys.isCtrlTogglePrettyPrint(keyStroke)
 				|| JmxTuiKeys.isCtrlToggleThreadRefresh(keyStroke)) {
-			// Output-only shortcuts must not type 's'/'l' into other panes.
+			// Output 전용 단축키가 다른 패널에 문자로 입력되지 않도록 소비한다.
 			return Interactable.Result.HANDLED;
 		}
 		if(JmxTuiKeys.isCtrlPaste(keyStroke)) {

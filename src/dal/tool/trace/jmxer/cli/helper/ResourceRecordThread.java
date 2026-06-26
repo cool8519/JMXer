@@ -8,10 +8,17 @@ import javax.management.openmbean.CompositeData;
 
 import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.cli.data.ResourceUsage;
-import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * RECORD RESOURCE 샘플링 스레드(CPU·할당 메모리)
+ *
+ */
 public class ResourceRecordThread extends AbstractRecordThread {
+
+	private static final long INVALID_THREAD_COUNTER = -1L;
+	private static final String TERMINATED_DURING_RECORDING = "Terminated during recording";
+	private static final String TERMINATED_TID_REUSED_SUFFIX = " (tid reused by \"%s\")";
 
 	protected ResourceUsage[] recordData;
 	protected boolean threadCpuTimeEnabled;
@@ -32,6 +39,7 @@ public class ResourceRecordThread extends AbstractRecordThread {
 	}
 
 	protected void beforeStartRecording() {
+		markActiveRecording();
 		try {
 			startTimeMS = collectResourceData();
 		} catch(Exception e) {
@@ -45,6 +53,7 @@ public class ResourceRecordThread extends AbstractRecordThread {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		clearActiveRecording();
 	}
 	
 	protected long collectData() throws Exception {
@@ -83,26 +92,11 @@ public class ResourceRecordThread extends AbstractRecordThread {
 		Logger.logln("");
 		for(int i = 0; i < recordData.length; i++) {
 			ResourceUsage usage = recordData[i];
-			String thrStr = "\"" + StringUtil.shortenStringWithSuffix(usage.threadName, 38, "...") + "\"";
+			String thrStr = formatQuotedThreadName(usage.threadName);
 			long cpuStr = (usage.currCpu - usage.startCpu) / 1000000;
 			long memStr = (usage.currMem - usage.startMem);
-			if(usage.startCpu > usage.currCpu || usage.startMem > usage.currMem) {
-				String newThreadStr = "";
-				try {
-					ObjectName objectName = new ObjectName("java.lang:type=Threading");
-					Object resultData = JMXUtil.invokeAttributeOrOperation(mbeanConnection, objectName, "getThreadInfo(long[])", new String[]{threadIds[i]});
-					if(resultData == null || ((CompositeData[])resultData).length < 1) {
-						throw new Exception("Could not get thread info.");
-					}
-					CompositeData[] cd = (CompositeData[])resultData;
-					ThreadInfo threadInfo = ThreadInfo.from(cd[0]);
-					if(threadInfo != null) {
-						newThreadStr = threadInfo.getThreadName();
-					}
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-				Logger.logln(String.format(" - tid [%5d] %-40s : Changed thread to \"%s\"", Long.parseLong(threadIds[i]), thrStr, newThreadStr));
+			if(isThreadGoneDuringRecording(usage)) {
+				Logger.logln(formatTerminatedDuringRecordingLine(usage, i, thrStr));
 				continue;
 			}
 			if(!threadCpuTimeEnabled) {
@@ -112,6 +106,55 @@ public class ResourceRecordThread extends AbstractRecordThread {
 			} else {
 				Logger.logln(String.format(" - tid [%5d] %-40s : CpuTime=%-10d, AllocatedBytes=%d", Long.parseLong(threadIds[i]), thrStr, cpuStr, memStr));
 			}
+		}
+	}
+
+	private boolean isThreadGoneDuringRecording(ResourceUsage usage) {
+		boolean cpuGone = threadCpuTimeEnabled && isCounterRegressed(usage.startCpu, usage.currCpu);
+		boolean memGone = threadAllocatedMemoryEnabled && isCounterRegressed(usage.startMem, usage.currMem);
+		return cpuGone || memGone;
+	}
+
+	/** 종료·tid 재사용 시 카운터가 감소하거나 -1이 되면 해당 스레드 인스턴스가 사라진 것으로 본다. */
+	private static boolean isCounterRegressed(long start, long current) {
+		if(current < 0L) {
+			return start >= 0L;
+		}
+		return start > current;
+	}
+
+	private String formatTerminatedDuringRecordingLine(ResourceUsage usage, int index, String thrStr) {
+		StringBuilder detail = new StringBuilder(TERMINATED_DURING_RECORDING);
+		String reuseName = resolveCurrentThreadName(index);
+		if(reuseName != null && !reuseName.equals(normalizeThreadName(usage.threadName))) {
+			detail.append(String.format(TERMINATED_TID_REUSED_SUFFIX, reuseName));
+		}
+		return String.format(" - tid [%5d] %-40s : %s", Long.parseLong(threadIds[index]), thrStr, detail.toString());
+	}
+
+	private String resolveCurrentThreadName(int index) {
+		try {
+			ObjectName objectName = new ObjectName("java.lang:type=Threading");
+			Object resultData = JMXUtil.invokeAttributeOrOperation(
+				mbeanConnection, objectName, "getThreadInfo(long[])", new String[] { threadIds[index] });
+			if(!(resultData instanceof CompositeData[])) {
+				return null;
+			}
+			CompositeData[] compositeData = (CompositeData[]) resultData;
+			if(compositeData.length < 1 || compositeData[0] == null) {
+				return null;
+			}
+			ThreadInfo threadInfo = ThreadInfo.from(compositeData[0]);
+			if(threadInfo == null) {
+				return null;
+			}
+			String name = threadInfo.getThreadName();
+			if(name == null || name.length() == 0) {
+				return null;
+			}
+			return name;
+		} catch(Exception e) {
+			return null;
 		}
 	}
 

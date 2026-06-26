@@ -20,26 +20,28 @@ import com.googlecode.lanterna.gui2.dialogs.MessageDialogButton;
 import com.googlecode.lanterna.screen.Screen;
 
 import dal.tool.trace.jmxer.tui.output.OutputLineReflow;
+import dal.tool.trace.jmxer.tui.support.TuiHelpTextFormat;
 
 /**
- * F2 detail popup: same layout as {@link com.googlecode.lanterna.gui2.dialogs.MessageDialog}
- * (Label or scrollable body, buttons right-aligned). Width fits content up to 80% of the terminal.
+ * Info 상세 팝업. MessageDialog와 동일한 레이아웃(본문·스크롤·버튼 우측 정렬)이며,
+ * 터미널 너비의 80%까지 내용에 맞게 조절한다.
+ *
  */
 public final class TuiDetailDialog extends DialogWindow {
 	static final int MAX_WIDTH_PERCENT = 80;
 	static final int MAX_HEIGHT_PERCENT = 80;
 	static final int MIN_DIALOG_COLUMNS = 40;
 	static final int MIN_TEXT_ROWS = 3;
-	/** Grid margins and TextBox vertical scrollbar column (matches MessageDialog side margins + scrollbar). */
 	static final int HORIZONTAL_PADDING_COLS = 6;
 	static final int VERTICAL_CHROME_ROWS = 4;
-	/** Blank row below the body content (above buttons); leading blank line is in {@link TuiDialogText#body}. */
 	static final int BODY_VERTICAL_PADDING_ROWS = 1;
 	static final int TEXTBOX_CARET_COLUMN_RESERVE = 1;
+	static final int HELP_MAX_CONTENT_COLUMNS = 120;
+	static final String HELP_CONTINUATION_INDENT = TuiHelpTextFormat.ITEM_CONTINUATION_INDENT;
 
 	private final Button okButton;
 
-	private TuiDetailDialog(WindowBasedTextGUI gui, String title, String text) {
+	private TuiDetailDialog(WindowBasedTextGUI gui, String title, String text, boolean helpLayout) {
 		super(title == null ? "Detail" : title);
 		enableCenteredHint();
 
@@ -50,14 +52,14 @@ public final class TuiDetailDialog extends DialogWindow {
 		int maxDialogCols = Math.max(MIN_DIALOG_COLUMNS, termCols * MAX_WIDTH_PERCENT / 100);
 		int maxTextBoxCols = Math.max(16, maxDialogCols - HORIZONTAL_PADDING_COLS);
 		int maxWrapCols = Math.max(16, maxTextBoxCols - TEXTBOX_CARET_COLUMN_RESERVE);
-
-		List<String> naturalLines = OutputLineReflow.expandedLines(text);
-		if(naturalLines.isEmpty()) {
-			naturalLines.add("");
+		if(helpLayout) {
+			maxWrapCols = Math.min(maxWrapCols, HELP_MAX_CONTENT_COLUMNS);
 		}
-		int contentWidth = OutputLineReflow.maxDisplayWidth(naturalLines);
 
-		List<String> lines = OutputLineReflow.formatWithinMaxColumns(text, maxWrapCols);
+		List<String> lines = helpLayout
+			? OutputLineReflow.formatHelpWithinMaxColumnsWithIndent(text, maxWrapCols, HELP_CONTINUATION_INDENT)
+			: OutputLineReflow.formatWithinMaxColumns(text, maxWrapCols);
+		int contentWidth = OutputLineReflow.maxDisplayWidth(lines);
 		int textBoxCols;
 		if(contentWidth <= maxWrapCols) {
 			textBoxCols = Math.max(16, Math.min(maxTextBoxCols, contentWidth + TEXTBOX_CARET_COLUMN_RESERVE));
@@ -97,7 +99,14 @@ public final class TuiDetailDialog extends DialogWindow {
 		if(gui == null) {
 			return;
 		}
-		new TuiDetailDialog(gui, title, TuiDialogText.body(text)).showDialog(gui);
+		new TuiDetailDialog(gui, title, TuiDialogText.body(text), false).showDialog(gui);
+	}
+
+	public static void showHelp(WindowBasedTextGUI gui, String title, String text) {
+		if(gui == null) {
+			return;
+		}
+		new TuiDetailDialog(gui, title, TuiDialogText.body(text), true).showDialog(gui);
 	}
 
 	@Override

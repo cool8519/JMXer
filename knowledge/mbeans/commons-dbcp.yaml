@@ -1,0 +1,192 @@
+entries:
+  - match:
+      objectName: "org.apache.commons.dbcp2:name=*,type=BasicDataSource"
+      className: "org.apache.commons.dbcp2.DataSourceMXBean"
+    description: "Commons DBCP2 data source management interface."
+    attributes:
+      AbandonedUsageTracking:
+        description: "If the connection pool implements UsageTracking, configures whether a stack trace is recorded on each pooled connection call to aid debugging of abandoned connections."
+      AccessToUnderlyingConnectionAllowed:
+        description: "Whether access to the underlying JDBC connection is allowed through a wrapper connection."
+      CacheState:
+        description: "Whether connection state (auto-commit, read-only, transaction isolation, catalog, schema) is cached and reset on pool checkout."
+      ClearStatementPoolOnReturn:
+        description: "Whether the per-connection statement pool is cleared when the connection is returned to the pool."
+      Closed:
+        description: "Whether this data source is closed and can no longer hand out connections."
+      ConnectionInitSqlsAsArray:
+        description: "SQL statements run when a physical connection is first created, exposed as a String array for JMX."
+      DefaultAutoCommit:
+        description: "Default auto-commit setting applied to pooled connections."
+      DefaultCatalog:
+        description: "Default catalog applied to pooled connections."
+      DefaultReadOnly:
+        description: "Default read-only setting applied to pooled connections."
+      DefaultSchema:
+        description: "Default schema applied to pooled connections."
+      DefaultTransactionIsolation:
+        description: "Default transaction isolation level applied to pooled connections."
+      DisconnectionSqlCodesAsArray:
+        description: "SQL state codes treated as fatal disconnections, exposed as a String array for JMX."
+      DriverClassName:
+        description: "JDBC driver class name used by this data source."
+      FastFailValidation:
+        description: "Whether validation fails immediately for connections that previously raised fatal disconnection SQLExceptions."
+      InitialSize:
+        description: "Initial number of connections created when the pool is started."
+      Lifo:
+        description: "Whether idle connections are returned last-in-first-out (LIFO) instead of first-in-first-out (FIFO)."
+      LogAbandoned:
+        description: "Whether stack traces are logged when application code abandons a Statement or Connection."
+      LogExpiredConnections:
+        description: "Whether to log when connections are closed because maximum connection lifetime was exceeded."
+      MaxConnLifetimeMillis:
+        description: "Maximum permitted lifetime of a pooled connection in milliseconds."
+      MaxIdle:
+        description: "Maximum number of idle connections that may remain in the pool."
+      MaxOpenPreparedStatements:
+        description: "Maximum number of open prepared statements per pooled connection."
+      MaxTotal:
+        description: "Maximum number of active connections that can be allocated at the same time."
+      MaxWaitMillis:
+        description: "Maximum time in milliseconds to wait for a connection before throwing an exception."
+      MinEvictableIdleTimeMillis:
+        description: "Minimum time in milliseconds a connection may remain idle before it is eligible for eviction."
+      MinIdle:
+        description: "Minimum number of idle connections maintained in the pool."
+      NumActive:
+        description: "Current number of active connections allocated from this data source."
+      NumIdle:
+        description: "Current number of idle connections waiting to be allocated."
+      NumTestsPerEvictionRun:
+        description: "Number of idle connections examined per eviction run."
+      PoolPreparedStatements:
+        description: "Whether prepared statements are pooled per connection."
+      RemoveAbandonedOnBorrow:
+        description: "Whether abandoned connections are removed when borrowObject is invoked."
+      RemoveAbandonedOnMaintenance:
+        description: "Whether abandoned connections are removed during pool maintenance."
+      RemoveAbandonedTimeout:
+        description: "Timeout in seconds after which an unused borrowed connection is considered abandoned."
+      SoftMinEvictableIdleTimeMillis:
+        description: "Minimum idle time in milliseconds before eviction while keeping at least minIdle connections in the pool."
+      TestOnBorrow:
+        description: "Whether connections are validated when borrowed from the pool."
+      TestOnCreate:
+        description: "Whether connections are validated when created."
+      TestWhileIdle:
+        description: "Whether idle connections are validated by the evictor thread."
+      TimeBetweenEvictionRunsMillis:
+        description: "Time in milliseconds to sleep between idle connection eviction runs."
+      Url:
+        description: "JDBC connection URL for this data source."
+      UserName:
+        description: "Database user name for this data source."
+      Username:
+        description: "Database user name for this data source (deprecated alias of UserName)."
+      ValidationQuery:
+        description: "SQL query used to validate connections before they are returned from the pool."
+      ValidationQueryTimeout:
+        description: "Timeout in seconds for the validation query."
+    operations:
+      "restart()":
+        description: "Restarts the data source by closing and starting the pool; idle connections are closed immediately."
+      "start()":
+        description: "Starts the data source and initializes the connection pool."
+
+  - match:
+      objectName: "org.apache.commons.dbcp2:name=*,type=BasicDataSource"
+      className: "org.apache.commons.dbcp2.BasicDataSourceMXBean"
+    description: "Commons DBCP2 basic data source management interface (extends DataSourceMXBean; adds password attribute)."
+    attributes:
+      AbandonedUsageTracking:
+        description: "If the connection pool implements UsageTracking, configures whether a stack trace is recorded on each pooled connection call to aid debugging of abandoned connections."
+      AccessToUnderlyingConnectionAllowed:
+        description: "Whether access to the underlying JDBC connection is allowed through a wrapper connection."
+      CacheState:
+        description: "Whether connection state (auto-commit, read-only, transaction isolation, catalog, schema) is cached and reset on pool checkout."
+      ClearStatementPoolOnReturn:
+        description: "Whether the per-connection statement pool is cleared when the connection is returned to the pool."
+      Closed:
+        description: "Whether this data source is closed and can no longer hand out connections."
+      ConnectionInitSqlsAsArray:
+        description: "SQL statements run when a physical connection is first created, exposed as a String array for JMX."
+      DefaultAutoCommit:
+        description: "Default auto-commit setting applied to pooled connections."
+      DefaultCatalog:
+        description: "Default catalog applied to pooled connections."
+      DefaultReadOnly:
+        description: "Default read-only setting applied to pooled connections."
+      DefaultSchema:
+        description: "Default schema applied to pooled connections."
+      DefaultTransactionIsolation:
+        description: "Default transaction isolation level applied to pooled connections."
+      DisconnectionSqlCodesAsArray:
+        description: "SQL state codes treated as fatal disconnections, exposed as a String array for JMX."
+      DriverClassName:
+        description: "JDBC driver class name used by this data source."
+      FastFailValidation:
+        description: "Whether validation fails immediately for connections that previously raised fatal disconnection SQLExceptions."
+      InitialSize:
+        description: "Initial number of connections created when the pool is started."
+      Lifo:
+        description: "Whether idle connections are returned last-in-first-out (LIFO) instead of first-in-first-out (FIFO)."
+      LogAbandoned:
+        description: "Whether stack traces are logged when application code abandons a Statement or Connection."
+      LogExpiredConnections:
+        description: "Whether to log when connections are closed because maximum connection lifetime was exceeded."
+      MaxConnLifetimeMillis:
+        description: "Maximum permitted lifetime of a pooled connection in milliseconds."
+      MaxIdle:
+        description: "Maximum number of idle connections that may remain in the pool."
+      MaxOpenPreparedStatements:
+        description: "Maximum number of open prepared statements per pooled connection."
+      MaxTotal:
+        description: "Maximum number of active connections that can be allocated at the same time."
+      MaxWaitMillis:
+        description: "Maximum time in milliseconds to wait for a connection before throwing an exception."
+      MinEvictableIdleTimeMillis:
+        description: "Minimum time in milliseconds a connection may remain idle before it is eligible for eviction."
+      MinIdle:
+        description: "Minimum number of idle connections maintained in the pool."
+      NumActive:
+        description: "Current number of active connections allocated from this data source."
+      NumIdle:
+        description: "Current number of idle connections waiting to be allocated."
+      NumTestsPerEvictionRun:
+        description: "Number of idle connections examined per eviction run."
+      Password:
+        description: "Database password. Exposed only on BasicDataSourceMXBean; exposing passwords via JMX is discouraged."
+      PoolPreparedStatements:
+        description: "Whether prepared statements are pooled per connection."
+      RemoveAbandonedOnBorrow:
+        description: "Whether abandoned connections are removed when borrowObject is invoked."
+      RemoveAbandonedOnMaintenance:
+        description: "Whether abandoned connections are removed during pool maintenance."
+      RemoveAbandonedTimeout:
+        description: "Timeout in seconds after which an unused borrowed connection is considered abandoned."
+      SoftMinEvictableIdleTimeMillis:
+        description: "Minimum idle time in milliseconds before eviction while keeping at least minIdle connections in the pool."
+      TestOnBorrow:
+        description: "Whether connections are validated when borrowed from the pool."
+      TestOnCreate:
+        description: "Whether connections are validated when created."
+      TestWhileIdle:
+        description: "Whether idle connections are validated by the evictor thread."
+      TimeBetweenEvictionRunsMillis:
+        description: "Time in milliseconds to sleep between idle connection eviction runs."
+      Url:
+        description: "JDBC connection URL for this data source."
+      UserName:
+        description: "Database user name for this data source."
+      Username:
+        description: "Database user name for this data source (deprecated alias of UserName)."
+      ValidationQuery:
+        description: "SQL query used to validate connections before they are returned from the pool."
+      ValidationQueryTimeout:
+        description: "Timeout in seconds for the validation query."
+    operations:
+      "restart()":
+        description: "Restarts the data source by closing and starting the pool; idle connections are closed immediately."
+      "start()":
+        description: "Starts the data source and initializes the connection pool."

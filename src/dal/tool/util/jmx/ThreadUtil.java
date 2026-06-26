@@ -26,7 +26,10 @@ public class ThreadUtil {
 	}
 
 	/**
-	 * @param maxDepth maximum stack frames to print; values less than 1 mean all frames
+	 * 쓰레드 별 덤프를 리턴한다.
+	 * @param ti JMX의 ThreadInfo 객체
+	 * @param maxDepth 출력할 스택 프레임 최대 개수. 1 미만이면 전체 프레임
+	 * @return 쓰레드 덤프 문자열 목록
 	 */
 	public static List<String> getThreadDump(ThreadInfo ti, int maxDepth) {
 		List<String> dump = new ArrayList<String>();

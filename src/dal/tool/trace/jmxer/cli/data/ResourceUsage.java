@@ -2,6 +2,10 @@ package dal.tool.trace.jmxer.cli.data;
 
 import java.io.Serializable;
 
+/**
+ * RECORD RESOURCE 샘플의 스레드별 CPU·할당 메모리 사용량
+ *
+ */
 public class ResourceUsage implements Serializable {
 
 	private static final long serialVersionUID = 8269957265134857655L;

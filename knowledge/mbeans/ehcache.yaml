@@ -1,0 +1,215 @@
+entries:
+  - match:
+      objectName: "net.sf.ehcache:type=CacheManager,name=*"
+      className: "net.sf.ehcache.management.CacheManagerMBean"
+    description: "EhCache 2.x cache manager management interface."
+    attributes:
+      CacheNames:
+        description: "Gets the cache names managed by the CacheManager."
+      Caches:
+        description: "Gets a list of caches in this CacheManager."
+      Name:
+        description: "Gets the name of the cache manager."
+      Status:
+        description: "Copyright Terracotta, Inc."
+      TransactionCommittedCount:
+        description: "Get the committed transactions count."
+      TransactionRolledBackCount:
+        description: "Get the rolled back transactions count."
+      TransactionTimedOutCount:
+        description: "Get the timed out transactions count. Note that only transactions which failed to commit due to a timeout are taken into account."
+    operations:
+      "clearAll()":
+        description: "Clears the contents of all caches in the CacheManager, but without removing any caches. This method is not synchronized. It only guarantees to clear those elements in a cache at the time that the {@link net.sf.ehcache.Ehcache#removeAll()} mehod on each cache is called."
+      "getCache(java.lang.String)":
+        description: "Returns a JMX Cache bean."
+        return: "Return type: Cache."
+        params:
+          - name: name
+            type: java.lang.String
+      "shutdown()":
+        description: "Shuts down the CacheManager. If the shutdown occurs on the singleton, then the singleton is removed, so that if a singleton access method is called, a new singleton will be created."
+
+  - match:
+      objectName: "net.sf.ehcache:type=Cache,CacheManager=*,name=*"
+      className: "net.sf.ehcache.management.CacheMBean"
+    description: "EhCache 2.x cache management interface."
+    attributes:
+      CacheConfiguration:
+        description: "Gets the JMX read-only CacheConfiguration."
+      Name:
+        description: "Gets the cache name."
+      Statistics:
+        description: "Gets the JMX cache statistics."
+      Status:
+        description: "Gets the status attribute of the Cache."
+      TerracottaClustered:
+        description: "Uses a Terracotta clustered store."
+    operations:
+      "flush()":
+        description: "Flushes all cache items from memory to the disk store, and from the DiskStore to disk."
+      "hasAbortedSizeOf()":
+        description: "Check if the cache may contain elements which the SizeOf engine could not fully size."
+        return: "Return type: boolean."
+      "removeAll()":
+        description: "Copyright Terracotta, Inc."
+
+  - match:
+      objectName: "net.sf.ehcache:type=CacheConfiguration,CacheManager=*,name=*"
+      className: "net.sf.ehcache.management.CacheConfigurationMBean"
+    description: "EhCache 2.x cache configuration management interface."
+    attributes:
+      DiskExpiryThreadIntervalSeconds:
+        description: "Accessor."
+      DiskPersistent:
+        description: "Accessor."
+      DiskSpoolBufferSizeMB:
+        description: "Accessor."
+      Eternal:
+        description: "Accessor."
+      LoggingEnabled:
+        description: "Accessor."
+      MaxBytesLocalDisk:
+        description: "Configured maximum number of bytes for the local disk store."
+      MaxBytesLocalHeap:
+        description: "Configured maximum number of bytes for the local memory heap."
+      MaxBytesLocalOffHeap:
+        description: "Configured maximum number of bytes for the local off-heap memory."
+      MaxElementsInMemory:
+        description: "Accessor."
+      MaxElementsOnDisk:
+        description: "Accessor."
+      MaxEntriesLocalDisk:
+        description: "Configured maximum number of entries for the local disk store."
+      MaxEntriesLocalHeap:
+        description: "Configured maximum number of entries for the local memory heap."
+      MaxMemoryOffHeapInBytes:
+        description: "Accessor."
+      MemoryStoreEvictionPolicy:
+        description: "Accessor."
+      Name:
+        description: "Copyright Terracotta, Inc."
+      OverflowToDisk:
+        description: "Accessor."
+      OverflowToOffHeap:
+        description: "Accessor."
+      TerracottaClustered:
+        description: "Accessor."
+      TerracottaConsistency:
+        description: "Accessor."
+      TimeToIdleSeconds:
+        description: "Accessor."
+      TimeToLiveSeconds:
+        description: "Accessor."
+    operations:
+      "setDiskExpiryThreadIntervalSeconds(long)":
+        description: "setDiskExpiryThreadIntervalSeconds."
+        params:
+          - name: seconds
+            type: long
+      "setDiskPersistent(boolean)":
+        description: "setDiskPersistent."
+        params:
+          - name: diskPersistent
+            type: boolean
+      "setDiskSpoolBufferSizeMB(int)":
+        description: "setDiskSpoolBufferSizeMB."
+        params:
+          - name: diskSpoolBufferSizeMB
+            type: int
+      "setEternal(boolean)":
+        description: "setEternal."
+        params:
+          - name: eternal
+            type: boolean
+      "setLoggingEnabled(boolean)":
+        description: "setLoggingEnabled."
+        params:
+          - name: loggingEnabled
+            type: boolean
+      "setMaxElementsInMemory(int)":
+        description: "setMaxElementsInMemory."
+        params:
+          - name: maxElements
+            type: int
+      "setMaxElementsOnDisk(int)":
+        description: "setMaxElementsOnDisk."
+        params:
+          - name: maxElements
+            type: int
+      "setMaxEntriesLocalDisk(long)":
+        description: "Configured maximum number of entries for the local disk store."
+        params:
+          - name: maxEntries
+            type: long
+      "setMaxEntriesLocalHeap(long)":
+        description: "Configured maximum number of entries for the local memory heap."
+        params:
+          - name: maxEntries
+            type: long
+      "setMemoryStoreEvictionPolicy(java.lang.String)":
+        description: "setMemoryStoreEvictionPolicy."
+        params:
+          - name: policy
+            type: java.lang.String
+      "setOverflowToDisk(boolean)":
+        description: "setOverflowToDisk."
+        params:
+          - name: overflow
+            type: boolean
+      "setTimeToIdleSeconds(long)":
+        description: "setTimeToIdleSeconds."
+        params:
+          - name: tti
+            type: long
+      "setTimeToLiveSeconds(long)":
+        description: "setTimeToLiveSeconds."
+        params:
+          - name: ttl
+            type: long
+
+  - match:
+      objectName: "net.sf.ehcache:type=CacheStatistics,CacheManager=*,name=*"
+      className: "net.sf.ehcache.management.CacheStatisticsMBean"
+    description: "EhCache 2.x cache statistics management interface."
+    attributes:
+      AssociatedCacheName:
+        description: "Returns the associatedCacheName."
+      CacheHitPercentage:
+        description: "Returns the percentage of cache accesses that found a requested item in the cache."
+      CacheHits:
+        description: "Copyright Terracotta, Inc."
+      CacheMissPercentage:
+        description: "Returns the percentage of cache accesses that did not find a requested element in the cache."
+      CacheMisses:
+        description: "Returns the cacheMisses."
+      DiskStoreObjectCount:
+        description: "Gets the number of objects in the DiskStore."
+      InMemoryHitPercentage:
+        description: "Returns the percentage of cache accesses that found a requested item cached in-memory."
+      InMemoryHits:
+        description: "Number of times a requested item was found in the Memory Store."
+      InMemoryMisses:
+        description: "Returns the inMemoryMisses."
+      MemoryStoreObjectCount:
+        description: "Gets the number of objects in the MemoryStore."
+      ObjectCount:
+        description: "Returns the objectCount."
+      OffHeapHitPercentage:
+        description: "Returns the percentage of cache accesses that found a requested item cached off-heap."
+      OffHeapHits:
+        description: "Number of times a requested item was found in the off-heap store."
+      OffHeapMisses:
+        description: "Returns the offHeapMisses."
+      OffHeapStoreObjectCount:
+        description: "Gets the number of objects in the OffHeapStore."
+      OnDiskHitPercentage:
+        description: "Returns the percentage of cache accesses that found a requested item cached on disk."
+      OnDiskHits:
+        description: "Number of times a requested item was found in the Disk Store."
+      OnDiskMisses:
+        description: "Returns the onDiskMisses."
+      WriterMaxQueueSize:
+        description: "Gets the maximum size of the write-behind queue, if any."
+      WriterQueueLength:
+        description: "Gets the size of the write-behind queue, if any. The value is for all local buckets."

@@ -7,11 +7,13 @@ import com.googlecode.lanterna.gui2.TextBox;
 import com.googlecode.lanterna.gui2.TextGUIGraphics;
 
 import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
+import dal.tool.trace.jmxer.tui.widget.JmxTextBoxRenderer;
 
 /**
- * Highlights {@link TuiOutputConstant#OUTPUT_TRUNCATED_PREFIX} lines after the default TextBox draw.
+ * 기본 TextBox 그리기 뒤 잘림 안내 줄(TuiOutputConstant.OUTPUT_TRUNCATED_PREFIX)을 강조한다.
+ *
  */
-final class OutputTextBoxRenderer extends TextBox.DefaultTextBoxRenderer {
+final class OutputTextBoxRenderer extends JmxTextBoxRenderer {
 
 	@Override
 	public void drawComponent(TextGUIGraphics graphics, TextBox component) {

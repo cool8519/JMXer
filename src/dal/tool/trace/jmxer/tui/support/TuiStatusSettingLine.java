@@ -3,13 +3,12 @@ package dal.tool.trace.jmxer.tui.support;
 import dal.tool.trace.jmxer.cli.JmxSettings;
 
 /**
- * Formats status line 3: SET-linked settings for the active UI mode (value + optional toggle key).
+ * 상태 줄 3 형식: 활성 UI 모드의 SET 연동 설정(값·토글 키).
+ *
  */
 public final class TuiStatusSettingLine {
 	private static final String LINE_PREFIX = "   - ";
-	/** Wide separator between multiple settings on one line. */
 	private static final String ITEM_SEP = ", ";
-	private static final String PRETTY_PRINT_TOGGLE_KEY = "Ctrl+P";
 
 	private TuiStatusSettingLine() {}
 
@@ -17,7 +16,8 @@ public final class TuiStatusSettingLine {
 		if(settings == null) {
 			return LINE_PREFIX;
 		}
-		return join(item("PRETTY_PRINT", onOff(settings.prettyPrintInResult()), PRETTY_PRINT_TOGGLE_KEY));
+		return join(item("PRETTY_PRINT", onOff(settings.prettyPrintInResult()),
+			TuiKeyBindings.label(TuiKeyAction.OUTPUT_PRETTY_PRINT)));
 	}
 
 	public static String recordDetailLine(JmxSettings settings) {
@@ -25,8 +25,10 @@ public final class TuiStatusSettingLine {
 			return LINE_PREFIX;
 		}
 		return join(
-				item("RECORD_VIEW", settings.getRecordViewMode().name(), null),
-				item("SHOW_EMPTY_THREAD", onOff(settings.showEmptyThreadInRecordView()), null));
+				item("DUMP_STACK_FILTER", settings.getDumpStackFilter().name(),
+					TuiRecordUiKeys.dumpStackFilterToggleKeyLabel()),
+				item("SHOW_EMPTY_THREAD", onOff(settings.showEmptyThreadInRecordView()),
+					TuiRecordUiKeys.showEmptyThreadToggleKeyLabel()));
 	}
 
 	private static String onOff(boolean on) {

@@ -66,8 +66,8 @@ public class MBeanConnector {
 	}
 
     /**
-     * Marks the session disconnected without remote {@link JMXConnector#close()} I/O
-     * (avoids blocking on a dead RMI link). Use before prompting for reconnect in TUI.
+     * 끊어진 RMI 세션에서 원격 JMXConnector.close() I/O를 호출하지 않고 연결 끊김으로 표시한다.
+     * TUI에서 재연결 프롬프트 전에 사용한다.
      */
     public void markConnectionStale() {
     	initialized = false;
@@ -106,8 +106,8 @@ public class MBeanConnector {
     }
 
     /**
-     * Reconnect after a dead session without calling {@link #close()} on a stale remote connector
-     * (avoids blocking RMI teardown). On failure the session is left stale.
+     * 끊어진 세션에서 close() 없이 재연결한다. 실패 시 세션은 끊김 상태로 남는다.
+     * @throws Exception 수행 과정에서 발생한 모든 Exception
      */
     public void reconnect() throws Exception {
     	markConnectionStale();
@@ -129,96 +129,53 @@ public class MBeanConnector {
     }
     
 
-	/**
-	 * 연결 방식을 가져온다.
-	 * @return 연결 방식
-	 */
 	public ConnectType getConnectType() {
 		return connectType;
 	}
 
-	/**
-	 * 연결 방식을 설정한다.
-	 * @param connectType 연결 방식
-	 */
 	public void setConnectType(ConnectType connectType) {
 		this.connectType = connectType;
 	}
 
-	/**
-	 * 연결 대상을 가져온다.
-	 * @return 연결 대상 문자열
-	 */
 	public String getTargetName() {
 		return targetName;
 	}
 
-	/**
-	 * 연결 대상을 설정한다.
-	 * @param targetName 연결 대상 문자열
-	 */
 	public void setTargetName(String targetName) {
 		this.targetName = targetName;
 	}
 
-	/**
-	 * 인증 User를 가져온다.
-	 * @return 인증 User 문자열
-	 */
 	public String getAuthUser() {
 		return authUser;
 	}
 
-	/**
-	 * 인증 User를 설정한다.
-	 * @param authUser 인증 User 문자열
-	 */
 	public void setAuthUser(String authUser) {
 		this.authUser = authUser;
 	}
 
-	/**
-	 * 인증 Password를 가져온다.
-	 * @return 인증 Password 문자열
-	 */
 	public String getAuthPass() {
 		return authPass;
 	}
 
-	/**
-	 * 인증 Password를 설정한다.
-	 * @param authPass 인증 Password 문자열
-	 */
 	public void setAuthPass(String authPass) {
 		this.authPass = authPass;
 	}
 
-	/**
-	 * JMX 통신을 위한 JMXConnector 객체를 가져온다.
-	 * @return JMXConnector 객체
-	 */
 	public JMXConnector getJMXConnector() {
 		return jmxConnector;
 	}
 
-	/**
-	 * JMX 통신을 위한 MBeanConnection을 가져온다.
-	 * @return MBeanConnection 객체
-	 */
 	public MBeanServerConnection getMBeanConnection() {
     	return mbeanConnection;
     }
     
-    /**
-     * 정상 연결 여부를 확인한다. 
-     * @return 정상 연결이 되었으면 true
-     */
     public boolean isInitialized() {
     	return initialized;
     }
 
     /**
-     * Verifies that the JMX session accepts MBeanServer operations (detects stale connectors).
+     * JMX 세션이 MBeanServer 작업을 수락하는지 검증한다(끊긴 커넥터 감지).
+     * @throws IOException 세션이 연결되지 않았거나 검증에 실패한 경우
      */
     public void verifySession() throws IOException {
     	if(!initialized || mbeanConnection == null) {

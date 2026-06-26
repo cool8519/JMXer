@@ -25,6 +25,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
 
 import dal.tool.cli.Logger;
+import dal.tool.util.ObjectDataUtil;
 import dal.tool.util.PatternUtil;
 import dal.tool.util.PatternUtil.PATTERN_TYPE;
 import dal.tool.util.StringUtil;
@@ -398,6 +399,86 @@ public class JMXUtil {
         	}
 		}
 		throw new MBeanNotFoundException("No such attribute or operation '" + target_name + "' found");
+	}
+
+	/**
+	 * CALL·invoke 결과를 출력용 문자열로 변환한다.
+	 * @param mbeanConn MBeanServerConnection
+	 * @param oName ObjectName
+	 * @param targetName Attribute 또는 Operation 이름
+	 * @param targetValues 인자 배열
+	 * @param result invoke 결과
+	 * @param prettyPrint 들여쓰기·줄바꿈 포함 여부
+	 * @return 출력 문자열. attribute write 등 출력이 없으면 null
+	 * @throws Exception MBeanInfo 조회 실패 등
+	 */
+	public static String formatInvokeOutput(MBeanServerConnection mbeanConn, ObjectName oName, String targetName,
+			String[] targetValues, Object result, boolean prettyPrint) throws Exception {
+		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
+		if(isAttributeWriteTarget(mbeanInfo, targetName, targetValues)) {
+			return null;
+		}
+		MBeanOperationInfo operation = findMatchingOperation(mbeanInfo, targetName, targetValues);
+		if(operation != null && "void".equals(operation.getReturnType())) {
+			return ObjectDataUtil.voidOperationMessage();
+		}
+		if(result == null) {
+			return "null";
+		}
+		return ObjectDataUtil.toString(result, prettyPrint);
+	}
+
+	private static boolean isAttributeWriteTarget(MBeanInfo mbeanInfo, String targetName, String[] targetValues) {
+		if(targetName == null || targetName.indexOf('(') > 0) {
+			return false;
+		}
+		if(targetValues == null || targetValues.length < 1) {
+			return false;
+		}
+		for(MBeanAttributeInfo info : mbeanInfo.getAttributes()) {
+			if(info.getName().equals(targetName) && info.isWritable()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static MBeanOperationInfo findMatchingOperation(MBeanInfo mbeanInfo, String targetName, String[] targetValues) {
+		if(targetName == null || mbeanInfo == null) {
+			return null;
+		}
+		boolean isOperation = (targetName.indexOf('(') > 0);
+		for(MBeanOperationInfo info : mbeanInfo.getOperations()) {
+			if(isOperation) {
+				String opString = targetName.substring(0, targetName.indexOf('('));
+				String argsString = targetName.substring(targetName.indexOf('(') + 1, targetName.indexOf(')'));
+				if(!info.getName().equals(opString)) {
+					continue;
+				}
+				String[] argsArr = StringUtil.getTokenArray(argsString, ',', new String[] { "()" });
+				MBeanParameterInfo[] paramInfo = info.getSignature();
+				if(argsArr.length != paramInfo.length) {
+					continue;
+				}
+				boolean isMatch = true;
+				for(int i = 0; i < argsArr.length; i++) {
+					String type = TypeUtil.toType(paramInfo[i].getType());
+					if(!type.equals(argsArr[i])) {
+						isMatch = false;
+						break;
+					}
+				}
+				if(isMatch) {
+					return info;
+				}
+			} else if(info.getName().equals(targetName)) {
+				if((targetValues == null && info.getSignature().length == 0)
+						|| (targetValues != null && targetValues.length == info.getSignature().length)) {
+					return info;
+				}
+			}
+		}
+		return null;
 	}
 
 	

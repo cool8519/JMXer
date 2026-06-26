@@ -25,6 +25,10 @@ import dal.tool.util.NumberUtil;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * JMXer THREAD 명령(스레드 목록·스택트레이스)
+ *
+ */
 public class JmxThreadCommand extends JmxCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(JmxThreadCommand.class, "THR[EAD]");
@@ -220,12 +224,10 @@ public class JmxThreadCommand extends JmxCommand {
 				target = target.trim();
 				if(target.length() == 0) continue;
 				if(NumberUtil.isNumber(target)) {
-					// thread id
 					if(threadMap.containsKey(Long.valueOf(target))) {
 						thrSet.add(Long.valueOf(target));
 					}
 				} else if(Character.isDigit(target.charAt(0))) {
-					// thread id range
 					String[] range = target.split("-");
 					if(range.length == 2) {
 						String s_from = range[0];
@@ -249,7 +251,6 @@ public class JmxThreadCommand extends JmxCommand {
 						throw new Exception("Thread id range('" + target + "') could not be resolved.");						
 					}					
 				} else if(target.startsWith("\"")) {
-					// thread name
 					if(target.length() > 1 && target.endsWith("\"")) {
 						target = target.substring(1, target.length()-1);
 						Iterator<Long> iter = threadMap.keySet().iterator();
@@ -261,7 +262,6 @@ public class JmxThreadCommand extends JmxCommand {
 									thrSet.add(id);
 								}
 							} else {
-								// thread name pattern
 								if(StringUtil.isMatchStringWithPattern(name, target)) {
 									thrSet.add(id);
 								}

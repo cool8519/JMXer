@@ -1,15 +1,13 @@
 package dal.tool.trace.jmxer.tui.output;
 
 /**
- * TUI Output pane behavior for commands that intentionally produce no captured lines.
+ * 의도적으로 캡처 줄이 없는 명령에 대한 TUI Output 패널 동작.
+ *
  */
 public final class TuiOutputCommandPolicy {
 
 	private TuiOutputCommandPolicy() {}
 
-	/**
-	 * @return true when the command clears the display and should leave Output empty without a placeholder
-	 */
 	public static boolean isClearOutputCommand(String commandLine) {
 		if(commandLine == null) {
 			return false;

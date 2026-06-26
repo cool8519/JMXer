@@ -21,6 +21,9 @@ public class Logger extends Object {
 	 */
 	public interface OutputSink {
 		void print(Object msg, boolean newline);
+
+		/** 마지막 출력 줄에 텍스트를 이어 붙인다(표준입력 에코, 진행 점 등). */
+		default void appendInlineFragment(String fragment) {}
 	}
 
 	private static final OutputSink DEFAULT_OUTPUT_SINK = new OutputSink() {
@@ -40,23 +43,20 @@ public class Logger extends Object {
 
 	/**
 	 * TUI Output 패널에 사용자 명시적 명령 결과만 붙일 때 true.
-	 * false이면 {@link #outputSink}는 화면에 쓰지 않는다(스풀 등 다른 기록은 유지).
+	 * false이면 outputSink는 화면에 쓰지 않는다(스풀 등 다른 기록은 유지).
 	 */
 	private static volatile boolean tuiPanelCapture = false;
 
-	/** @see #tuiPanelCapture */
 	public static boolean isTuiPanelCapture() {
 		return tuiPanelCapture;
 	}
 
-	/** @see #tuiPanelCapture */
 	public static void setTuiPanelCapture(boolean on) {
 		tuiPanelCapture = on;
 	}
 
 	/**
-	 * TUI mode is active (terminal UI owns the console). While true, direct writes to
-	 * {@link System#out}/{@link System#err} can corrupt the screen; route diagnostics via {@link Logger}.
+	 * TUI 모드 활성 여부. true이면 System.out/err 직접 쓰기가 화면을 깨뜨릴 수 있으므로 Logger로 라우팅한다.
 	 */
 	private static volatile boolean tuiActive = false;
 
@@ -68,7 +68,7 @@ public class Logger extends Object {
 		tuiActive = on;
 	}
 
-	/** TUI: roll back the current user command capture (e.g. mutating CALL cancelled). */
+	/** TUI: 변경 CALL 등이 취소될 때 현재 사용자 명령 캡처를 롤백한다. */
 	private static volatile Runnable tuiAbortUserCaptureRunnable;
 	private static volatile Runnable tuiCommitCapturePreambleRunnable;
 
@@ -89,7 +89,7 @@ public class Logger extends Object {
 		}
 	}
 
-	/** TUI: show {@code > command} in Output after confirmation passes. */
+	/** TUI: 확인 통과 후 Output에 > command 줄을 표시한다. */
 	public static void commitTuiUserCapturePreamble() {
 		Runnable r = tuiCommitCapturePreambleRunnable;
 		if(r != null) {
@@ -100,7 +100,7 @@ public class Logger extends Object {
 	}
 
 	/**
-	 * Writes a throwable stack trace through the configured {@link #outputSink} (never {@link System#err}).
+	 * 예외 스택 트레이스를 outputSink로 출력한다(System.err 사용 안 함).
 	 */
 	public static void logStackTrace(Throwable t) {
 		if(t == null) {
@@ -303,8 +303,8 @@ public class Logger extends Object {
     }
 
     /**
-     * Emits one visible blank line in CLI and TUI output.
-     * TUI output skips empty strings; a no-break space is used there so the row is still reserved.
+     * CLI·TUI 출력에 빈 줄 한 줄을 남긴다.
+     * TUI는 빈 문자열을 건너뛰므로 줄을 확보하려고 no-break space를 쓴다.
      */
     public static void logBlankLine() {
         logln(tuiActive ? "\u00a0" : "");
@@ -344,6 +344,18 @@ public class Logger extends Object {
         try {
             outputSink.print(msg, newline);
             logOnlySpool(msg, newline);
+        } catch(Exception e) {}
+    }
+
+    /**
+     * TUI 출력의 마지막 줄에 인라인 텍스트를 이어 붙인다(진행 점, stdin 에코 등).
+     */
+    public static void appendTuiInlineFragment(String fragment) {
+        if(!tuiActive || fragment == null || fragment.length() == 0) {
+            return;
+        }
+        try {
+            outputSink.appendInlineFragment(fragment);
         } catch(Exception e) {}
     }
 

@@ -6,8 +6,8 @@ import java.io.PrintStream;
 import dal.tool.cli.Logger;
 
 /**
- * While TUI owns the terminal, redirects {@link System#out} and {@link System#err} to {@link Logger}
- * so stray {@code printStackTrace()} or {@code System.out.println()} calls cannot corrupt the screen.
+ * TUI가 터미널을 점유하는 동안 System.out·System.err를 Logger로 넘겨 화면이 깨지지 않게 한다.
+ *
  */
 public final class TuiStdioRedirect {
 	private final PrintStream prevOut;
@@ -39,15 +39,23 @@ public final class TuiStdioRedirect {
 			@Override
 			public synchronized void write(int b) {
 				if(b == '\n') {
-					emitLine();
+					if(Logger.isTuiActive()) {
+						line.setLength(0);
+					} else {
+						emitLine();
+					}
 				} else if(b != '\r') {
-					line.append((char)(b & 0xff));
+					char c = (char)(b & 0xff);
+					line.append(c);
+					if(Logger.isTuiActive()) {
+						Logger.appendTuiInlineFragment(String.valueOf(c));
+					}
 				}
 			}
 
 			@Override
 			public synchronized void flush() {
-				if(line.length() > 0) {
+				if(!Logger.isTuiActive() && line.length() > 0) {
 					emitLine();
 				}
 			}
@@ -58,11 +66,7 @@ public final class TuiStdioRedirect {
 				}
 				String s = line.toString();
 				line.setLength(0);
-				if(Logger.isTuiActive()) {
-					Logger.logln(s);
-				} else {
-					fallback.println(s);
-				}
+				fallback.println(s);
 			}
 		}, true);
 	}

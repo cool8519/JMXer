@@ -1,0 +1,594 @@
+entries:
+  - match:
+      objectName: "java.lang:type=ClassLoading"
+      className: "java.lang.management.ClassLoadingMXBean"
+    description: "The management interface for the class loading system of the Java virtual machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      TotalLoadedClassCount:
+        description: "Returns the total number of classes that have been loaded since the Java virtual machine has started execution."
+      LoadedClassCount:
+        description: "Returns the number of classes that are currently loaded in the Java virtual machine."
+      UnloadedClassCount:
+        description: "Returns the total number of classes unloaded since the Java virtual machine has started execution."
+      Verbose:
+        description: "Tests if the verbose output for the class loading system is enabled."
+    operations:
+      "setVerbose(boolean)":
+        description: "Enables or disables the verbose output for the class loading system."
+        params:
+          - name: value
+            type: boolean
+  - match:
+      objectName: "java.lang:type=Memory"
+      className: "java.lang.management.MemoryMXBean"
+    description: "The management interface for the memory system of the Java virtual machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      ObjectPendingFinalizationCount:
+        description: "Returns the approximate number of objects for which finalization is pending."
+      HeapMemoryUsage:
+        description: "Returns the current memory usage of the heap that is used for object allocation."
+      NonHeapMemoryUsage:
+        description: "Returns the current memory usage of non-heap memory that is used by the Java virtual machine."
+      Verbose:
+        description: "Tests if verbose output for the memory system is enabled."
+    operations:
+      "setVerbose(boolean)":
+        description: "Enables or disables verbose output for the memory system."
+        params:
+          - name: value
+            type: boolean
+      "gc()":
+        description: "Runs the garbage collector."
+  - match:
+      objectName: "java.lang:type=Threading"
+      className: "java.lang.management.ThreadMXBean"
+    description: "The management interface for the thread system of the Java virtual machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      ThreadCount:
+        description: "Returns the current number of live platform threads including both daemon and non-daemon threads."
+      PeakThreadCount:
+        description: "Returns the peak live platform thread count since the Java virtual machine started or peak was reset."
+      TotalStartedThreadCount:
+        description: "Returns the total number of platform threads created and also started since the Java virtual machine started."
+      DaemonThreadCount:
+        description: "Returns the current number of live platform threads that are daemon threads."
+      AllThreadIds:
+        description: "Returns the threadIDs of all live platform threads."
+      ThreadContentionMonitoringSupported:
+        description: "Tests if the Java virtual machine supports thread contention monitoring."
+      ThreadContentionMonitoringEnabled:
+        description: "Tests if thread contention monitoring is enabled."
+      CurrentThreadCpuTime:
+        description: "Returns the total CPU time for the current thread in nanoseconds."
+      CurrentThreadUserTime:
+        description: "Returns the CPU time that the current thread has executed in user mode in nanoseconds."
+      ThreadCpuTimeSupported:
+        description: "Tests if the Java virtual machine implementation supports CPU time measurement for any platform thread."
+      CurrentThreadCpuTimeSupported:
+        description: "Tests if the Java virtual machine supports CPU time measurement from a platform thread with the getCurrentThreadCpuTime() and getCurrentThreadUserTime() methods."
+      ThreadCpuTimeEnabled:
+        description: "Tests if thread CPU time measurement is enabled."
+      ObjectMonitorUsageSupported:
+        description: "Tests if the Java virtual machine supports monitoring of object monitor usage."
+      SynchronizerUsageSupported:
+        description: "Tests if the Java virtual machine supports monitoring of ownable synchronizer usage."
+    operations:
+      "getThreadInfo(long)":
+        description: "Returns the thread info for a thread of the specified id with no stack trace."
+        return: "a ThreadInfo object for the thread of the given ID with no stack trace, no locked monitor and no synchronizer info; null if the thread of the given ID is a virtual thread, is not alive, or it does not exist."
+        params:
+          - name: id
+            type: long
+      "getThreadInfo(long[])":
+        description: "Returns the thread info for each thread whose ID is in the input array ids with no stack trace."
+        return: "an array of the ThreadInfo objects, each containing information about a thread whose ID is in the corresponding element of the input array of IDs with no stack trace, no locked monitor and no synchronizer info."
+        params:
+          - name: ids
+            type: "long[]"
+      "getThreadInfo(long,int)":
+        description: "Returns a thread info for a thread of the specified id, with stack trace of a specified number of stack trace elements."
+        return: "a ThreadInfo of the thread of the given ID with no locked monitor and synchronizer info."
+        params:
+          - name: id
+            type: long
+          - name: maxDepth
+            type: int
+      "getThreadInfo(long[],int)":
+        description: "Returns the thread info for each thread whose ID is in the input array ids, with stack trace of a specified number of stack trace elements."
+        return: "an array of the ThreadInfo objects, each containing information about a thread whose ID is in the corresponding element of the input array of IDs with no locked monitor and synchronizer info."
+        params:
+          - name: ids
+            type: "long[]"
+          - name: maxDepth
+            type: int
+      "setThreadContentionMonitoringEnabled(boolean)":
+        description: "Enables or disables thread contention monitoring."
+        params:
+          - name: enable
+            type: boolean
+      "getThreadCpuTime(long)":
+        description: "Returns the total CPU time for a thread of the specified ID in nanoseconds."
+        return: "the total CPU time for a thread of the specified ID if the thread of the specified ID is a platform thread, the thread is alive, and CPU time measurement is enabled; -1 otherwise."
+        params:
+          - name: id
+            type: long
+      "getThreadUserTime(long)":
+        description: "Returns the CPU time that a thread of the specified ID has executed in user mode in nanoseconds."
+        return: "the user-level CPU time for a thread of the specified ID if the thread of the specified ID is a platform thread, the thread is alive, and CPU time measurement is enabled; -1 otherwise."
+        params:
+          - name: id
+            type: long
+      "setThreadCpuTimeEnabled(boolean)":
+        description: "Enables or disables thread CPU time measurement."
+        params:
+          - name: enable
+            type: boolean
+      "findMonitorDeadlockedThreads()":
+        description: "Finds cycles of platform threads that are in deadlock waiting to acquire object monitors."
+        return: "an array of IDs of the platform threads that are monitor deadlocked, if any; null otherwise."
+      "resetPeakThreadCount()":
+        description: "Resets the peak thread count to the current number of live platform threads."
+      "findDeadlockedThreads()":
+        description: "Finds cycles of platform threads that are in deadlock waiting to acquire object monitors or ownable synchronizers ."
+        return: "an array of IDs of the platform threads that are deadlocked waiting for object monitors or ownable synchronizers, if any; null otherwise."
+      "getThreadInfo(long[],boolean,boolean)":
+        description: "Returns the thread info for each thread whose ID is in the input array ids, with stack trace and synchronization information."
+        return: "an array of the ThreadInfo objects, each containing information about a thread whose ID is in the corresponding element of the input array of IDs."
+        params:
+          - name: ids
+            type: "long[]"
+          - name: lockedMonitors
+            type: boolean
+          - name: lockedSynchronizers
+            type: boolean
+      "getThreadInfo(long[],boolean,boolean,int)":
+        description: "Returns the thread info for each thread whose ID is in the input array ids, with stack trace of the specified maximum number of elements and synchronization information."
+        return: "an array of the ThreadInfo objects, each containing information about a thread whose ID is in the corresponding element of the input array of IDs."
+        params:
+          - name: ids
+            type: "long[]"
+          - name: lockedMonitors
+            type: boolean
+          - name: lockedSynchronizers
+            type: boolean
+          - name: maxDepth
+            type: int
+      "dumpAllThreads(boolean,boolean)":
+        description: "Returns the thread info for all live platform threads with stack trace and synchronization information."
+        return: "an array of ThreadInfo for all live platform threads."
+        params:
+          - name: lockedMonitors
+            type: boolean
+          - name: lockedSynchronizers
+            type: boolean
+      "dumpAllThreads(boolean,boolean,int)":
+        description: "Returns the thread info for all live platform threads with stack trace of the specified maximum number of elements and synchronization information."
+        return: "an array of ThreadInfo for all live platform threads."
+        params:
+          - name: lockedMonitors
+            type: boolean
+          - name: lockedSynchronizers
+            type: boolean
+          - name: maxDepth
+            type: int
+  - match:
+      objectName: "java.lang:type=OperatingSystem"
+      className: "java.lang.management.OperatingSystemMXBean"
+    description: "The management interface for the operating system on which the Java virtual machine is running."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the operating system name."
+      Arch:
+        description: "Returns the operating system architecture."
+      Version:
+        description: "Returns the operating system version."
+      AvailableProcessors:
+        description: "Returns the number of processors available to the Java virtual machine."
+      SystemLoadAverage:
+        description: "Returns the system load average for the last minute."
+      CommittedVirtualMemorySize:
+        description: "Returns the amount of virtual memory that is guaranteed to be available to the running process in bytes, or -1 if this operation is not supported."
+      TotalSwapSpaceSize:
+        description: "Returns the total amount of swap space in bytes."
+      FreeSwapSpaceSize:
+        description: "Returns the amount of free swap space in bytes."
+      ProcessCpuTime:
+        description: "Returns the CPU time used by the process on which the Java virtual machine is running in nanoseconds."
+      FreePhysicalMemorySize:
+        description: "Returns the amount of free physical memory in bytes."
+      FreeMemorySize:
+        description: "Returns the amount of free memory in bytes."
+      TotalPhysicalMemorySize:
+        description: "Returns the total amount of physical memory in bytes."
+      TotalMemorySize:
+        description: "Returns the total amount of memory in bytes."
+      SystemCpuLoad:
+        description: "Returns the \"recent CPU usage\" for the whole system."
+      CpuLoad:
+        description: "Returns the \"recent CPU usage\" for the operating environment."
+      ProcessCpuLoad:
+        description: "Returns the \"recent CPU usage\" for the Java Virtual Machine process."
+      OpenFileDescriptorCount:
+        description: "Returns the number of open file descriptors."
+      MaxFileDescriptorCount:
+        description: "Returns the maximum number of file descriptors."
+  - match:
+      objectName: "java.lang:type=Runtime"
+      className: "java.lang.management.RuntimeMXBean"
+    description: "The management interface for the runtime system of the Java virtual machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Pid:
+        description: "Returns the process ID representing the running Java virtual machine."
+      Name:
+        description: "Returns the name representing the running Java virtual machine."
+      VmName:
+        description: "Returns the Java virtual machine implementation name."
+      VmVendor:
+        description: "Returns the Java virtual machine implementation vendor."
+      VmVersion:
+        description: "Returns the Java virtual machine implementation version."
+      SpecName:
+        description: "Returns the Java virtual machine specification name."
+      SpecVendor:
+        description: "Returns the Java virtual machine specification vendor."
+      SpecVersion:
+        description: "Returns the Java virtual machine specification version."
+      ManagementSpecVersion:
+        description: "Returns the version of the specification for the management interface implemented by the running Java virtual machine."
+      ClassPath:
+        description: "Returns the Java class path that is used by the system class loader to search for class files."
+      LibraryPath:
+        description: "Returns the Java library path."
+      BootClassPathSupported:
+        description: "Tests if the Java virtual machine supports the boot class path mechanism used by the bootstrap class loader to search for class files."
+      BootClassPath:
+        description: "Returns the boot class path that is used by the bootstrap class loader to search for class files."
+      InputArguments:
+        description: "Returns the input arguments passed to the Java virtual machine which does not include the arguments to the main method."
+      Uptime:
+        description: "Returns the uptime of the Java virtual machine in milliseconds."
+      StartTime:
+        description: "Returns the start time of the Java virtual machine in milliseconds."
+      SystemProperties:
+        description: "Returns a map of names and values of all system properties."
+  - match:
+      objectName: "java.lang:type=Compilation"
+      className: "java.lang.management.CompilationMXBean"
+    description: "The management interface for the compilation system of the Java virtual machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the name of the Just-in-time (JIT) compiler."
+      CompilationTimeMonitoringSupported:
+        description: "Tests if the Java virtual machine supports the monitoring of compilation time."
+      TotalCompilationTime:
+        description: "Returns the approximate accumulated elapsed time (in milliseconds) spent in compilation."
+  - match:
+      objectName: "java.lang:type=GarbageCollector,name=*"
+      className: "java.lang.management.GarbageCollectorMXBean"
+    description: "The management interface for the garbage collection of the Java virtual machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the name representing this memory manager."
+      Valid:
+        description: "Tests if this memory manager is valid in the Java virtual machine."
+      MemoryPoolNames:
+        description: "Returns the name of memory pools that this memory manager manages."
+      CollectionCount:
+        description: "Returns the total number of collections that have occurred."
+      CollectionTime:
+        description: "Returns the approximate accumulated collection elapsed time in milliseconds."
+  - match:
+      objectName: "java.lang:type=MemoryManager,name=*"
+      className: "java.lang.management.MemoryManagerMXBean"
+    description: "The management interface for a memory manager."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the name representing this memory manager."
+      Valid:
+        description: "Tests if this memory manager is valid in the Java virtual machine."
+      MemoryPoolNames:
+        description: "Returns the name of memory pools that this memory manager manages."
+  - match:
+      objectName: "java.lang:type=MemoryPool,name=*"
+      className: "java.lang.management.MemoryPoolMXBean"
+    description: "The management interface for a memory pool."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the name representing this memory pool."
+      Type:
+        description: "Returns the type of this memory pool."
+      Usage:
+        description: "Returns an estimate of the memory usage of this memory pool."
+      PeakUsage:
+        description: "Returns the peak memory usage of this memory pool since the Java virtual machine was started or since the peak was reset."
+      Valid:
+        description: "Tests if this memory pool is valid in the Java virtual machine."
+      MemoryManagerNames:
+        description: "Returns the name of memory managers that manages this memory pool."
+      UsageThreshold:
+        description: "Returns the usage threshold value of this memory pool in bytes."
+      UsageThresholdExceeded:
+        description: "Tests if the memory usage of this memory pool reaches or exceeds its usage threshold value."
+      UsageThresholdCount:
+        description: "Returns the number of times that the memory usage has crossed the usage threshold."
+      UsageThresholdSupported:
+        description: "Tests if this memory pool supports usage threshold."
+      CollectionUsageThreshold:
+        description: "Returns the collection usage threshold value of this memory pool in bytes."
+      CollectionUsageThresholdExceeded:
+        description: "Tests if the memory usage of this memory pool after the most recent collection on which the Java virtual machine has expended effort has reached or exceeded its collection usage threshold."
+      CollectionUsageThresholdCount:
+        description: "Returns the number of times that the Java virtual machine has detected that the memory usage has reached or exceeded the collection usage threshold."
+      CollectionUsage:
+        description: "Returns the memory usage after the Java virtual machine most recently expended effort in recycling unused objects in this memory pool."
+      CollectionUsageThresholdSupported:
+        description: "Tests if this memory pool supports a collection usage threshold."
+    operations:
+      "resetPeakUsage()":
+        description: "Resets the peak memory usage statistic of this memory pool to the current memory usage."
+      "setUsageThreshold(long)":
+        description: "Sets the threshold of this memory pool to the given threshold value if this memory pool supports the usage threshold."
+        params:
+          - name: threshold
+            type: long
+      "setCollectionUsageThreshold(long)":
+        description: "Sets the collection usage threshold of this memory pool to the given threshold value."
+        params:
+          - name: threshold
+            type: long
+  - match:
+      objectName: "java.nio:type=BufferPool,name=*"
+      className: "java.lang.management.BufferPoolMXBean"
+    description: "The management interface for a buffer pool, for example a pool of direct or mapped buffers."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the name representing this buffer pool."
+      Count:
+        description: "Returns an estimate of the number of buffers in the pool."
+      TotalCapacity:
+        description: "Returns an estimate of the total capacity of the buffers in this pool."
+      MemoryUsed:
+        description: "Returns an estimate of the memory that the Java virtual machine is using for this buffer pool."
+  - match:
+      objectName: "java.lang:type=GarbageCollector,name=*"
+      className: "com.sun.management.GarbageCollectorMXBean"
+    description: "Platform-specific management interface for a garbage collector which performs collections in cycles."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Name:
+        description: "Returns the name representing this memory manager."
+      Valid:
+        description: "Tests if this memory manager is valid in the Java virtual machine."
+      MemoryPoolNames:
+        description: "Returns the name of memory pools that this memory manager manages."
+      CollectionCount:
+        description: "Returns the total number of collections that have occurred."
+      CollectionTime:
+        description: "Returns the approximate accumulated collection elapsed time in milliseconds."
+      LastGcInfo:
+        description: "Returns the GC information about the most recent GC. Returns null if no GC information is available."
+  - match:
+      objectName: "com.sun.management:type=HotSpotDiagnostic"
+      className: "com.sun.management.HotSpotDiagnosticMXBean"
+    description: "Diagnostic management interface for the HotSpot Virtual Machine."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      DiagnosticOptions:
+        description: "Returns a list of VMOption objects for all diagnostic options."
+    operations:
+      "dumpHeap(java.lang.String,boolean)":
+        description: "Dumps the heap to the outputFile file in the same format as the hprof heap dump."
+        params:
+          - name: outputFile
+            type: "java.lang.String"
+          - name: live
+            type: boolean
+      "getVMOption(java.lang.String)":
+        description: "Returns a VMOption object for a VM option of the given name."
+        return: "a VMOption object for a VM option of the given name."
+        params:
+          - name: name
+            type: "java.lang.String"
+      "setVMOption(java.lang.String,java.lang.String)":
+        description: "Sets a VM option of the given name to the specified value."
+        params:
+          - name: name
+            type: "java.lang.String"
+          - name: value
+            type: "java.lang.String"
+      "dumpThreads(java.lang.String,com.sun.management.HotSpotDiagnosticMXBean.ThreadDumpFormat)":
+        description: "Generate a thread dump to the given file in the given format."
+        params:
+          - name: outputFile
+            type: "java.lang.String"
+          - name: format
+            type: "com.sun.management.HotSpotDiagnosticMXBean.ThreadDumpFormat"
+  - match:
+      objectName: "com.sun.management:type=DiagnosticCommand"
+      className: "com.sun.management.DiagnosticCommandMBean"
+    description: "Management interface for HotSpot diagnostic commands. Operations are generated at runtime from supported jcmd commands and may change during the JVM lifetime."
+  - match:
+      objectName: "java.util.logging:type=Logging"
+      className: "java.lang.management.PlatformLoggingMXBean"
+    description: "The management interface for the logging facility."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      LoggerNames:
+        description: "Returns the list of the currently registered logger names."
+    operations:
+      "getLoggerLevel(java.lang.String)":
+        description: "Gets the name of the log level associated with the specified logger."
+        return: "The name of the log level of the specified logger; or an empty string if the log level of the specified logger is null."
+        params:
+          - name: loggerName
+            type: "java.lang.String"
+      "setLoggerLevel(java.lang.String,java.lang.String)":
+        description: "Sets the specified logger to the specified new level ."
+        params:
+          - name: loggerName
+            type: "java.lang.String"
+          - name: levelName
+            type: "java.lang.String"
+      "getParentLoggerName(java.lang.String)":
+        description: "Returns the name of the parent for the specified logger."
+        return: "the name of the nearest existing parent logger; an empty string if the specified logger is the root logger."
+        params:
+          - name: loggerName
+            type: "java.lang.String"
+  - match:
+      objectName: "jdk.management.jfr:type=FlightRecorder"
+      className: "jdk.management.jfr.FlightRecorderMXBean"
+    description: "Management interface for controlling Flight Recorder."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Recordings:
+        description: "Returns the list of the available recordings, not necessarily running."
+      Configurations:
+        description: "Returns the list of predefined configurations for this Java Virtual Machine (JVM)."
+      EventTypes:
+        description: "Returns the list of currently registered event types."
+    operations:
+      "newRecording()":
+        description: "Creates a recording, but doesn't start it."
+        return: "a unique ID that can be used to start, stop, close and configure the recording"
+      "takeSnapshot()":
+        description: "Creates a snapshot recording of all available recorded data."
+        return: "a unique ID that can be used for reading recording data"
+      "cloneRecording(long,boolean)":
+        description: "Creates a copy of an existing recording, useful for extracting parts of a recording."
+        return: "a unique ID that can be used to start, stop, close and configure the recording"
+        params:
+          - name: recordingId
+            type: long
+          - name: stop
+            type: boolean
+      "startRecording(long)":
+        description: "Starts the recording with the specified ID."
+        params:
+          - name: recordingId
+            type: long
+      "stopRecording(long)":
+        description: "Stops the running recording with the specified ID."
+        return: "true if the recording is stopped, false otherwise"
+        params:
+          - name: recordingId
+            type: long
+      "closeRecording(long)":
+        description: "Closes the recording with the specified ID and releases any system resources that are associated with the recording."
+        params:
+          - name: recordingId
+            type: long
+      "openStream(long,java.util.Map)":
+        description: "Opens a data stream for the recording with the specified ID, or 0 to get data irrespective of recording."
+        return: "a unique ID for the stream."
+        params:
+          - name: recordingId
+            type: long
+          - name: streamOptions
+            type: "java.util.Map"
+            description: "Map of stream options (startTime, endTime, blockSize, streamVersion); null uses defaults."
+      "closeStream(long)":
+        description: "Closes the recording stream with the specified ID and releases any system resources that are associated with the stream."
+        params:
+          - name: streamId
+            type: long
+      "readStream(long)":
+        description: "Reads a portion of data from the stream with the specified ID, or returns null if no more data is available."
+        return: "byte array that contains recording data, or null when no more data is available"
+        params:
+          - name: streamId
+            type: long
+      "getRecordingOptions(long)":
+        description: "Returns a map that contains the options for the recording with the specified ID (for example, the destination file or time span to keep recorded data)."
+        return: "a map describing the recording options, not null"
+        params:
+          - name: recordingId
+            type: long
+      "getRecordingSettings(long)":
+        description: "Returns a Map that contains the settings for the recording with the specified ID, (for example, the event thresholds) If multiple recordings are running at the same time, more data could be recorded than what is specified in the Map object."
+        return: "a map that describes the recording settings, not null"
+        params:
+          - name: recordingId
+            type: long
+      "setConfiguration(long,java.lang.String)":
+        description: "Sets a configuration as a string representation for the recording with the specified ID."
+        params:
+          - name: recordingId
+            type: long
+          - name: contents
+            type: "java.lang.String"
+      "setPredefinedConfiguration(long,java.lang.String)":
+        description: "Sets a predefined configuration for the recording with the specified ID."
+        params:
+          - name: recordingId
+            type: long
+          - name: configurationName
+            type: "java.lang.String"
+      "setRecordingSettings(long,java.util.Map)":
+        description: "Sets and replaces all previous settings for the specified recording."
+        params:
+          - name: recordingId
+            type: long
+          - name: settings
+            type: "java.util.Map"
+            description: "Map of event setting names to values (for example, jdk.CPULoad#period=1 s)."
+      "setRecordingOptions(long,java.util.Map)":
+        description: "Configures the recording options (for example, destination file and time span to keep data)."
+        params:
+          - name: recordingId
+            type: long
+          - name: options
+            type: "java.util.Map"
+            description: "Map of recording option names to values (name, maxAge, maxSize, dumpOnExit, destination, disk, duration)."
+      "copyTo(long,java.lang.String)":
+        description: "Writes recording data to the specified file."
+        params:
+          - name: recordingId
+            type: long
+          - name: outputFile
+            type: "java.lang.String"
+  - match:
+      objectName: "jdk.management:type=VirtualThreadScheduler"
+      className: "jdk.management.VirtualThreadSchedulerMXBean"
+    description: "Management interface for the JDK's virtual thread scheduler."
+    attributes:
+      ObjectName:
+        description: "Returns an ObjectName instance representing the object name of this platform managed object."
+      Parallelism:
+        description: "Returns the scheduler's target parallelism."
+      PoolSize:
+        description: "Returns the current number of platform threads that the scheduler has started but have not terminated; -1 if not known."
+      MountedVirtualThreadCount:
+        description: "Returns an estimate of the number of virtual threads that are currently mounted by the scheduler; -1 if not known."
+      QueuedVirtualThreadCount:
+        description: "Returns an estimate of the number of virtual threads that are queued to the scheduler to start or continue execution; -1 if not known."
+    operations:
+      "setParallelism(int)":
+        description: "Sets the scheduler's target parallelism."
+        params:
+          - name: size
+            type: int

@@ -10,8 +10,8 @@ import com.googlecode.lanterna.gui2.dialogs.TextInputDialog;
 import com.googlecode.lanterna.gui2.dialogs.TextInputDialogBuilder;
 
 /**
- * TUI dialog entry points with consistent body spacing ({@link TuiDialogText}),
- * Enter-only button activation, and Escape-to-cancel focus.
+ * TUI 다이얼로그 진입점. 본문 여백·Enter 버튼 활성화·Esc 취소 포커스를 통일한다.
+ *
  */
 public final class TuiDialogs {
 

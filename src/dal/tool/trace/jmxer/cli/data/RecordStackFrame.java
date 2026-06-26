@@ -5,6 +5,10 @@ import java.util.HashSet;
 import dal.tool.util.NumberUtil;
 import dal.tool.util.StringUtil;
 
+/**
+ * RECORD THREAD/METHOD 뷰용 스택 프레임 집계 노드
+ *
+ */
 public class RecordStackFrame {
 
 	public StackTraceElement stackTraceElement;
@@ -88,7 +92,7 @@ public class RecordStackFrame {
 	}
 
 	/**
-	 * THREAD 뷰 헤더. {@code countNumW}/{@code timeNumW}는 각각 (hit/total), (sample/total)에 쓰는 숫자 최소 자릿수(우측 정렬 공통 폭).
+	 * THREAD 뷰 헤더. countNumW/timeNumW는 각각 (hit/total), (sample/total) 숫자 우측 정렬 공통 폭.
 	 */
 	public String toThreadHeaderString(int countNumW, int timeNumW) {
 		int countCol = Math.max(5, 2 * countNumW + 1);

@@ -6,10 +6,17 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
+import dal.tool.cli.Logger;
 import dal.tool.util.StringUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * RECORD 스택·리소스 샘플링 스레드 공통 베이스
+ *
+ */
 public abstract class AbstractRecordThread implements Runnable {
+
+	protected static final String UNKNOWN_THREAD_NAME = "<unknown>";
 
 	protected boolean stop = false;
 	protected String recordThreadName;
@@ -22,6 +29,8 @@ public abstract class AbstractRecordThread implements Runnable {
 	protected long startTimeMS = 0L;
 	protected long endTimeMS = 0L;
 	protected Thread recordRunnerThread = null;
+	private boolean tuiSampleProgressLineStarted;
+	private static volatile AbstractRecordThread activeRecording;
 
 	public AbstractRecordThread(String recordThreadName, MBeanServerConnection mbeanConnection, String[] threadIds) throws Exception {
 		this.recordThreadName = recordThreadName;
@@ -46,13 +55,61 @@ public abstract class AbstractRecordThread implements Runnable {
 			throw new Exception("Could not get thread info.");
 		}
 		CompositeData[] resultDataArr = (CompositeData[])resultData;
-		int idx = 0;
-		for(CompositeData cd : resultDataArr) {
-			if(cd == null) continue;
-			ThreadInfo threadInfo = ThreadInfo.from(cd);
-			threadNames[idx++] = threadInfo.getThreadName();
+		if(resultDataArr.length != threadIds.length) {
+			throw new Exception("Could not get thread info.");
+		}
+		for(int i = 0; i < threadIds.length; i++) {
+			threadNames[i] = resolveThreadName(resultDataArr[i]);
 		}
 		afterInit();
+	}
+
+	protected static String resolveThreadName(CompositeData compositeData) {
+		if(compositeData == null) {
+			return UNKNOWN_THREAD_NAME;
+		}
+		ThreadInfo threadInfo = ThreadInfo.from(compositeData);
+		if(threadInfo == null) {
+			return UNKNOWN_THREAD_NAME;
+		}
+		String name = threadInfo.getThreadName();
+		if(name == null || name.length() == 0) {
+			return UNKNOWN_THREAD_NAME;
+		}
+		return name;
+	}
+
+	protected static String formatQuotedThreadName(String threadName) {
+		String normalized = normalizeThreadName(threadName);
+		return "\"" + StringUtil.shortenStringWithSuffix(normalized, 38, "...") + "\"";
+	}
+
+	protected static String normalizeThreadName(String threadName) {
+		if(threadName == null || threadName.length() == 0) {
+			return UNKNOWN_THREAD_NAME;
+		}
+		return threadName;
+	}
+
+	public static AbstractRecordThread getActiveRecording() {
+		return activeRecording;
+	}
+
+	public static void stopActiveRecording() {
+		AbstractRecordThread active = activeRecording;
+		if(active != null) {
+			active.stopRecording();
+		}
+	}
+
+	protected void markActiveRecording() {
+		activeRecording = this;
+	}
+
+	protected void clearActiveRecording() {
+		if(activeRecording == this) {
+			activeRecording = null;
+		}
 	}
 
 	public void startRecording(long interval, long limit) {
@@ -88,6 +145,7 @@ public abstract class AbstractRecordThread implements Runnable {
 	}
 	
 	public void run() {
+		tuiSampleProgressLineStarted = false;
 		startTimeMS = System.currentTimeMillis();
 		long collectStart = -1L;
 		long collectEnd = -1L;
@@ -95,7 +153,7 @@ public abstract class AbstractRecordThread implements Runnable {
 			collectStart = System.currentTimeMillis();
 			try {
 				collectEnd = collectData();
-				System.out.print(".");
+				emitSampleProgressMarker();
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -118,7 +176,26 @@ public abstract class AbstractRecordThread implements Runnable {
 				}
 			}
 		}
-		System.out.println();
+		emitSampleProgressEnd();
+	}
+
+	private void emitSampleProgressMarker() {
+		if(Logger.isTuiActive() && Logger.isTuiPanelCapture()) {
+			if(!tuiSampleProgressLineStarted) {
+				Logger.logln(".");
+				tuiSampleProgressLineStarted = true;
+			} else {
+				Logger.appendTuiInlineFragment(".");
+			}
+			return;
+		}
+		System.out.print(".");
+	}
+
+	private void emitSampleProgressEnd() {
+		if(!Logger.isTuiActive() || !Logger.isTuiPanelCapture()) {
+			System.out.println();
+		}
 	}
 
 	protected void beforeStartRecording() {}

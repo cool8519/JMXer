@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.googlecode.lanterna.gui2.ActionListBox;
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.Component;
 import com.googlecode.lanterna.gui2.Container;
@@ -18,10 +19,11 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 
 import dal.tool.trace.jmxer.cli.JmxTuiConnectionLossHandler;
+import dal.tool.trace.jmxer.tui.support.JmxTuiKeys;
 
 /**
- * Dialog keyboard behavior: Escape moves focus to the cancel/dismiss button;
- * dialog buttons activate on Enter only (not Space).
+ * 다이얼로그 키보드 동작. Esc는 취소/닫기 버튼으로 포커스 이동, 버튼은 Enter로만 활성화한다.
+ *
  */
 final class TuiDialogEscFocus {
 
@@ -38,6 +40,14 @@ final class TuiDialogEscFocus {
 		window.addWindowListener(new WindowListener() {
 			@Override
 			public void onInput(Window pane, KeyStroke keyStroke, AtomicBoolean deliverEvent) {
+				if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
+					deliverEvent.set(false);
+					return;
+				}
+				if(shouldConsumeSpaceOnDialog(pane, keyStroke)) {
+					deliverEvent.set(false);
+					return;
+				}
 				if(keyStroke == null || keyStroke.getKeyType() != KeyType.Escape) {
 					return;
 				}
@@ -52,17 +62,14 @@ final class TuiDialogEscFocus {
 
 			@Override
 			public void onUnhandledInput(Window pane, KeyStroke keyStroke, AtomicBoolean consumeEvent) {
-				// no-op
 			}
 
 			@Override
 			public void onResized(Window window, com.googlecode.lanterna.TerminalSize oldSize, com.googlecode.lanterna.TerminalSize newSize) {
-				// no-op
 			}
 
 			@Override
 			public void onMoved(Window window, com.googlecode.lanterna.TerminalPosition oldPosition, com.googlecode.lanterna.TerminalPosition newPosition) {
-				// no-op
 			}
 		});
 	}
@@ -90,6 +97,14 @@ final class TuiDialogEscFocus {
 		}
 		Character character = keyStroke.getCharacter();
 		return character != null && character.charValue() == SPACE_CHAR;
+	}
+
+	private static boolean shouldConsumeSpaceOnDialog(Window window, KeyStroke keyStroke) {
+		if(!isSpaceKey(keyStroke) || window == null) {
+			return false;
+		}
+		Interactable focused = window.getFocusedInteractable();
+		return focused instanceof ActionListBox || focused instanceof Button;
 	}
 
 	private static Button resolveCancelButton(Window window) {

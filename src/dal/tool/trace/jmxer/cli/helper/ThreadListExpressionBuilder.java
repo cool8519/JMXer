@@ -14,7 +14,8 @@ import dal.tool.trace.jmxer.cli.command.JmxThreadCommand;
 import dal.tool.util.StringUtil;
 
 /**
- * Builds a compact ThreadList expression from a set of selected thread IDs.
+ * 선택된 스레드 ID 집합을 압축된 ThreadList 표현식으로 만든다.
+ *
  */
 public final class ThreadListExpressionBuilder {
 	private static final String ALL_THREADS = "*";
@@ -91,9 +92,6 @@ public final class ThreadListExpressionBuilder {
 		return groups;
 	}
 
-	/**
-	 * Replace trailing digits with '*' when the name ends with a numeric suffix.
-	 */
 	private static String generalizeNamePattern(String name) {
 		if(name == null || name.length() == 0) {
 			return null;
@@ -197,7 +195,10 @@ public final class ThreadListExpressionBuilder {
 		return map;
 	}
 
-	/** Minimal thread snapshot entry for expression building. */
+	/**
+	 * ThreadList 표현식 생성용 스레드 스냅샷 항목
+	 *
+	 */
 	public static final class ThreadSnapshotEntry {
 		private final long threadId;
 		private final String threadName;

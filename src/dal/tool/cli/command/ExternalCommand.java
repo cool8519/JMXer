@@ -5,10 +5,16 @@ import java.util.List;
 
 import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.ExternalUiHooks;
+import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.util.ExternalProcessRunner;
 import dal.tool.cli.util.ExternalProcessRunner.Sink;
 
+/**
+ * 외부 셸 명령을 실행하는 EXTERNAL(!) 명령
+ * @author 권영달
+ *
+ */
 public class ExternalCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(ExternalCommand.class, "!", "EXT[ERNAL]");
@@ -56,14 +62,22 @@ public class ExternalCommand extends Command {
 				self.logln(Level.ERROR, message);
 			}
 		};
-		ExternalUiHooks.runBeforeBlockingExternalProcess();
+		// TUI: stdout/stderr는 파이프로 받아 logln으로 출력한다(Windows에서 Lanterna stopScreen/startScreen 시 JVM이 종료될 수 있음).
+		boolean suspendTerminalUi = !Logger.isTuiActive();
+		if(suspendTerminalUi) {
+			ExternalUiHooks.runBeforeBlockingExternalProcess();
+		}
 		try {
 			int exit = ExternalProcessRunner.run(joined, unix, sink);
-			if (exit != 0) {
+			if(Logger.isTuiActive()) {
+				ExternalUiHooks.notifyTuiExternalCommandFinished(exit, System.currentTimeMillis() - startTime);
+			} else if(exit != 0) {
 				logln(Level.ERROR, "External process exited with code " + exit);
 			}
 		} finally {
-			ExternalUiHooks.runAfterBlockingExternalProcess();
+			if(suspendTerminalUi) {
+				ExternalUiHooks.runAfterBlockingExternalProcess();
+			}
 		}
 	}
 

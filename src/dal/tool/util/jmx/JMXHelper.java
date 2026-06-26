@@ -105,7 +105,6 @@ public class JMXHelper {
 	            connectorAddr = virtualMachine.getAgentProperties().getProperty("com.sun.management.jmxremote.localConnectorAddress");
         	} else {
         		if(tool_version > 1.8F) {
-	        		// Use exported API type for reflection to avoid JPMS access issue on implementation class.
 	        		Method m = VirtualMachine.class.getMethod("startLocalManagementAgent");
 	        		connectorAddr = (String)m.invoke(virtualMachine);
         		} else {
@@ -165,7 +164,6 @@ public class JMXHelper {
             	if(virtualMachine == null) throw e;
             	Float target_version = Float.parseFloat(getVmVersion(virtualMachine));
             	if(target_version <= 1.8F) {
-            		// attach one more time to avoid error 
                     try {
                     	virtualMachine = attachProvider.attachVirtualMachine(connect_value);            	
                     	connectorAddress = getLocalConnectorAddress(virtualMachine);
@@ -204,7 +202,6 @@ public class JMXHelper {
             	if(virtualMachine == null) throw e;
             	Float target_version = Float.parseFloat(getVmVersion(virtualMachine));
             	if(target_version <= 1.8F) {
-            		// attach one more time to avoid error 
                     try {
                     	virtualMachine = attachProvider.attachVirtualMachine(descriptor);            	
                     	connectorAddress = getLocalConnectorAddress(virtualMachine);
@@ -345,10 +342,10 @@ public class JMXHelper {
 
 	
 	/**
-	 * Parses a boolean text value. Only {@code true} and {@code false} are accepted (case-insensitive).
-	 * @param value input text
-	 * @return parsed value
-	 * @throws Exception if the text is not {@code true} or {@code false}
+	 * 불리언 텍스트를 파싱한다. true와 false만 허용한다(대소문자 무시).
+	 * @param value 입력 문자열
+	 * @return 파싱된 값
+	 * @throws Exception true 또는 false가 아닌 경우
 	 */
 	public static boolean parseStrictBoolean(String value) throws Exception {
 		if(value == null) {
@@ -452,9 +449,10 @@ public class JMXHelper {
 	}
 
 	/**
-	 * CALL command target name with operation signature types (e.g. {@code getThreadInfo(long[],boolean,int)}).
-	 * @param operationInfo Operation metadata
-	 * @return target name for {@code CALL ObjectName TargetName ...}
+	 * CALL 명령 대상명을 연산 시그니처 타입과 함께 만든다.
+	 * 예) getThreadInfo(long[],boolean,int)
+	 * @param operationInfo Operation 메타데이터
+	 * @return CALL ObjectName TargetName ... 형식의 대상명
 	 */
 	public static String toOperationCallTargetName(MBeanOperationInfo operationInfo) {
 		if(operationInfo == null) {
@@ -464,10 +462,10 @@ public class JMXHelper {
 	}
 
 	/**
-	 * CALL command target name with operation signature types.
-	 * @param operationName Operation name
-	 * @param signature Parameter metadata; empty or null yields {@code operationName()}
-	 * @return target name for {@code CALL ObjectName TargetName ...}
+	 * CALL 명령 대상명을 연산 시그니처 타입과 함께 만든다.
+	 * @param operationName 연산 이름
+	 * @param signature 파라미터 메타데이터. 비어 있거나 null이면 operationName()
+	 * @return CALL ObjectName TargetName ... 형식의 대상명
 	 */
 	public static String toOperationCallTargetName(String operationName, MBeanParameterInfo[] signature) {
 		if(operationName == null) {
@@ -484,11 +482,11 @@ public class JMXHelper {
 	}
 
 	/**
-	 * Formats operation argument values for a CALL ArgumentList (one command token, comma-separated).
-	 * Array parameters are wrapped in {@code []}; string values with comma or space are quoted per argument.
-	 * @param signature Operation parameter metadata
-	 * @param values One trimmed value per parameter (same order as signature)
-	 * @return ArgumentList text without outer quotes, e.g. {@code [1,5],7}
+	 * CALL ArgumentList용 연산 인자 값을 포맷한다(쉼표 구분, 한 토큰).
+	 * 배열 파라미터는 []로 감싸고, 쉼표·공백이 있는 문자열은 인자별로 따옴표 처리한다.
+	 * @param signature 연산 파라미터 메타데이터
+	 * @param values 파라미터 순서와 동일한 trim된 값
+	 * @return 바깥 따옴표 없는 ArgumentList 텍스트. 예) [1,5],7
 	 */
 	public static String formatCallArgumentList(MBeanParameterInfo[] signature, String[] values) {
 		if(signature == null || values == null || signature.length == 0) {

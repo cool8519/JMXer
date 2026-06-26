@@ -7,7 +7,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Daemon scheduler for Thread UI mode periodic refresh ticks.
+ * Thread UI 모드 주기적 새로고침 틱용 데몬 스케줄러.
+ *
  */
 public final class ThreadAutoRefreshScheduler {
 	private static final String THREAD_NAME = "JmxTui-ThreadRefresh";

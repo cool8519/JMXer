@@ -10,6 +10,10 @@ import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 import dal.tool.util.NumberUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * JMXer OBJECT 명령(현재 MBean ObjectName 설정)
+ *
+ */
 public class JmxObjectCommand extends JmxCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(JmxObjectCommand.class, "OBJ[ECT]");

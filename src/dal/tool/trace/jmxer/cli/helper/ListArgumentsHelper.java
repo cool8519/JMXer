@@ -6,6 +6,10 @@ import java.util.List;
 import dal.tool.cli.ListArguments;
 import dal.tool.util.StringUtil;
 
+/**
+ * ListArguments 인자 목록의 따옴표 처리·공백 결합 유틸
+ *
+ */
 public class ListArgumentsHelper {
 
 	

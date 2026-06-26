@@ -13,8 +13,9 @@ import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
 import dal.tool.trace.jmxer.tui.support.TuiF2Handler;
 
 /**
- * Single-line MBean filter input with focus theme and optional key handler.
- * Enter does not move focus (Lanterna {@code TextBox} SINGLE_LINE default is {@code MOVE_FOCUS_NEXT}).
+ * 포커스 테마와 선택적 키 핸들러를 갖는 MBean 필터 한 줄 입력 상자.
+ * Enter 키는 포커스를 이동시키지 않는다.
+ *
  */
 public final class MbeanSearchInputBox extends TextBox implements TuiF2Handler {
 	private volatile MbeanSearchKeyHandler handler;
@@ -39,6 +40,11 @@ public final class MbeanSearchInputBox extends TextBox implements TuiF2Handler {
 	@Override
 	public boolean onF2Key() {
 		return false;
+	}
+
+	@Override
+	protected TextBoxRenderer createDefaultRenderer() {
+		return new JmxTextBoxRenderer();
 	}
 
 	@Override
@@ -69,10 +75,10 @@ public final class MbeanSearchInputBox extends TextBox implements TuiF2Handler {
 		if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
 			return Interactable.Result.HANDLED;
 		}
-		if(JmxTuiKeys.isCtrlSaveOutput(keyStroke) || JmxTuiKeys.isCtrlToggleOutputWrap(keyStroke)
+		if(JmxTuiKeys.isSaveOutputKey(keyStroke) || JmxTuiKeys.isCtrlToggleOutputWrap(keyStroke)
 				|| JmxTuiKeys.isCtrlTogglePrettyPrint(keyStroke)
 				|| JmxTuiKeys.isCtrlToggleThreadRefresh(keyStroke)) {
-			// Output-only shortcuts must not type 's'/'l' into other panes.
+			// Output 전용 단축키가 다른 패널에 문자로 입력되지 않도록 소비한다.
 			return Interactable.Result.HANDLED;
 		}
 		MbeanSearchKeyHandler h = handler;

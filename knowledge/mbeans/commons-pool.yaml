@@ -1,0 +1,170 @@
+entries:
+  - match:
+      objectName: "org.apache.commons.pool2:type=GenericObjectPool,name=*"
+      className: "org.apache.commons.pool2.impl.GenericObjectPoolMXBean"
+    description: "Commons Pool2 generic object pool management interface."
+    attributes:
+      AbandonedConfig:
+        description: "Whether abandoned object removal is configured for this pool."
+      BlockWhenExhausted:
+        description: "Whether borrowObject blocks when the pool is exhausted instead of failing immediately."
+      BorrowedCount:
+        description: "Total number of objects successfully borrowed from this pool over its lifetime."
+      Closed:
+        description: "Whether this pool is closed."
+      CreatedCount:
+        description: "Total number of objects created for this pool over its lifetime."
+      CreationStackTrace:
+        description: "Stack trace captured when this pool was created."
+      DestroyedByBorrowValidationCount:
+        description: "Total number of objects destroyed after failing validation during borrowObject."
+      DestroyedByEvictorCount:
+        description: "Total number of objects destroyed by the idle object evictor."
+      DestroyedCount:
+        description: "Total number of objects destroyed by this pool over its lifetime."
+      FactoryType:
+        description: "Type name of the PooledObjectFactory used by this pool."
+      Fairness:
+        description: "Whether threads waiting to borrow objects are served fairly."
+      Lifo:
+        description: "Whether idle objects are returned last-in-first-out (true) or first-in-first-out (false)."
+      LogAbandoned:
+        description: "Whether abandoned pooled objects are identified and logged."
+      MaxBorrowWaitTimeMillis:
+        description: "Maximum time in milliseconds a thread waited to borrow an object from the pool."
+      MaxIdle:
+        description: "Cap on the number of idle instances in the pool."
+      MaxTotal:
+        description: "Maximum number of objects that may be allocated by the pool at one time."
+      MaxWaitMillis:
+        description: "Maximum time in milliseconds borrowObject blocks when the pool is exhausted and blockWhenExhausted is true."
+      MeanActiveTimeMillis:
+        description: "Mean time borrowed objects remain active, based on recent returns."
+      MeanBorrowWaitTimeMillis:
+        description: "Mean time threads wait to borrow an object, based on recent borrows."
+      MeanIdleTimeMillis:
+        description: "Mean time objects remain idle, based on recent borrows."
+      MinEvictableIdleTimeMillis:
+        description: "Minimum idle time in milliseconds before an object is eligible for eviction."
+      MinIdle:
+        description: "Target minimum number of idle objects maintained in the pool."
+      NumActive:
+        description: "Number of instances currently borrowed from this pool."
+      NumIdle:
+        description: "Number of instances currently idle in this pool."
+      NumTestsPerEvictionRun:
+        description: "Maximum number of idle objects examined during each evictor run."
+      NumWaiters:
+        description: "Estimated number of threads blocked waiting for an object from the pool."
+      RemoveAbandonedOnBorrow:
+        description: "Whether abandoned objects are checked when an object is borrowed."
+      RemoveAbandonedOnMaintenance:
+        description: "Whether abandoned objects are checked during evictor maintenance."
+      RemoveAbandonedTimeout:
+        description: "Timeout in seconds after which a borrowed object is considered abandoned."
+      ReturnedCount:
+        description: "Total number of objects returned to this pool over its lifetime."
+      TestOnBorrow:
+        description: "Whether pooled objects are validated when borrowed."
+      TestOnCreate:
+        description: "Whether pooled objects are validated when created."
+      TestOnReturn:
+        description: "Whether pooled objects are validated when returned."
+      TestWhileIdle:
+        description: "Whether idle objects are validated by the evictor thread."
+      TimeBetweenEvictionRunsMillis:
+        description: "Duration in milliseconds between idle object evictor runs."
+    operations:
+      "listAllObjects()":
+        description: "Returns information on all pooled objects, both idle and currently borrowed."
+        return: "Set of DefaultPooledObjectInfo for all pooled objects."
+
+  - match:
+      objectName: "org.apache.commons.pool2:type=GenericKeyedObjectPool,name=*"
+      className: "org.apache.commons.pool2.impl.GenericKeyedObjectPoolMXBean"
+    description: "Commons Pool2 generic keyed object pool management interface."
+    attributes:
+      AbandonedConfig:
+        description: "Whether abandoned object removal is configured for this pool."
+      BlockWhenExhausted:
+        description: "Whether borrowObject blocks when the pool is exhausted instead of failing immediately."
+      BorrowedCount:
+        description: "Total number of objects successfully borrowed from this pool over its lifetime."
+      Closed:
+        description: "Whether this pool is closed."
+      CreatedCount:
+        description: "Total number of objects created for this pool over its lifetime."
+      CreationStackTrace:
+        description: "Stack trace captured when this pool was created."
+      DestroyedByBorrowValidationCount:
+        description: "Total number of objects destroyed after failing validation during borrowObject."
+      DestroyedByEvictorCount:
+        description: "Total number of objects destroyed by the idle object evictor."
+      DestroyedCount:
+        description: "Total number of objects destroyed by this pool over its lifetime."
+      FactoryType:
+        description: "Type name of the PooledObjectFactory used by this pool."
+      Fairness:
+        description: "Whether threads waiting to borrow objects are served fairly."
+      Lifo:
+        description: "Whether idle objects are returned last-in-first-out (true) or first-in-first-out (false)."
+      LogAbandoned:
+        description: "Whether abandoned pooled objects are identified and logged."
+      MaxBorrowWaitTimeMillis:
+        description: "Maximum time in milliseconds a thread waited to borrow an object from the pool."
+      MaxIdle:
+        description: "Cap on the number of idle instances in the pool."
+      MaxIdlePerKey:
+        description: "Cap on the number of idle instances per key in the pool."
+      MaxTotal:
+        description: "Maximum number of objects that may be allocated by the pool at one time."
+      MaxTotalPerKey:
+        description: "Maximum number of object instances allocated per key (checked out or idle)."
+      MaxWaitMillis:
+        description: "Maximum time in milliseconds borrowObject blocks when the pool is exhausted and blockWhenExhausted is true."
+      MeanActiveTimeMillis:
+        description: "Mean time borrowed objects remain active, based on recent returns."
+      MeanBorrowWaitTimeMillis:
+        description: "Mean time threads wait to borrow an object, based on recent borrows."
+      MeanIdleTimeMillis:
+        description: "Mean time objects remain idle, based on recent borrows."
+      MinEvictableIdleTimeMillis:
+        description: "Minimum idle time in milliseconds before an object is eligible for eviction."
+      MinIdle:
+        description: "Target minimum number of idle objects maintained in the pool."
+      MinIdlePerKey:
+        description: "Target minimum number of idle objects maintained per key."
+      NumActive:
+        description: "Number of instances currently borrowed from this pool."
+      NumActivePerKey:
+        description: "Number of borrowed instances per key."
+      NumIdle:
+        description: "Number of instances currently idle in this pool."
+      NumTestsPerEvictionRun:
+        description: "Maximum number of idle objects examined during each evictor run."
+      NumWaiters:
+        description: "Estimated number of threads blocked waiting for an object from the pool."
+      NumWaitersByKey:
+        description: "Estimated number of blocked waiting threads per key."
+      RemoveAbandonedOnBorrow:
+        description: "Whether abandoned objects are checked when an object is borrowed."
+      RemoveAbandonedOnMaintenance:
+        description: "Whether abandoned objects are checked during evictor maintenance."
+      RemoveAbandonedTimeout:
+        description: "Timeout in seconds after which a borrowed object is considered abandoned."
+      ReturnedCount:
+        description: "Total number of objects returned to this pool over its lifetime."
+      TestOnBorrow:
+        description: "Whether pooled objects are validated when borrowed."
+      TestOnCreate:
+        description: "Whether pooled objects are validated when created."
+      TestOnReturn:
+        description: "Whether pooled objects are validated when returned."
+      TestWhileIdle:
+        description: "Whether idle objects are validated by the evictor thread."
+      TimeBetweenEvictionRunsMillis:
+        description: "Duration in milliseconds between idle object evictor runs."
+    operations:
+      "listAllObjects()":
+        description: "Returns information on all pooled objects, both idle and currently borrowed."
+        return: "Map of key to lists of DefaultPooledObjectInfo for all pooled objects."

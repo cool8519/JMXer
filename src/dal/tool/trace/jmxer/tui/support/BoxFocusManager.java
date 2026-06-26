@@ -6,7 +6,8 @@ import java.util.List;
 import com.googlecode.lanterna.gui2.Panel;
 
 /**
- * Tracks which pane is focused and applies fill highlight on Output/Command panes only.
+ * 포커스된 패널을 추적하고 Output/Command 패널에만 채움 하이라이트를 적용한다.
+ *
  */
 public final class BoxFocusManager {
 	private final List<Panel> panes = new ArrayList<Panel>();

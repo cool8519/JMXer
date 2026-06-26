@@ -7,6 +7,11 @@ import dal.tool.cli.History;
 import dal.tool.cli.util.IOUtil;
 import dal.tool.trace.jmxer.cli.helper.ListArgumentsHelper;
 
+/**
+ * 명령 히스토리를 조회하는 HISTORY 명령
+ * @author 권영달
+ *
+ */
 public class HistoryCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(HistoryCommand.class, "HI[STORY]");

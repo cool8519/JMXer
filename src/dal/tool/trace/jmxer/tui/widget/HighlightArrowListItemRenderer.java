@@ -10,9 +10,11 @@ import com.googlecode.lanterna.gui2.TextGUIGraphics;
 import com.googlecode.lanterna.graphics.ThemeDefinition;
 
 import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
+import dal.tool.trace.jmxer.tui.support.TuiListArrowPrefix;
 
 /**
- * List row renderer with selection arrow and search-term highlighting in the label.
+ * 선택 화살표와 검색어 강조를 적용하는 목록 행 렌더러.
+ *
  */
 public final class HighlightArrowListItemRenderer extends AbstractListBox.ListItemRenderer<Runnable, ActionListBox> {
 	private volatile String highlightQuery = "";
@@ -28,7 +30,7 @@ public final class HighlightArrowListItemRenderer extends AbstractListBox.ListIt
 		if(label == null) {
 			label = "";
 		}
-		String prefix = selected ? "\u25b6 " : "  ";
+		String prefix = selected ? TuiListArrowPrefix.LIST_SELECTED : TuiListArrowPrefix.LIST_UNSELECTED;
 		int maxCols = graphics.getSize().getColumns();
 		String fittedPrefix = TerminalTextUtils.fitString(prefix, maxCols);
 		int prefixCols = TerminalTextUtils.getColumnWidth(fittedPrefix);
@@ -40,14 +42,16 @@ public final class HighlightArrowListItemRenderer extends AbstractListBox.ListIt
 		String query = highlightQuery.trim();
 		if(query.isEmpty() || isPlaceholderLabel(label)) {
 			graphics.putString(prefixCols, 0, fittedLabel);
-			padRow(graphics, prefixCols + TerminalTextUtils.getColumnWidth(fittedLabel), maxCols);
+			padRow(graphics, themeDefinition, selected, focused,
+				prefixCols + TerminalTextUtils.getColumnWidth(fittedLabel), maxCols);
 			return;
 		}
 
 		List<int[]> ranges = findMatchRanges(fittedLabel, query);
 		if(ranges.isEmpty()) {
 			graphics.putString(prefixCols, 0, fittedLabel);
-			padRow(graphics, prefixCols + TerminalTextUtils.getColumnWidth(fittedLabel), maxCols);
+			padRow(graphics, themeDefinition, selected, focused,
+				prefixCols + TerminalTextUtils.getColumnWidth(fittedLabel), maxCols);
 			return;
 		}
 
@@ -75,10 +79,17 @@ public final class HighlightArrowListItemRenderer extends AbstractListBox.ListIt
 			graphics.putString(col, 0, tail);
 			col += TerminalTextUtils.getColumnWidth(tail);
 		}
-		padRow(graphics, col, maxCols);
+		padRow(graphics, themeDefinition, selected, focused, col, maxCols);
 	}
 
-	private static void padRow(TextGUIGraphics graphics, int usedCols, int maxCols) {
+	private static void padRow(
+			TextGUIGraphics graphics,
+			ThemeDefinition themeDefinition,
+			boolean selected,
+			boolean focused,
+			int usedCols,
+			int maxCols) {
+		applyRowStyle(graphics, themeDefinition, selected, focused);
 		while(usedCols < maxCols) {
 			graphics.putString(usedCols, 0, " ");
 			usedCols++;
@@ -94,7 +105,6 @@ public final class HighlightArrowListItemRenderer extends AbstractListBox.ListIt
 		}
 	}
 
-	/** Status rows such as {@code (no matching MBeans)} — not real ObjectNames. */
 	private static boolean isPlaceholderLabel(String label) {
 		return label != null && label.startsWith("(");
 	}

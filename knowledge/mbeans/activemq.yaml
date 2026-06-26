@@ -1,0 +1,1161 @@
+entries:
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*"
+      className: "org.apache.activemq.broker.jmx.BrokerViewMBean"
+    description: "Management interface for an ActiveMQ Classic broker."
+    attributes:
+      BrokerId:
+        description: "The unique id of the broker."
+      BrokerName:
+        description: "The name of the broker."
+      BrokerVersion:
+        description: "The version of the broker."
+      Uptime:
+        description: "Uptime of the broker."
+      UptimeMillis:
+        description: "Uptime of the broker in milliseconds."
+      CurrentConnectionsCount:
+        description: "The current number of active connections on this Broker."
+      TotalConnectionsCount:
+        description: "The total number of connections serviced since this Broker was started."
+      StatisticsEnabled:
+        description: "Broker statistics enabled."
+      TotalEnqueueCount:
+        description: "Number of messages that have been sent to the broker."
+      TotalDequeueCount:
+        description: "Number of messages that have been acknowledged or discarded on the broker."
+      TotalConsumerCount:
+        description: "Number of message consumers subscribed to destinations on the broker."
+      TotalProducerCount:
+        description: "Number of message producers active on destinations on the broker."
+      TotalMessageCount:
+        description: "Number of unacknowledged messages on the broker."
+      AverageMessageSize:
+        description: "Average message size on this broker"
+      MaxMessageSize:
+        description: "Max message size on this broker"
+      MinMessageSize:
+        description: "Min message size on this broker"
+      MemoryPercentUsage:
+        description: "Percent of memory limit used."
+      MemoryLimit:
+        description: "Memory limit, in bytes, used for holding undelivered messages before paging to temporary storage."
+      StorePercentUsage:
+        description: "Percent of store limit used."
+      StoreLimit:
+        description: "Disk limit, in bytes, used for persistent messages before producers are blocked."
+      TempPercentUsage:
+        description: "Percent of temp limit used."
+      TempLimit:
+        description: "Disk limit, in bytes, used for non-persistent messages and temporary data before producers are blocked."
+      JobSchedulerStorePercentUsage:
+        description: "Percent of job store limit used."
+      JobSchedulerStoreLimit:
+        description: "Disk limit, in bytes, used for scheduled messages before producers are blocked."
+      Persistent:
+        description: "Messages are synchronized to disk."
+      Slave:
+        description: "Slave broker."
+      TotalTopicsCount:
+        description: "Total number of topics"
+      TotalManagedTopicsCount:
+        description: "Total number of non suppressed topics"
+      TotalTemporaryTopicsCount:
+        description: "Total number of temporary topics"
+      TotalQueuesCount:
+        description: "Total number of queues"
+      TotalManagedQueuesCount:
+        description: "Total number of non suppressed queues"
+      TotalTemporaryQueuesCount:
+        description: "Total number of temporary queues"
+      Topics:
+        description: "Topics (broadcasted queues); generally system information."
+      Queues:
+        description: "Standard Queues containing AIE messages."
+      TemporaryTopics:
+        description: "Temporary Topics; generally unused."
+      TemporaryQueues:
+        description: "Temporary Queues; generally temporary message response holders."
+      TopicSubscribers:
+        description: "Topic Subscribers"
+      DurableTopicSubscribers:
+        description: "Durable (persistent) topic subscribers"
+      InactiveDurableTopicSubscribers:
+        description: "Inactive (disconnected persistent) topic subscribers"
+      QueueSubscribers:
+        description: "Queue Subscribers."
+      TemporaryTopicSubscribers:
+        description: "Temporary Topic Subscribers."
+      TemporaryQueueSubscribers:
+        description: "Temporary Queue Subscribers."
+      TopicProducers:
+        description: "Topic Producers."
+      QueueProducers:
+        description: "Queue Producers."
+      TemporaryTopicProducers:
+        description: "Temporary Topic Producers."
+      TemporaryQueueProducers:
+        description: "Temporary Queue Producers."
+      DynamicDestinationProducers:
+        description: "Dynamic Destination Producers."
+      VMURL:
+        description: "The url of the VM connector"
+      TransportConnectors:
+        description: "The map of all defined transport connectors, with transport name as a key"
+      DataDirectory:
+        description: "The location of the data directory"
+      JMSJobScheduler:
+        description: "JMSJobScheduler"
+      MaxUncommittedCount:
+        description: "Returns the allowed max uncommitted count per transaction"
+      TotalMaxUncommittedExceededCount:
+        description: "The total number of times that the max number of uncommitted count has been exceeded across all destinations"
+      DedicatedTaskRunner:
+        description: "Dedicated Task Runner enabled."
+      VirtualThreadTaskRunner:
+        description: "Virtual Thread Task Runner enabled."
+    operations:
+      "gc()":
+        description: "Runs the Garbage Collector."
+      "resetStatistics()":
+        description: "Reset all broker statistics."
+      "enableStatistics()":
+        description: "Enable broker statistics."
+      "disableStatistics()":
+        description: "Disable broker statistics."
+      "setMemoryLimit(long)":
+        description: "Sets the broker memory limit in bytes."
+        params:
+          - name: limit
+            type: long
+            description: "bytes"
+      "setStoreLimit(long)":
+        description: "Sets the broker store limit in bytes."
+        params:
+          - name: limit
+            type: long
+            description: "bytes"
+      "setTempLimit(long)":
+        description: "Sets the broker temp limit in bytes."
+        params:
+          - name: limit
+            type: long
+            description: "bytes"
+      "setJobSchedulerStoreLimit(long)":
+        description: "Sets the job scheduler store limit in bytes."
+        params:
+          - name: limit
+            type: long
+            description: "bytes"
+      "terminateJVM(int)":
+        description: "Shuts down the JVM."
+        params:
+          - name: exitCode
+            type: int
+      "stop()":
+        description: "Stop the broker and all its components."
+      "restart()":
+        description: "Restart the broker and all its components."
+      "stopGracefully(java.lang.String,java.lang.String,long,long)":
+        description: "Poll for queues matching queueName are empty before stopping"
+        params:
+          - name: connectorName
+            type: java.lang.String
+          - name: queueName
+            type: java.lang.String
+          - name: timeout
+            type: long
+          - name: pollInterval
+            type: long
+      "queryQueues(java.lang.String,int,int)":
+        description: "Query queues"
+        return: "JSON or text result of the queue query."
+        params:
+          - name: filter
+            type: java.lang.String
+          - name: page
+            type: int
+          - name: pageSize
+            type: int
+      "queryTopics(java.lang.String,int,int)":
+        description: "Query topics"
+        return: "JSON or text result of the topic query."
+        params:
+          - name: filter
+            type: java.lang.String
+          - name: page
+            type: int
+          - name: pageSize
+            type: int
+      "browseQueue(java.lang.String)":
+        description: "Browses messages in the named queue."
+        return: "CompositeData array of messages in the queue."
+        params:
+          - name: queueName
+            type: java.lang.String
+      "addConnector(java.lang.String)":
+        description: "Adds a Connector to the broker."
+        return: "Name of the added connector."
+        params:
+          - name: discoveryAddress
+            type: java.lang.String
+      "addNetworkConnector(java.lang.String)":
+        description: "Adds a Network Connector to the broker."
+        return: "Name of the added network connector."
+        params:
+          - name: discoveryAddress
+            type: java.lang.String
+      "removeConnector(java.lang.String)":
+        description: "Removes a Connector from the broker."
+        return: "true if the connector was removed."
+        params:
+          - name: connectorName
+            type: java.lang.String
+      "removeNetworkConnector(java.lang.String)":
+        description: "Removes a Network Connector from the broker."
+        return: "true if the network connector was removed."
+        params:
+          - name: connectorName
+            type: java.lang.String
+      "addTopic(java.lang.String)":
+        description: "Adds a Topic destination to the broker."
+        params:
+          - name: name
+            type: java.lang.String
+      "addQueue(java.lang.String)":
+        description: "Adds a Queue destination to the broker."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeTopic(java.lang.String)":
+        description: "Removes a Topic destination from the broker."
+        params:
+          - name: name
+            type: java.lang.String
+      "removeQueue(java.lang.String)":
+        description: "Removes a Queue destination from the broker."
+        params:
+          - name: name
+            type: java.lang.String
+      "createDurableSubscriber(java.lang.String,java.lang.String,java.lang.String,java.lang.String)":
+        description: "Creates a new durable topic subscriber."
+        return: "ObjectName of the MBean registered in JMX."
+        params:
+          - name: clientId
+            type: java.lang.String
+          - name: subscriberName
+            type: java.lang.String
+          - name: topicName
+            type: java.lang.String
+          - name: selector
+            type: java.lang.String
+      "destroyDurableSubscriber(java.lang.String,java.lang.String)":
+        description: "Destroys a durable subscriber."
+        params:
+          - name: clientId
+            type: java.lang.String
+          - name: subscriberName
+            type: java.lang.String
+      "reloadLog4jProperties()":
+        description: "Reloads log4j.properties from the classpath."
+      "getTransportConnectorByType(java.lang.String)":
+        description: "The url of transport connector by its type; e.g. tcp, stomp, ssl, etc."
+        return: "Transport connector URL."
+        params:
+          - name: type
+            type: java.lang.String
+      "setMaxUncommittedCount(int)":
+        description: "Temporarily set the allowed max uncommitted count per transaction"
+        params:
+          - name: maxUncommittedCount
+            type: int
+      "start()":
+        description: "Starts the broker service."
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Queue,destinationName=*"
+      className: "org.apache.activemq.broker.jmx.QueueViewMBean"
+    description: "Management interface for an ActiveMQ Classic queue destination."
+    attributes:
+      Name:
+        description: "Name of this destination."
+      EnqueueCount:
+        description: "Number of messages that have been sent to the destination."
+      DispatchCount:
+        description: "Number of messages that has been delivered to consumers, including those not acknowledged"
+      DequeueCount:
+        description: "Number of messages that has been acknowledged (and removed) from the destination."
+      DuplicateFromStoreCount:
+        description: "Number of duplicate messages that have been paged-in from the store."
+      SendDuplicateFromStoreToDLQ:
+        description: "Config setting to send a duplicate from store message to the dead letter queue."
+      ForwardCount:
+        description: "Number of messages that have been forwarded (to a networked broker) from the destination."
+      InFlightCount:
+        description: "Number of messages that have been dispatched to, but not acknowledged by, consumers."
+      ExpiredCount:
+        description: "Number of messages that have been expired."
+      ConsumerCount:
+        description: "Number of consumers subscribed to this destination."
+      ProducerCount:
+        description: "Number of producers attached to this destination"
+      QueueSize:
+        description: "Number of messages on this destination, including any that have been dispatched but not acknowledged"
+      StoreMessageSize:
+        description: "The memory size of all messages in this destination's store."
+      MemoryPercentUsage:
+        description: "The percentage of the memory limit used"
+      MemoryUsageByteCount:
+        description: "Memory used by undelivered messages in bytes"
+      MemoryLimit:
+        description: "Memory limit, in bytes, used by undelivered messages before paging to temporary storage."
+      TempUsagePercentUsage:
+        description: "The percentage of the temp usage limit used"
+      TempUsageLimit:
+        description: "Temp usage limit, in bytes, assigned to this destination."
+      MemoryUsagePortion:
+        description: "Portion of memory from the broker memory limit for this destination"
+      MaxEnqueueTime:
+        description: "The longest time a message was held on this destination"
+      MinEnqueueTime:
+        description: "The shortest time a message was held on this destination"
+      AverageEnqueueTime:
+        description: "Average time a message was held on this destination."
+      AverageMessageSize:
+        description: "Average message size on this destination"
+      MaxMessageSize:
+        description: "Max message size on this destination"
+      MinMessageSize:
+        description: "Min message size on this destination"
+      ProducerFlowControl:
+        description: "Flow control is enabled for producers"
+      AlwaysRetroactive:
+        description: "Always treat consumers as retroactive"
+      BlockedProducerWarningInterval:
+        description: "Blocked Producer Warning Interval"
+      MaxProducersToAudit:
+        description: "Maximum number of producers to audit"
+      MaxAuditDepth:
+        description: "Max audit depth"
+      MaxPageSize:
+        description: "Maximum number of messages to be paged in"
+      UseCache:
+        description: "Caching is allowed"
+      PrioritizedMessages:
+        description: "Prioritized messages is enabled"
+      Options:
+        description: "Destination options as name value pairs in a URL queryString"
+      DLQ:
+        description: "Dead Letter Queue"
+      BlockedSends:
+        description: "Number of messages blocked for flow control"
+      AverageBlockedTime:
+        description: "Average time (ms) messages have been blocked by flow control"
+      TotalBlockedTime:
+        description: "Total time (ms) messages have been blocked by flow control"
+      MaxUncommittedExceededCount:
+        description: "Number of times the max uncommitted limit has been exceed for this destination"
+      AdvancedNetworkStatisticsEnabled:
+        description: "Query Advanced Network Statistics flag"
+      NetworkEnqueues:
+        description: "Number of messages sent to the destination via network connection"
+      NetworkDequeues:
+        description: "Number of messages acknowledged from the destination via network connection"
+      AdvancedMessageStatisticsEnabled:
+        description: "Query Advanced Message Statistics flag"
+      EnqueuedMessageBrokerInTime:
+        description: "Broker in time (ms) of last enqueued message to the destination"
+      EnqueuedMessageClientId:
+        description: "ClientID of last enqueued message to the destination"
+      EnqueuedMessageId:
+        description: "MessageID of last enqueued message to the destination"
+      EnqueuedMessageTimestamp:
+        description: "Message timestamp in (ms) of last enqueued message to the destination"
+      DequeuedMessageBrokerInTime:
+        description: "Broker in time (ms) of last dequeued message to the destination"
+      DequeuedMessageBrokerOutTime:
+        description: "Broker out time (ms) of last dequeued message to the destination"
+      DequeuedMessageClientId:
+        description: "ClientID of last dequeued message to the destination"
+      DequeuedMessageId:
+        description: "MessageID of last dequeued message to the destination"
+      DequeuedMessageTimestamp:
+        description: "Message timestamp in (ms) of last dequeued message to the destination"
+      CacheEnabled:
+        description: "Caching is enabled"
+      MessageGroupType:
+        description: "group implementation (simple,bucket,cached)"
+      Paused:
+        description: "Dispatch to consumers is paused"
+      CursorMemoryUsage:
+        description: "Message cursor memory usage, in bytes."
+      CursorPercentUsage:
+        description: "Percentage of memory limit used"
+    operations:
+      "resetStatistics()":
+        description: "Resets statistics."
+      "browse()":
+        description: "An array of all messages in the destination. Not HTML friendly."
+        return: "CompositeData array of messages in the destination."
+      "browseAsTable()":
+        description: "A list of all messages in the destination. Not HTML friendly."
+        return: "TabularData of messages in the destination."
+      "browse(java.lang.String)":
+        description: "An array of all messages in the destination based on an SQL-92 selection on the message headers or XPATH on the body. Not HTML friendly."
+        params:
+          - name: selector
+            type: java.lang.String
+      "browseAsTable(java.lang.String)":
+        description: "A list of all messages in the destination based on an SQL-92 selection on the message headers or XPATH on the body. Not HTML friendly."
+        params:
+          - name: selector
+            type: java.lang.String
+      "sendTextMessage(java.lang.String)":
+        description: "Sends a TextMessage to the destination."
+        return: "The message id of the message sent."
+        params:
+          - name: body
+            type: java.lang.String
+      "sendTextMessageWithProperties(java.lang.String)":
+        description: "Sends a TextMessage to the destination using comma separated properties list. Example properties: body=value,header=value"
+        return: "The message id of the message sent."
+        params:
+          - name: properties
+            type: java.lang.String
+      "sendTextMessageWithProperties(java.lang.String,java.lang.String)":
+        description: "Sends a TextMessage to the destination using properties separated by arbitrary delimiter. Example properties: body=value;header=value"
+        return: "The message id of the message sent."
+        params:
+          - name: properties
+            type: java.lang.String
+          - name: delimiter
+            type: java.lang.String
+      "sendTextMessage(java.util.Map,java.lang.String)":
+        description: "Sends a TextMessage to the destination."
+        return: "The message id of the message sent."
+        params:
+          - name: headers
+            type: java.util.Map
+          - name: body
+            type: java.lang.String
+      "sendTextMessage(java.lang.String,java.lang.String,java.lang.String)":
+        description: "Sends a TextMessage to a password-protected destination."
+        return: "The message id of the message sent."
+        params:
+          - name: body
+            type: java.lang.String
+          - name: user
+            type: java.lang.String
+          - name: password
+            type: java.lang.String
+      "sendTextMessage(java.util.Map,java.lang.String,java.lang.String,java.lang.String)":
+        description: "Sends a TextMessage to a password-protected destination."
+        return: "The message id of the message sent."
+        params:
+          - name: headers
+            type: java.util.Map
+          - name: body
+            type: java.lang.String
+          - name: user
+            type: java.lang.String
+          - name: password
+            type: java.lang.String
+      "setMemoryLimit(long)":
+        description: "Sets the memory limit allocated to this destination."
+        params:
+          - name: limit
+            type: long
+      "setTempUsageLimit(long)":
+        description: "Sets the temp usage limit allocated to this destination."
+        params:
+          - name: limit
+            type: long
+      "setMemoryUsagePortion(float)":
+        description: "Sets the portion of memory from the broker memory limit for this destination."
+        params:
+          - name: value
+            type: float
+      "setProducerFlowControl(boolean)":
+        description: "Enables or disables producer flow control."
+        params:
+          - name: producerFlowControl
+            type: boolean
+      "setAlwaysRetroactive(boolean)":
+        description: "Sets whether consumers are always treated as retroactive."
+        params:
+          - name: alwaysRetroactive
+            type: boolean
+      "setBlockedProducerWarningInterval(long)":
+        description: "Sets the interval at which warnings about blocked producers will be triggered."
+        params:
+          - name: blockedProducerWarningInterval
+            type: long
+      "setMaxProducersToAudit(int)":
+        description: "Sets the maximum number of producers to audit."
+        params:
+          - name: maxProducersToAudit
+            type: int
+      "setMaxAuditDepth(int)":
+        description: "Sets the max audit depth."
+        params:
+          - name: maxAuditDepth
+            type: int
+      "setMaxPageSize(int)":
+        description: "Sets the maximum number of messages to page into the destination."
+        params:
+          - name: pageSize
+            type: int
+      "setUseCache(boolean)":
+        description: "Enables or disables caching on the destination."
+        params:
+          - name: cache
+            type: boolean
+      "browseMessages()":
+        description: "A list of all messages in the destination. Not HTML friendly."
+        return: "List of messages in the destination."
+      "browseMessages(java.lang.String)":
+        description: "A list of all messages in the destination based on an SQL-92 selection on the message headers or XPATH on the body. Not HTML friendly."
+        return: "List of matching messages."
+        params:
+          - name: selector
+            type: java.lang.String
+      "getSubscriptions()":
+        description: "Returns subscription MBeans matching this destination."
+        return: "ObjectName array of subscriptions for this destination."
+      "getSlowConsumerStrategy()":
+        description: "Returns the optional slow consumer handler MBean for this destination."
+        return: "ObjectName of the slow consumer strategy MBean."
+      "setDLQ(boolean)":
+        description: "Enables or disables the DLQ flag."
+        params:
+          - name: value
+            type: boolean
+      "setAdvancedNetworkStatisticsEnabled(boolean)":
+        description: "Toggles the Advanced Network Statistics flag."
+        params:
+          - name: advancedNetworkStatisticsEnabled
+            type: boolean
+      "setAdvancedMessageStatisticsEnabled(boolean)":
+        description: "Toggles the Advanced Message Statistics flag."
+        params:
+          - name: advancedMessageStatisticsEnabled
+            type: boolean
+      "getMessage(java.lang.String)":
+        description: "View a message from the destination by JMS message ID."
+        return: "CompositeData for the message."
+        params:
+          - name: messageId
+            type: java.lang.String
+      "removeMessage(java.lang.String)":
+        description: "Remove a message from the destination by JMS message ID. If the message has been dispatched, it cannot be deleted and false is returned."
+        return: "true if the message was found and deleted."
+        params:
+          - name: messageId
+            type: java.lang.String
+      "removeMatchingMessages(java.lang.String)":
+        description: "Removes messages from the destination based on an SQL-92 selection on the message headers or XPATH on the body."
+        return: "Number of messages removed."
+        params:
+          - name: selector
+            type: java.lang.String
+      "removeMatchingMessages(java.lang.String,int)":
+        description: "Removes up to a specified number of messages from the destination based on an SQL-92 selection on the message headers or XPATH on the body."
+        return: "Number of messages removed."
+        params:
+          - name: selector
+            type: java.lang.String
+          - name: maximumMessages
+            type: int
+      "purge()":
+        description: "Removes all of the messages in the queue."
+      "copyMessageTo(java.lang.String,java.lang.String)":
+        description: "Copies a message with the given JMS message ID into the specified destination."
+        return: "true if the message was found and copied."
+        params:
+          - name: messageId
+            type: java.lang.String
+          - name: destinationName
+            type: java.lang.String
+      "copyMatchingMessagesTo(java.lang.String,java.lang.String)":
+        description: "Copies messages based on an SQL-92 selection on the message headers or XPATH on the body into the specified destination."
+        return: "Number of messages copied."
+        params:
+          - name: selector
+            type: java.lang.String
+          - name: destinationName
+            type: java.lang.String
+      "copyMatchingMessagesTo(java.lang.String,java.lang.String,int)":
+        description: "Copies up to a specified number of messages based on an SQL-92 selection on the message headers or XPATH on the body into the specified destination."
+        return: "Number of messages copied."
+        params:
+          - name: selector
+            type: java.lang.String
+          - name: destinationName
+            type: java.lang.String
+          - name: maximumMessages
+            type: int
+      "moveMessageTo(java.lang.String,java.lang.String)":
+        description: "Moves a message with the given JMS message ID into the specified destination."
+        return: "true if the message was found and moved."
+        params:
+          - name: messageId
+            type: java.lang.String
+          - name: destinationName
+            type: java.lang.String
+      "retryMessage(java.lang.String)":
+        description: "Moves a message with the given JMS message back to its original destination"
+        return: "true if the message was retried."
+        params:
+          - name: messageId
+            type: java.lang.String
+      "moveMatchingMessagesTo(java.lang.String,java.lang.String)":
+        description: "Moves messages based on an SQL-92 selection on the message headers or XPATH on the body into the specified destination."
+        return: "Number of messages moved."
+        params:
+          - name: selector
+            type: java.lang.String
+          - name: destinationName
+            type: java.lang.String
+      "moveMatchingMessagesTo(java.lang.String,java.lang.String,int)":
+        description: "Moves up to a specified number of messages based on an SQL-92 selection on the message headers or XPATH on the body into the specified destination."
+        return: "Number of messages moved."
+        params:
+          - name: selector
+            type: java.lang.String
+          - name: destinationName
+            type: java.lang.String
+          - name: maximumMessages
+            type: int
+      "retryMessages()":
+        description: "Retries messages sent to the DLQ"
+        return: "Number of messages retried."
+      "doesCursorHaveSpace()":
+        description: "Message cursor has memory space available"
+        return: "true if the message cursor has memory space available to page in more messages."
+      "isCursorFull()":
+        description: "Message cursor has reached its memory limit for paged in messages"
+        return: "true if the cursor has reached its memory limit."
+      "doesCursorHaveMessagesBuffered()":
+        description: "Message cursor has buffered messages to deliver"
+        return: "true if the cursor has messages buffered to deliver."
+      "cursorSize()":
+        description: "Number of messages available to be paged in by the cursor."
+        return: "Number of messages available to be paged in."
+      "getMessageGroups()":
+        description: "Map of groupNames and ConsumerIds"
+        return: "Map of message group names to consumer IDs."
+      "removeMessageGroup(java.lang.String)":
+        description: "remove a message group by its groupName"
+        params:
+          - name: groupName
+            type: java.lang.String
+      "removeAllMessageGroups()":
+        description: "Remove all the message groups - will rebalance all message groups across consumers"
+      "pause()":
+        description: "pause dispatch to consumers"
+      "resume()":
+        description: "resume dispatch to consumers if paused"
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
+      className: "org.apache.activemq.broker.jmx.TopicViewMBean"
+    description: "Management interface for an ActiveMQ Classic topic destination."
+    attributes:
+      Name:
+        description: "Name of this destination."
+      EnqueueCount:
+        description: "Number of messages that have been sent to the destination."
+      DispatchCount:
+        description: "Number of messages that has been delivered to consumers, including those not acknowledged"
+      DequeueCount:
+        description: "Number of messages that has been acknowledged (and removed) from the destination."
+      DuplicateFromStoreCount:
+        description: "Number of duplicate messages that have been paged-in from the store."
+      SendDuplicateFromStoreToDLQ:
+        description: "Config setting to send a duplicate from store message to the dead letter queue."
+      ForwardCount:
+        description: "Number of messages that have been forwarded (to a networked broker) from the destination."
+      InFlightCount:
+        description: "Number of messages that have been dispatched to, but not acknowledged by, consumers."
+      ExpiredCount:
+        description: "Number of messages that have been expired."
+      ConsumerCount:
+        description: "Number of consumers subscribed to this destination."
+      ProducerCount:
+        description: "Number of producers attached to this destination"
+      QueueSize:
+        description: "Number of messages on this destination, including any that have been dispatched but not acknowledged"
+      StoreMessageSize:
+        description: "The memory size of all messages in this destination's store."
+      MemoryPercentUsage:
+        description: "The percentage of the memory limit used"
+      MemoryUsageByteCount:
+        description: "Memory used by undelivered messages in bytes"
+      MemoryLimit:
+        description: "Memory limit, in bytes, used by undelivered messages before paging to temporary storage."
+      TempUsagePercentUsage:
+        description: "The percentage of the temp usage limit used"
+      TempUsageLimit:
+        description: "Temp usage limit, in bytes, assigned to this destination."
+      MemoryUsagePortion:
+        description: "Portion of memory from the broker memory limit for this destination"
+      MaxEnqueueTime:
+        description: "The longest time a message was held on this destination"
+      MinEnqueueTime:
+        description: "The shortest time a message was held on this destination"
+      AverageEnqueueTime:
+        description: "Average time a message was held on this destination."
+      AverageMessageSize:
+        description: "Average message size on this destination"
+      MaxMessageSize:
+        description: "Max message size on this destination"
+      MinMessageSize:
+        description: "Min message size on this destination"
+      ProducerFlowControl:
+        description: "Flow control is enabled for producers"
+      AlwaysRetroactive:
+        description: "Always treat consumers as retroactive"
+      BlockedProducerWarningInterval:
+        description: "Blocked Producer Warning Interval"
+      MaxProducersToAudit:
+        description: "Maximum number of producers to audit"
+      MaxAuditDepth:
+        description: "Max audit depth"
+      MaxPageSize:
+        description: "Maximum number of messages to be paged in"
+      UseCache:
+        description: "Caching is allowed"
+      PrioritizedMessages:
+        description: "Prioritized messages is enabled"
+      Options:
+        description: "Destination options as name value pairs in a URL queryString"
+      DLQ:
+        description: "Dead Letter Queue"
+      BlockedSends:
+        description: "Number of messages blocked for flow control"
+      AverageBlockedTime:
+        description: "Average time (ms) messages have been blocked by flow control"
+      TotalBlockedTime:
+        description: "Total time (ms) messages have been blocked by flow control"
+      MaxUncommittedExceededCount:
+        description: "Number of times the max uncommitted limit has been exceed for this destination"
+      AdvancedNetworkStatisticsEnabled:
+        description: "Query Advanced Network Statistics flag"
+      NetworkEnqueues:
+        description: "Number of messages sent to the destination via network connection"
+      NetworkDequeues:
+        description: "Number of messages acknowledged from the destination via network connection"
+      AdvancedMessageStatisticsEnabled:
+        description: "Query Advanced Message Statistics flag"
+      EnqueuedMessageBrokerInTime:
+        description: "Broker in time (ms) of last enqueued message to the destination"
+      EnqueuedMessageClientId:
+        description: "ClientID of last enqueued message to the destination"
+      EnqueuedMessageId:
+        description: "MessageID of last enqueued message to the destination"
+      EnqueuedMessageTimestamp:
+        description: "Message timestamp in (ms) of last enqueued message to the destination"
+      DequeuedMessageBrokerInTime:
+        description: "Broker in time (ms) of last dequeued message to the destination"
+      DequeuedMessageBrokerOutTime:
+        description: "Broker out time (ms) of last dequeued message to the destination"
+      DequeuedMessageClientId:
+        description: "ClientID of last dequeued message to the destination"
+      DequeuedMessageId:
+        description: "MessageID of last dequeued message to the destination"
+      DequeuedMessageTimestamp:
+        description: "Message timestamp in (ms) of last dequeued message to the destination"
+    operations:
+      "resetStatistics()":
+        description: "Resets statistics."
+      "browse()":
+        description: "An array of all messages in the destination. Not HTML friendly."
+        return: "CompositeData array of messages in the destination."
+      "browseAsTable()":
+        description: "A list of all messages in the destination. Not HTML friendly."
+        return: "TabularData of messages in the destination."
+      "browse(java.lang.String)":
+        description: "An array of all messages in the destination based on an SQL-92 selection on the message headers or XPATH on the body. Not HTML friendly."
+        params:
+          - name: selector
+            type: java.lang.String
+      "browseAsTable(java.lang.String)":
+        description: "A list of all messages in the destination based on an SQL-92 selection on the message headers or XPATH on the body. Not HTML friendly."
+        params:
+          - name: selector
+            type: java.lang.String
+      "sendTextMessage(java.lang.String)":
+        description: "Sends a TextMessage to the destination."
+        return: "The message id of the message sent."
+        params:
+          - name: body
+            type: java.lang.String
+      "sendTextMessageWithProperties(java.lang.String)":
+        description: "Sends a TextMessage to the destination using comma separated properties list. Example properties: body=value,header=value"
+        return: "The message id of the message sent."
+        params:
+          - name: properties
+            type: java.lang.String
+      "sendTextMessageWithProperties(java.lang.String,java.lang.String)":
+        description: "Sends a TextMessage to the destination using properties separated by arbitrary delimiter. Example properties: body=value;header=value"
+        return: "The message id of the message sent."
+        params:
+          - name: properties
+            type: java.lang.String
+          - name: delimiter
+            type: java.lang.String
+      "sendTextMessage(java.util.Map,java.lang.String)":
+        description: "Sends a TextMessage to the destination."
+        return: "The message id of the message sent."
+        params:
+          - name: headers
+            type: java.util.Map
+          - name: body
+            type: java.lang.String
+      "sendTextMessage(java.lang.String,java.lang.String,java.lang.String)":
+        description: "Sends a TextMessage to a password-protected destination."
+        return: "The message id of the message sent."
+        params:
+          - name: body
+            type: java.lang.String
+          - name: user
+            type: java.lang.String
+          - name: password
+            type: java.lang.String
+      "sendTextMessage(java.util.Map,java.lang.String,java.lang.String,java.lang.String)":
+        description: "Sends a TextMessage to a password-protected destination."
+        return: "The message id of the message sent."
+        params:
+          - name: headers
+            type: java.util.Map
+          - name: body
+            type: java.lang.String
+          - name: user
+            type: java.lang.String
+          - name: password
+            type: java.lang.String
+      "setMemoryLimit(long)":
+        description: "Sets the memory limit allocated to this destination."
+        params:
+          - name: limit
+            type: long
+      "setTempUsageLimit(long)":
+        description: "Sets the temp usage limit allocated to this destination."
+        params:
+          - name: limit
+            type: long
+      "setMemoryUsagePortion(float)":
+        description: "Sets the portion of memory from the broker memory limit for this destination."
+        params:
+          - name: value
+            type: float
+      "setProducerFlowControl(boolean)":
+        description: "Enables or disables producer flow control."
+        params:
+          - name: producerFlowControl
+            type: boolean
+      "setAlwaysRetroactive(boolean)":
+        description: "Sets whether consumers are always treated as retroactive."
+        params:
+          - name: alwaysRetroactive
+            type: boolean
+      "setBlockedProducerWarningInterval(long)":
+        description: "Sets the interval at which warnings about blocked producers will be triggered."
+        params:
+          - name: blockedProducerWarningInterval
+            type: long
+      "setMaxProducersToAudit(int)":
+        description: "Sets the maximum number of producers to audit."
+        params:
+          - name: maxProducersToAudit
+            type: int
+      "setMaxAuditDepth(int)":
+        description: "Sets the max audit depth."
+        params:
+          - name: maxAuditDepth
+            type: int
+      "setMaxPageSize(int)":
+        description: "Sets the maximum number of messages to page into the destination."
+        params:
+          - name: pageSize
+            type: int
+      "setUseCache(boolean)":
+        description: "Enables or disables caching on the destination."
+        params:
+          - name: cache
+            type: boolean
+      "browseMessages()":
+        description: "A list of all messages in the destination. Not HTML friendly."
+        return: "List of messages in the destination."
+      "browseMessages(java.lang.String)":
+        description: "A list of all messages in the destination based on an SQL-92 selection on the message headers or XPATH on the body. Not HTML friendly."
+        return: "List of matching messages."
+        params:
+          - name: selector
+            type: java.lang.String
+      "getSubscriptions()":
+        description: "Returns subscription MBeans matching this destination."
+        return: "ObjectName array of subscriptions for this destination."
+      "getSlowConsumerStrategy()":
+        description: "Returns the optional slow consumer handler MBean for this destination."
+        return: "ObjectName of the slow consumer strategy MBean."
+      "setDLQ(boolean)":
+        description: "Enables or disables the DLQ flag."
+        params:
+          - name: value
+            type: boolean
+      "setAdvancedNetworkStatisticsEnabled(boolean)":
+        description: "Toggles the Advanced Network Statistics flag."
+        params:
+          - name: advancedNetworkStatisticsEnabled
+            type: boolean
+      "setAdvancedMessageStatisticsEnabled(boolean)":
+        description: "Toggles the Advanced Message Statistics flag."
+        params:
+          - name: advancedMessageStatisticsEnabled
+            type: boolean
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,connector=networkConnectors,networkConnectorName=*"
+      className: "org.apache.activemq.broker.jmx.NetworkConnectorViewMBean"
+    description: "Management interface for an ActiveMQ Classic network connector."
+    attributes:
+      Name:
+        description: "Network connector name."
+      MessageTTL:
+        description: "Message time-to-live for network forwarding."
+      ConsumerTTL:
+        description: "Consumer time-to-live for network subscriptions."
+      PrefetchSize:
+        description: "Prefetch size for network consumers."
+      AdvisoryPrefetchSize:
+        description: "The prefetch setting for the advisory message consumer. If set to <= 0 then this setting is disabled and the prefetchSize attribute is used instead for configuring the advisory consumer."
+      UserName:
+        description: "User name for the network connector."
+      Password:
+        description: "Password for the network connector."
+      RemoteUserName:
+        description: "Remote user name for the network connector."
+      RemotePassword:
+        description: "Remote password for the network connector."
+      BridgeTempDestinations:
+        description: "Whether temporary destinations are bridged across the network."
+      ConduitSubscriptions:
+        description: "Whether conduit subscriptions are enabled."
+      DecreaseNetworkConsumerPriority:
+        description: "Whether network consumer priority is decreased."
+      DispatchAsync:
+        description: "Whether dispatch is asynchronous."
+      DynamicOnly:
+        description: "Whether only dynamically included destinations are forwarded."
+      Duplex:
+        description: "Whether the network connector is duplex."
+      SuppressDuplicateQueueSubscriptions:
+        description: "Whether duplicate queue subscriptions are suppressed."
+      SuppressDuplicateTopicSubscriptions:
+        description: "Whether duplicate topic subscriptions are suppressed."
+      AutoStart:
+        description: "Whether the network connector auto-starts."
+    operations:
+      "setBridgeTempDestinations(boolean)":
+        description: "Sets whether temporary destinations are bridged."
+        params:
+          - name: bridgeTempDestinations
+            type: boolean
+      "setConduitSubscriptions(boolean)":
+        description: "Sets whether conduit subscriptions are enabled."
+        params:
+          - name: conduitSubscriptions
+            type: boolean
+      "setDispatchAsync(boolean)":
+        description: "Sets whether dispatch is asynchronous."
+        params:
+          - name: dispatchAsync
+            type: boolean
+      "setDynamicOnly(boolean)":
+        description: "Sets whether only dynamically included destinations are forwarded."
+        params:
+          - name: dynamicOnly
+            type: boolean
+      "setMessageTTL(int)":
+        description: "Sets the message TTL."
+        params:
+          - name: messageTTL
+            type: int
+      "setConsumerTTL(int)":
+        description: "Sets the consumer TTL."
+        params:
+          - name: consumerTTL
+            type: int
+      "setPassword(java.lang.String)":
+        description: "Sets the network connector password."
+        params:
+          - name: password
+            type: java.lang.String
+      "setPrefetchSize(int)":
+        description: "Sets the prefetch size."
+        params:
+          - name: prefetchSize
+            type: int
+      "setAdvisoryPrefetchSize(int)":
+        description: "Sets the advisory prefetch size."
+        params:
+          - name: advisoryPrefetchSize
+            type: int
+      "setUserName(java.lang.String)":
+        description: "Sets the network connector user name."
+        params:
+          - name: userName
+            type: java.lang.String
+      "setDecreaseNetworkConsumerPriority(boolean)":
+        description: "Sets whether network consumer priority is decreased."
+        params:
+          - name: decreaseNetworkConsumerPriority
+            type: boolean
+      "setSuppressDuplicateQueueSubscriptions(boolean)":
+        description: "Sets whether duplicate queue subscriptions are suppressed."
+        params:
+          - name: val
+            type: boolean
+      "setSuppressDuplicateTopicSubscriptions(boolean)":
+        description: "Sets whether duplicate topic subscriptions are suppressed."
+        params:
+          - name: val
+            type: boolean
+      "setRemoteUserName(java.lang.String)":
+        description: "Sets the remote user name."
+        params:
+          - name: remoteUserName
+            type: java.lang.String
+      "setRemotePassword(java.lang.String)":
+        description: "Sets the remote password."
+        params:
+          - name: remotePassword
+            type: java.lang.String
+      "start()":
+        description: "Starts the service component."
+      "stop()":
+        description: "Stops the service component."
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,connector=clientConnectors,connectorName=*"
+      className: "org.apache.activemq.broker.jmx.ConnectorViewMBean"
+    description: "Management interface for an ActiveMQ Classic client transport connector."
+    attributes:
+      StatisticsEnabled:
+        description: "Statistics gathering enabled"
+      AllowLinkStealingEnabled:
+        description: "Link Stealing enabled"
+      UpdateClusterClients:
+        description: "Update client URLs when brokers leave/join a cluster enabled"
+      RebalanceClusterClients:
+        description: "Rebalance clients across the broker cluster enabled"
+      UpdateClusterClientsOnRemove:
+        description: "Update clients when a broker is removed from a network enabled."
+      UpdateClusterFilter:
+        description: "Comma separated list of regex patterns to match broker names for cluster client updates."
+      MaxConnectionExceededCount:
+        description: "Max connection exceeded count"
+      AutoStart:
+        description: "Auto-start enabled"
+      Started:
+        description: "Connector started"
+    operations:
+      "connectionCount()":
+        description: "Connection count"
+        return: "Current number of connections on this connector."
+      "resetStatistics()":
+        description: "Resets the statistics"
+      "enableStatistics()":
+        description: "Enables statistics gathering"
+      "disableStatistics()":
+        description: "Disables statistics gathering"
+      "start()":
+        description: "Starts the service component."
+      "stop()":
+        description: "Stops the service component."
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,connectionViewType=clientId,connectionName=*"
+      className: "org.apache.activemq.broker.jmx.ConnectionViewMBean"
+    description: "Management interface for an ActiveMQ Classic client connection."
+    attributes:
+      Slow:
+        description: "Connection is slow."
+      Blocked:
+        description: "Connection is blocked."
+      Connected:
+        description: "Connection is connected to the broker."
+      Active:
+        description: "Connection is active (both connected and receiving messages)."
+      RemoteAddress:
+        description: "source address for this connection"
+      ClientId:
+        description: "client id for this connection"
+      DispatchQueueSize:
+        description: "The number of messages pending dispatch"
+      UserName:
+        description: "User Name used to authorize creation of this connection"
+      Consumers:
+        description: "The ObjectNames of all Consumers created by this Connection"
+      Producers:
+        description: "The ObjectNames of all Producers created by this Connection"
+      ActiveTransactionCount:
+        description: "The number of active transactions established on this Connection."
+      OldestActiveTransactionDuration:
+        description: "The age in ms of the oldest active transaction established on this Connection."
+      FaultTolerantConnection:
+        description: "Connection is fault tolerant."
+      Manageable:
+        description: "Connection is manageable."
+      NetworkConnection:
+        description: "Connection is a network connection."
+      ConnectedTimestamp:
+        description: "Time in ms since epoch when connection was established."
+      WireFormatInfo:
+        description: "WireFormatInfo for the connection"
+    operations:
+      "resetStatistics()":
+        description: "Resets the statistics"
+      "start()":
+        description: "Starts the service component."
+      "stop()":
+        description: "Stops the service component."
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,Service=PersistenceAdapter,InstanceName=*"
+      className: "org.apache.activemq.broker.jmx.PersistenceAdapterViewMBean"
+    description: "Management interface for an ActiveMQ Classic persistence adapter."
+    attributes:
+      Name:
+        description: "Name of this persistence adapter."
+      Transactions:
+        description: "Inflight transactions."
+      Data:
+        description: "Current data."
+      Size:
+        description: "Current size."
+      Statistics:
+        description: "Statistics related to the PersistentAdapter."
+    operations:
+      "resetStatistics()":
+        description: "Resets statistics."
+        return: "Result message from resetting statistics."
+
+  - match:
+      objectName: "org.apache.activemq:type=Broker,brokerName=*,Service=Health"
+      className: "org.apache.activemq.broker.jmx.HealthViewMBean"
+    description: "Returns the status events of the broker to indicate any warnings."
+    attributes:
+      CurrentStatus:
+        description: "String representation of current Broker state"
+    operations:
+      "health()":
+        description: "Returns broker health status events as tabular data."
+        return: "TabularData describing broker health warnings and errors."
+      "healthList()":
+        description: "List of warnings and errors about the current health of the Broker - empty list is Good!"
+        return: "List of HealthStatus objects describing broker health."
+      "healthStatus()":
+        description: "String representation of current Broker state"
+        return: "Current broker health status text."

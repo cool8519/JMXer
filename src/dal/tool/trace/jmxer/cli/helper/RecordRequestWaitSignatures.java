@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 스레드 풀 대기(getTask/take 등) 시그니처 화이트리스트
+ *
+ */
 public class RecordRequestWaitSignatures {
 
 	private static final Set<String> WAITING_SIGNATURES = new HashSet<String>(Arrays.asList(

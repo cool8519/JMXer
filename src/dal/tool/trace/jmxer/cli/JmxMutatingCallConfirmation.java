@@ -10,18 +10,13 @@ import dal.tool.cli.Logger;
 import dal.tool.cli.util.IOUtil;
 
 /**
- * Warns and asks for confirmation before CALL commands that may modify the target JVM
- * (attribute write or operation invoke). Used from CLI and TUI ({@link #setHandler}).
+ * 대상 JVM을 변경할 수 있는 CALL(속성 쓰기·오퍼레이션 호출) 전 경고 및 확인을 처리한다.
+ * CLI와 TUI 모두에서 사용한다.
  */
 public final class JmxMutatingCallConfirmation {
 
-	/**
-	 * UI-specific confirmation (TUI dialog). When unset, CLI uses {@link IOUtil#readLine}.
-	 */
+	/** TUI 등 UI별 확인 처리. 미설정 시 CLI는 표준 입력으로 Y/N을 받는다. */
 	public interface Handler {
-		/**
-		 * @return true to perform the CALL, false to cancel
-		 */
 		boolean confirm(String title, String message);
 	}
 
@@ -41,7 +36,8 @@ public final class JmxMutatingCallConfirmation {
 	}
 
 	/**
-	 * @return true if the user chose to proceed (or no confirmation was required)
+	 * 변경 CALL이면 사용자 확인을 거친다.
+	 * @return 확인 불필요 또는 사용자가 진행을 선택하면 true
 	 */
 	public static boolean confirmIfNeeded(MBeanServerConnection conn, ObjectName objectName, String targetName,
 			String[] targetValues, int mbeanTargetCount) throws Exception {

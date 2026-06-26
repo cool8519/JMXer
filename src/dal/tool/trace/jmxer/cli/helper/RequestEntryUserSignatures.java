@@ -11,6 +11,10 @@ import java.util.Set;
 
 import dal.tool.cli.Logger;
 
+/**
+ * 사용자 정의 request-entry 시그니처 파일 로드 결과
+ *
+ */
 public final class RequestEntryUserSignatures {
 
 	private static final String LOAD_SUMMARY_PREFIX = "Loaded ";
@@ -46,12 +50,11 @@ public final class RequestEntryUserSignatures {
 		return resolvedPath;
 	}
 
-	/** Logs how many user-defined signatures were loaded when the file was read successfully. */
 	public void logLoadSummaryIfRead() {
 		if(!fileRead || readError) {
 			return;
 		}
-		Logger.logln(LOAD_SUMMARY_PREFIX + signatures.size() + LOAD_SUMMARY_SUFFIX + resolvedPath + "'.");
+		Logger.logln(LOAD_SUMMARY_PREFIX + signatures.size() + LOAD_SUMMARY_SUFFIX + resolvedPath + "'.\n");
 	}
 
 	public static RequestEntryUserSignatures load(String path) {
@@ -86,6 +89,17 @@ public final class RequestEntryUserSignatures {
 				} catch(Exception e) {}
 			}
 		}
+	}
+
+	public static boolean isEmptyPath(String path) {
+		return path == null || path.trim().isEmpty();
+	}
+
+	public static boolean isExistingFile(String path) {
+		if(isEmptyPath(path)) {
+			return false;
+		}
+		return new File(resolvePath(path.trim())).isFile();
 	}
 
 	static String resolvePath(String path) {

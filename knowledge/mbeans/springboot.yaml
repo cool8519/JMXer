@@ -1,0 +1,19 @@
+entries:
+  - match:
+      objectName: "org.springframework.boot:type=Admin,name=SpringApplication"
+      className: "org.springframework.boot.admin.SpringApplicationAdminMXBean"
+    description: "Spring Boot application administration MBean."
+    attributes:
+      EmbeddedWebApplication:
+        description: "Specify if the application runs in an embedded web container. Return false on a web application that hasn't fully started yet, so it is preferable to wait for the application to be {@link #isReady() ready}."
+      Ready:
+        description: "Specify if the application has fully started and is now ready."
+    operations:
+      "getProperty(java.lang.String)":
+        description: "Return the value of the specified key from the application {@link org.springframework.core.env.Environment Environment}."
+        return: "Return type: String."
+        params:
+          - name: key
+            type: java.lang.String
+      "shutdown()":
+        description: "Shutdown the application."

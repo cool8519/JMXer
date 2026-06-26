@@ -15,6 +15,7 @@ import javax.management.ObjectName;
 import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.command.Command;
+import dal.tool.cli.command.ScriptCommand;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxConnectionRecovery;
 import dal.tool.trace.jmxer.cli.JmxSettings;
@@ -25,6 +26,10 @@ import dal.tool.util.jmx.MBeanConnector;
 import dal.tool.util.jmx.MBeanNotFoundException;
 
 
+/**
+ * JMX CLI 명령 공통 베이스(연결·MBean 캐시·재연결 재시도)
+ *
+ */
 public abstract class JmxCommand extends Command {
 
 	protected static Map<String,Map<String,MBeanFeatureInfo>> mbeanInfoCache = new HashMap<String,Map<String,MBeanFeatureInfo>>();
@@ -137,7 +142,7 @@ public abstract class JmxCommand extends Command {
         	if(!this.beforeExecute()) {
         		return;
         	}
-        	if(Logger.isTuiPanelCapture()) {
+        	if(Logger.isTuiPanelCapture() && !ScriptCommand.isNestedScriptExecution()) {
         		Logger.commitTuiUserCapturePreamble();
         	}
         } catch(Exception e) {

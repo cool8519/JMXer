@@ -1,0 +1,101 @@
+entries:
+  - match:
+      objectName: "com.zaxxer.hikari:type=Pool,*"
+      className: "com.zaxxer.hikari.HikariPoolMXBean"
+    description: "HikariCP connection pool runtime management interface."
+    attributes:
+      ActiveConnections:
+        description: "Get the number of currently active connections in the pool. The return value is extremely transient and is a point-in-time measurement. Therefore, due to a time difference between invoking this method and {@link #getIdleConnections()}, it is possible for the sum of idle plus active connections to be either less than or greater than the value returned by {@link #getTotalConnections()}."
+      IdleConnections:
+        description: "The javax.management MBean for a Hikari pool instance."
+      ThreadsAwaitingConnection:
+        description: "Get the number of threads awaiting connections from the pool. The return value is extremely transient and is a point-in-time measurement."
+      TotalConnections:
+        description: "Get the total number of connections currently in the pool. The return value is transient and is a point-in-time measurement."
+    operations:
+      "resumePool()":
+        description: "Resume the pool. Enables connection borrowing to resume on a pool that has been suspended via the {@link #suspendPool()} method. This method has no effect unless the {@link HikariConfig#setAllowPoolSuspension(boolean)} method or equivalent property has been set to true."
+      "softEvictConnections()":
+        description: "Evict currently idle connections from the pool, and mark active (in-use) connections for eviction when they are returned to the pool."
+      "suspendPool()":
+        description: "Suspend the pool. When the pool is suspended, threads calling {@link DataSource#getConnection()} will be blocked with no timeout until the pool is resumed via the {@link #resumePool()} method. This method has no effect unless the {@link HikariConfig#setAllowPoolSuspension(boolean)} method or equivalent property has been set to true."
+
+  - match:
+      objectName: "com.zaxxer.hikari:type=PoolConfig,*"
+      className: "com.zaxxer.hikari.HikariConfigMXBean"
+    description: "HikariCP pool configuration management interface."
+    attributes:
+      Catalog:
+        description: "Get the default catalog name to be set on connections."
+      ConnectionTimeout:
+        description: "The javax.management MBean for a Hikari pool configuration."
+      IdleTimeout:
+        description: "This property controls the maximum amount of time (in milliseconds) that a connection is allowed to sit idle in the pool. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool."
+      LeakDetectionThreshold:
+        description: "This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled."
+      MaxLifetime:
+        description: "This property controls the maximum lifetime of a connection in the pool. When a connection reaches this timeout, even if recently used, it will be retired from the pool. An in-use connection will never be retired, only when it is idle will it be removed."
+      MaximumPoolSize:
+        description: "The property controls the maximum number of connections that HikariCP will keep in the pool, including both idle and in-use connections."
+      MinimumIdle:
+        description: "The property controls the minimum number of idle connections that HikariCP tries to maintain in the pool, including both idle and in-use connections. If the idle connections dip below this value, HikariCP will make a best effort to restore them quickly and efficiently."
+      PoolName:
+        description: "The name of the connection pool."
+      ValidationTimeout:
+        description: "Get the maximum number of milliseconds that the pool will wait for a connection to be validated as alive."
+    operations:
+      "setCatalog(java.lang.String)":
+        description: "Set the default catalog name to be set on connections. WARNING: THIS VALUE SHOULD ONLY BE CHANGED WHILE THE POOL IS SUSPENDED, AFTER CONNECTIONS HAVE BEEN EVICTED."
+        params:
+          - name: catalog
+            type: java.lang.String
+      "setConnectionTimeout(long)":
+        description: "Set the maximum number of milliseconds that a client will wait for a connection from the pool. If this time is exceeded without a connection becoming available, a SQLException will be thrown from {@link javax.sql.DataSource#getConnection()}."
+        params:
+          - name: connectionTimeoutMs
+            type: long
+      "setCredentials(java.lang.Credentials)":
+        description: "Set the username and password used for authentication. Changing this at runtime will apply to new connections only. Altering this at runtime only works for DataSource-based connections, not Driver-class or JDBC URL-based connections."
+        params:
+          - name: credentials
+            type: java.lang.Credentials
+      "setIdleTimeout(long)":
+        description: "This property controls the maximum amount of time (in milliseconds) that a connection is allowed to sit idle in the pool. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool."
+        params:
+          - name: idleTimeoutMs
+            type: long
+      "setLeakDetectionThreshold(long)":
+        description: "This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled."
+        params:
+          - name: leakDetectionThresholdMs
+            type: long
+      "setMaxLifetime(long)":
+        description: "This property controls the maximum lifetime of a connection in the pool. When a connection reaches this timeout, even if recently used, it will be retired from the pool. An in-use connection will never be retired, only when it is idle will it be removed."
+        params:
+          - name: maxLifetimeMs
+            type: long
+      "setMaximumPoolSize(int)":
+        description: "The property controls the maximum size that the pool is allowed to reach, including both idle and in-use connections. Basically this value will determine the maximum number of actual connections to the database backend. When the pool reaches this size, and no idle connections are available, calls to getConnection() will block for up to connectionTimeout milliseconds before timing out."
+        params:
+          - name: maxPoolSize
+            type: int
+      "setMinimumIdle(int)":
+        description: "The property controls the minimum number of idle connections that HikariCP tries to maintain in the pool, including both idle and in-use connections. If the idle connections dip below this value, HikariCP will make a best effort to restore them quickly and efficiently."
+        params:
+          - name: minIdle
+            type: int
+      "setPassword(java.lang.String)":
+        description: "Set the password used for authentication. Changing this at runtime will apply to new connections only. Altering this at runtime only works for DataSource-based connections, not Driver-class or JDBC URL-based connections."
+        params:
+          - name: password
+            type: java.lang.String
+      "setUsername(java.lang.String)":
+        description: "Set the username used for authentication. Changing this at runtime will apply to new connections only. Altering this at runtime only works for DataSource-based connections, not Driver-class or JDBC URL-based connections."
+        params:
+          - name: username
+            type: java.lang.String
+      "setValidationTimeout(long)":
+        description: "Sets the maximum number of milliseconds that the pool will wait for a connection to be validated as alive."
+        params:
+          - name: validationTimeoutMs
+            type: long

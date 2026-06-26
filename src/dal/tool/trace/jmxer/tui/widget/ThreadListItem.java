@@ -1,7 +1,8 @@
 package dal.tool.trace.jmxer.tui.widget;
 
 /**
- * Runnable placeholder for a thread row in {@link com.googlecode.lanterna.gui2.ActionListBox}.
+ * ActionListBox 스레드 행용 Runnable 플레이스홀더.
+ *
  */
 public final class ThreadListItem implements Runnable {
 	private final long threadId;

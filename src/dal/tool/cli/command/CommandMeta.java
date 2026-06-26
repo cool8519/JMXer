@@ -7,6 +7,11 @@ import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
 import dal.tool.cli.util.IOUtil;
 
+/**
+ * CLI 명령 메타정보(매칭 문자열, 구현 클래스)
+ * @author 권영달
+ *
+ */
 public class CommandMeta {
 
 	private Class<? extends Command> commandClass;

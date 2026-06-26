@@ -51,6 +51,7 @@ $ java -jar JMXer.jar [ARGUMENTS]
 | **Session Mode** | Online / Offline | JVM 연결 여부 (`PID`/`NAME`/`ADDRESS` → Online, `DUMPFILE` → Offline) |
 | **Interface Mode** | CLI / TUI | 풀스크린 UI(기본, `--tui`) 또는 텍스트 프롬프트 (`--cli`) |
 | **UI Mode** (TUI만) | MBean / Thread / Record | TUI 작업 화면 |
+| **Record View** (Record UI만) | Live / Dump | F4 토글(Online TUI). Live=실시간 JVM 쓰레드, Dump=수집 dump 쓰레드. Offline TUI(`DUMPFILE`)는 Dump View로 고정 |
 
 ```sh
 $ java -jar JMXer.jar {PID=<pid> | NAME=<proc_name> | ADDRESS=<ip>:<port> [AUTH=<user>/<pass>] | DUMPFILE[=<dumpfile_path>]} [--cli|--tui]
@@ -96,12 +97,27 @@ JMXer를 실행하기 위해서는 두 가지 Session Mode를 사용할 수 있�
 
 TUI는 CLI와 동일한 JMXer 명령을 **Command** 창에서 입력할 수 있으며, 상태·필터·목록·출력을 화면 창으로 나누어 보여준다. 단축키와 창 조작 방법은 TUI 화면의 상태 줄 및 내장 도움말에서 확인할 수 있다.
 
+**키 리매핑**: **F12**로 현재 UI Mode·View·포커스 창에 해당하는 **Global** 단축키와 **Window** 단축키를 라이브 캡처 방식으로 재지정할 수 있다. 변경 사항은 현재 실행 세션에만 유지되며, 재시작 시 기본값으로 복귀된다.
+
 ### UI Mode (TUI 전용)
-UI Mode는 TUI 작업 화면을 전환하는 축이다. **MBean → Thread → Record** 순으로 순환된다.
+UI Mode는 TUI 작업 화면을 전환하는 축이다. Online TUI에서는 **MBean → Thread → Record** 순으로 순환된다. **Offline TUI**(`DUMPFILE`)는 **Record UI Mode**의 **Dump View**로 시작하며, 다른 UI Mode나 Live View로 전환할 수 없다.
 
 - **MBean**: MBean ObjectName 목록과 Attribute/Operation(Features)을 탐색한다. CLI의 `OBJECT`/`LIST`/`CALL` 흐름과 동일한 작업을 GUI로 수행한다. Online 세션에서만 동작한다.
-- **Thread**: 대상 JVM의 Thread 목록을 조회·필터하고, 선택한 Thread의 Stacktrace를 Output에 출력한다. 실시간으로 변하는 Thread들의 상태를 모니터링하고 Stacktrace를 편리하게 확인할 수 있다. Online 세션에서만 동작한다.
-- **Record**: 레코드 덤프를 기록하고 분석하기 위한 레이아웃을 제공한다. `RECORD` 명령(샘플링·저장·로드·뷰)을 사용자 인터페이스와 함께 사용할 수 있도록 한다. Offline/Online 세션에서 모두 사용할 수 있다.
+
+![Screenhot](screenshots/tui_mbean.jpg)
+
+- **Thread**: 대상 JVM의 Thread 목록을 조회·필터하고, 선택한 Thread의 Stacktrace를 Output에 출력한다. 실시간 쓰레드 상태 모니터링에 적합하다. Online 세션에서만 동작한다.
+
+![Screenhot](screenshots/tui_thread.jpg)
+
+- **Record**: 대상 쓰레드를 조회·선택하고 스택트레이스 샘플링을 수행한다. Offline/Online 세션 모두 사용할 수 있다(스택트레이스 샘플링은 Online만). `RECORD VIEW` 등 기타 Record 명령은 Command Pane에서도 사용할 수 있다.
+  - **Live View**: 실시간 JVM 쓰레드 목록을 표시한다. Online TUI에서만 사용하며, 실시간 모니터링과 샘플링 시작에 적합하다.
+
+![Screenhot](screenshots/tui_record_live.jpg)
+
+  - **Dump View**: 마지막 샘플링 결과 또는 불러온 덤프의 쓰레드 목록을 표시한다. `RECORD VIEW` 계열 분석·덤프 로드/저장에 적합하다. Offline TUI는 이 View로 고정된다.
+
+![Screenhot](screenshots/tui_record_dump.jpg)
 
 
 ## Commands
@@ -191,6 +207,17 @@ JMXer> CALL [{*|ObjectName}] OperationName(type1,type2,...) [{?|ArgumentList}]
 
 ![Screenhot](screenshots/command_call_oper.jpg)
 
+###### 2.4 MBean Knowledge Base
+JMXer는 자주 사용하는 MBean에 대한 설명·인자명·예시 값을 YAML Knowledge Base로 보관하고, 런타임 JMX 메타데이터와 병합하여 표시한다.
+
+- **적용 위치**
+  - CLI: `CALL ... ??`, `CALL ... Feature ?`
+  - TUI: MBean/Feature Pane **F2** 상세 팝업, Attribute(write)/Operation 인자 입력 팝업
+- **TUI 제목 `(KB)`**: Knowledge Base에서 해당 MBean/Feature에 설명·예시·인자명 등이 보강된 경우, 관련 팝업 제목에 `(KB)` 접미사가 붙는다. 예: F2 상세 `MBean (KB)` / `Feature (KB)`, Attribute write `Attribute value (KB)`, Operation 인자 `Arguments (KB)`. KB 기여가 없으면 접미사 없음.
+- **우선순위**: JAR 내장 YAML > 런타임 JMX 메타데이터
+- **번들 데이터 위치**: `knowledge/mbeans/*.yaml` (빌드 시 JAR에 포함)
+- **소스 레지스트리 (JAR 미포함)**: `knowledge/sources/*.yaml` — YAML 작성·갱신 시 참고할 MBean 매핑·**Javadoc URL** 등 배경 정보. 제품별 파일이며, 대응하는 산출물은 `knowledge/mbeans/<제품>.yaml`이다. `manualCurationOnly: true` 주석이 있는 제품(WildFly, Kafka)은 공개 Java MBean interface Javadoc이 없어 `sources` 항목 없이 ObjectName 참조만 제공한다.
+
 ##### 3. 쓰레드
 Thread 정보 조회를 위해서 `THREAD`명령어를 사용한다.
 
@@ -258,7 +285,6 @@ Sampling Time in milliseconds(0, Until the enter key is pressed):
 - ThreadList : 수집할 Thread ID 또는 Name을 한정할 수 있다. *참고) ThreadList 표현식*
 - Sampling Interval : 모니터링 간격(ms)
 - Sampling Time : 모니터링 시간(ms). 0을 입력하면 <kbd>Enter</kbd>를 누를때 까지 모니터링 한다.
-- ACTIVE/WAITING_REQUEST 분류 시 내장 request-entry 시그니처와 `REQUEST_ENTRY_FILE`의 사용자 정의 시그니처를 함께 사용한다. (`SET REQUEST_ENTRY_FILE` — Common 설정 참고)
     > 주의:<br/>
     > Sampling Interval이 너무 길면 정확도가 떨어지며, 너무 짧으면 프로세스에 부하를 유발할 수 있다.<br/>
     > Sampling Time이 너무 길면 JMXer가 느려지거나 다운될 수 있다.
@@ -286,10 +312,10 @@ JMXer> REC[ORD] LOAD [FileName]
 ```sh
 JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
 ```
-- 분석 모드는 `SET RECORD_VIEW_MODE` 설정값을 따른다.
-    - `NO_REQUEST_WAIT` (기본값): 요청 대기 상태 스택을 분석 모수에서 제외
-    - `FULL`: 모든 스택을 분석 모수에 포함 (기존 방식)
-    - 예시) `JMXer> SET RECORD_VIEW_MODE FULL`
+- `RECORD VIEW` 출력 필터는 `SET DUMP_STACK_FILTER` 설정값을 따른다.
+    - `NO_REQUEST_WAIT` (기본값): 요청 대기 상태 스택을 분석 모수에서 제외. 이때 ACTIVE/WAITING_REQUEST 분류는 **view 시점**에 수행하며, 내장 request-entry 시그니처와 현재 `REQUEST_ENTRY_FILE` 설정을 함께 사용한다.
+    - `FULL`: 모든 스택을 분석 모수에 포함
+    - 예시) `JMXer> SET DUMP_STACK_FILTER FULL`
 - ViewType : 분석을 위한 세부 명령어로, 아래와 같이 사용할 수 있다.
     - `INFO` : 저장된 Sampling 결과를 요약하여 보여준다.<br/>
         Usage) JMXer> RECORD VIEW **INFO**
@@ -342,7 +368,10 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - 레코드 뷰의 출력 가독성 개선
 
 ### v2.0.0
- - TUI 모드 지원 (기본 Interface 모드로 변경)
+ - (Bug) CALL 인자 타입 검증 오류 수정
+ - (Bug) 레코드 뷰의 thread 타입에 트리 통합 로직 오류 수정
+ - TUI Interface Mode 지원 (기본 모드를 CLI에서 TUI로 변경)
  - Thread stacktrace 요청시 Active Thread만 출력하는 기능 추가
  - Active Thread 판별시 사용자 정의 Request Entry 등록 기능 추가
- 
+ - MBean Knowledge Base 추가
+ - Attribute 조회 및 Operation 호출 가독성 개선

@@ -2,6 +2,11 @@ package dal.tool.cli;
 
 
 
+/**
+ * CLI 명령어 인자 파싱 추상 클래스
+ * @author 권영달
+ *
+ */
 public abstract class AbstractArguments {
 
     protected String cmdLine = null;

@@ -4,7 +4,8 @@ import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.gui2.TextBox;
 
 /**
- * Inserts clipboard or other text into a {@link TextBox} at the caret.
+ * 클립보드 등 외부 텍스트를 TextBox 캐럿 위치에 삽입한다.
+ *
  */
 public final class TuiTextPaste {
 

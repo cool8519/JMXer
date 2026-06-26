@@ -5,15 +5,15 @@ import com.googlecode.lanterna.TerminalTextUtils;
 import com.googlecode.lanterna.gui2.TextBox;
 
 /**
- * Scrollable text area inside an Output {@link TextBox}, matching Lanterna scrollbar layout.
+ * Output TextBox 안의 스크롤 가능 텍스트 영역. Lanterna 스크롤바 배치 규칙과 맞춘다.
+ *
  */
 final class OutputTextBoxViewport {
 
 	private OutputTextBoxViewport() {}
 
 	/**
-	 * Visible content size after vertical/horizontal scrollbars (same rules as
-	 * {@link TextBox.DefaultTextBoxRenderer#drawComponent}).
+	 * 세로/가로 스크롤바를 뺀 뒤 보이는 콘텐츠 크기(TextBox.DefaultTextBoxRenderer.drawComponent와 동일 규칙).
 	 */
 	static TerminalSize contentAreaSize(TerminalSize paneSize, TextBox component) {
 		TerminalSize textArea = paneSize;
@@ -32,7 +32,6 @@ final class OutputTextBoxViewport {
 		return textArea;
 	}
 
-	/** Topmost view row so the last line is visible in the content area. */
 	static int maxViewTopRow(TextBox component, TerminalSize paneSize) {
 		TerminalSize textArea = contentAreaSize(paneSize, component);
 		int textRows = textArea.getRows();

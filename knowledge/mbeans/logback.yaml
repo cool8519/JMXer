@@ -1,0 +1,42 @@
+entries:
+  - match:
+      objectName: "ch.qos.logback.classic:Name=*,Type=ch.qos.logback.classic.jmx.JMXConfigurator"
+      className: "ch.qos.logback.classic.jmx.JMXConfiguratorMBean"
+    description: "Logback JMX configurator MBean."
+    attributes:
+      LoggerList:
+        description: "Returns the loggerList."
+      Statuses:
+        description: "Returns the statuses."
+    operations:
+      "getLoggerEffectiveLevel(java.lang.String)":
+        description: "Invokes getLoggerEffectiveLevel."
+        return: "Return type: String."
+        params:
+          - name: loggerName
+            type: java.lang.String
+      "getLoggerLevel(java.lang.String)":
+        description: "Invokes getLoggerLevel."
+        return: "Return type: String."
+        params:
+          - name: loggerName
+            type: java.lang.String
+      "reloadByFileName(java.lang.String)":
+        description: "Invokes reloadByFileName."
+        params:
+          - name: fileName
+            type: java.lang.String
+      "reloadByURL(java.lang.URL)":
+        description: "Invokes reloadByURL."
+        params:
+          - name: url
+            type: java.lang.URL
+      "reloadDefaultConfiguration()":
+        description: "Invokes reloadDefaultConfiguration."
+      "setLoggerLevel(java.lang.String,java.lang.String)":
+        description: "Sets the loggerLevel."
+        params:
+          - name: loggerName
+            type: java.lang.String
+          - name: levelStr
+            type: java.lang.String

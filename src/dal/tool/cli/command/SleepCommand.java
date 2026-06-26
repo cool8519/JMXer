@@ -1,11 +1,20 @@
 package dal.tool.cli.command;
 
 import dal.tool.cli.CommandExecutor;
+import dal.tool.cli.Logger;
 import dal.tool.cli.Logger.Level;
+import dal.tool.cli.SleepUiHooks;
 
+/**
+ * 지정 시간만큼 대기하는 SLEEP 명령
+ * @author 권영달
+ *
+ */
 public class SleepCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(SleepCommand.class, "SLEEP", "WAIT");
+
+	public static final String CANCELLED_MESSAGE = "Sleep cancelled.";
 
 	
 	public SleepCommand(String commandLine, CommandExecutor commandExecutor) {
@@ -42,11 +51,27 @@ public class SleepCommand extends Command {
         	return;
         }
         if(sleepMs > 0L) {
-            try {
-            	logln("Sleeping for " + sleepMs + " ms.");
-            	Thread.sleep(sleepMs);
-            } catch(InterruptedException ie) {}
+            logln("Sleeping for " + sleepMs + " ms.");
+            boolean completed;
+            if(Logger.isTuiActive() && !ScriptCommand.isNestedScriptExecution() && SleepUiHooks.hasHandler()) {
+            	completed = SleepUiHooks.waitForSleep(sleepMs);
+            } else {
+            	completed = waitWithoutTuiDialog(sleepMs);
+            }
+            if(!completed) {
+            	logln(Level.INFO, CANCELLED_MESSAGE);
+            }
         }
+	}
+
+	private static boolean waitWithoutTuiDialog(long sleepMs) {
+		try {
+			Thread.sleep(sleepMs);
+			return true;
+		} catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return false;
+		}
 	}
 
 }

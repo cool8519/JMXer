@@ -4,11 +4,12 @@ import dal.tool.cli.Logger;
 import dal.tool.trace.jmxer.JMXControl;
 
 /**
- * TUI handler for JMX connection loss when automatic reconnect failed.
- * Registered from {@link dal.tool.trace.jmxer.tui.TuiBootstrap}.
+ * 자동 재연결에 실패한 JMX 연결 끊김을 TUI에서 처리한다.
+ * TuiBootstrap에서 핸들러를 등록한다.
  */
 public final class JmxTuiConnectionLossHandler {
 
+	/** TUI 연결 끊김 이벤트 콜백 */
 	public interface Handler {
 		void onConnectionLoss(String message);
 	}
@@ -62,7 +63,7 @@ public final class JmxTuiConnectionLossHandler {
 	}
 
 	/**
-	 * @return {@code true} when the TUI handler consumed the event
+	 * TUI 핸들러가 이벤트를 처리했으면 true
 	 */
 	public static boolean notifyUnrecoverableLoss(String message) {
 		if(!Logger.isTuiActive() || JMXControl.isOfflineSession) {

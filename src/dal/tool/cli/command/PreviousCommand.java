@@ -4,9 +4,17 @@ import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.History;
 
 
+/**
+ * 히스토리에서 이전 명령을 다시 실행하는 PREVIOUS 명령
+ * @author 권영달
+ *
+ */
 public class PreviousCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(PreviousCommand.class, "/", "PRE[VIOUS]");
+
+	public static final String SCRIPT_NOT_AVAILABLE_MESSAGE =
+		"PREVIOUS is not available inside SCRIPT.";
 
 
 	public PreviousCommand(String commandLine, CommandExecutor commandExecutor) {

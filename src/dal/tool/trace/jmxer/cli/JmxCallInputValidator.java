@@ -13,14 +13,14 @@ import dal.tool.util.TypeUtil;
 import dal.tool.util.jmx.JMXHelper;
 
 /**
- * Validates CALL attribute values and operation arguments before JMX invoke (CLI and TUI).
+ * CALL 속성 값·오퍼레이션 인자를 JMX 호출 전에 검증한다(CLI/TUI 공통).
  */
 public final class JmxCallInputValidator {
 
 	private JmxCallInputValidator() {}
 
 	/**
-	 * @return error message, or null if valid or validation does not apply
+	 * @return 오류 메시지, 유효하거나 검증 대상이 아니면 null
 	 */
 	public static String validate(MBeanServerConnection conn, ObjectName oName, String targetName, String[] targetValues) {
 		if(conn == null || oName == null || targetName == null) {
@@ -95,9 +95,6 @@ public final class JmxCallInputValidator {
 		return null;
 	}
 
-	/**
-	 * Target and value lines for mutating-call confirmation (CLI/TUI).
-	 */
 	public static String formatCallConfirmationDetails(MBeanServerConnection conn, ObjectName oName, String targetName,
 			String[] targetValues) throws Exception {
 		if(conn == null || oName == null || targetName == null) {

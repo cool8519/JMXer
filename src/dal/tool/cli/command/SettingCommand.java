@@ -3,6 +3,11 @@ package dal.tool.cli.command;
 import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Settings;
 
+/**
+ * 공통 환경설정을 변경하는 SET 명령
+ * @author 권영달
+ *
+ */
 public class SettingCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(SettingCommand.class, "SET");

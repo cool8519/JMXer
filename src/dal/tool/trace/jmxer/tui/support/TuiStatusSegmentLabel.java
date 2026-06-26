@@ -13,10 +13,15 @@ import com.googlecode.lanterna.gui2.ComponentRenderer;
 import com.googlecode.lanterna.gui2.TextGUIGraphics;
 
 /**
- * Single-line status label that can render multiple colored text segments.
+ * 여러 색상 세그먼트로 한 줄 상태 라벨을 렌더링한다.
+ *
  */
 public final class TuiStatusSegmentLabel extends AbstractComponent<TuiStatusSegmentLabel> {
 
+	/**
+	 * 상태 라벨의 텍스트·전경색 한 조각.
+	 *
+	 */
 	public static final class Segment {
 		private final String text;
 		private final TextColor foreground;

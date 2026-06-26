@@ -2,6 +2,10 @@ package dal.tool.trace.jmxer.cli.data;
 
 import java.util.List;
 
+/**
+ * 형제·자식 포인터로 연결된 일반 트리
+ *
+ */
 public class Tree<E> {
 
 	private TreeNode<E> root;

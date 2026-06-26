@@ -13,9 +13,20 @@ import dal.tool.cli.History;
 import dal.tool.cli.Logger.Level;
 
 
+/**
+ * 외부 에디터로 명령 줄을 편집하는 EDIT 명령
+ * @author 권영달
+ *
+ */
 public class EditCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(EditCommand.class, "ED[IT]");
+
+	public static final String TUI_NOT_AVAILABLE_MESSAGE =
+		"EDIT is not available in TUI Interface Mode.";
+
+	public static final String SCRIPT_NOT_AVAILABLE_MESSAGE =
+		"EDIT is not available inside SCRIPT.";
 
 
 	public EditCommand(String commandLine, CommandExecutor commandExecutor) {

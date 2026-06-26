@@ -16,10 +16,15 @@ import com.googlecode.lanterna.gui2.dialogs.DialogWindow;
 import dal.tool.trace.jmxer.cli.JmxTuiConnectionLossHandler;
 
 /**
- * Connection Lost dialog with explicit Reconnect / Close actions (not {@code MessageDialogButton}).
+ * 연결 끊김 시 Reconnect/Close 버튼을 제공하는 다이얼로그.
+ *
  */
 public final class TuiConnectionLossDialog extends DialogWindow {
 
+	/**
+	 * 연결 끊김 다이얼로그 사용자 선택.
+	 *
+	 */
 	public enum Choice {
 		RECONNECT,
 		CLOSE

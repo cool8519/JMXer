@@ -1,0 +1,152 @@
+entries:
+  - match:
+      objectName: "org.hibernate.core:serviceRole=org.hibernate.stat.Statistics,*"
+      className: "org.hibernate.stat.Statistics"
+    description: "Hibernate ORM runtime statistics management interface."
+    attributes:
+      CloseStatementCount:
+        description: "The number of prepared statements that were released."
+      CollectionFetchCount:
+        description: "The global number of collections fetched."
+      CollectionLoadCount:
+        description: "The global number of collections loaded."
+      CollectionRecreateCount:
+        description: "The global number of collections removed. long getCollectionRemoveCount(); The global number of collections recreated."
+      CollectionRoleNames:
+        description: "The names of all collection roles."
+      CollectionUpdateCount:
+        description: "The global number of collections updated."
+      ConnectCount:
+        description: "The global number of connections requested by sessions. The actual number of connections used may be much smaller, assuming that a connection pool is in use."
+      EntityDeleteCount:
+        description: "The global number of entity deletes."
+      EntityFetchCount:
+        description: "The global number of entity fetches."
+      EntityInsertCount:
+        description: "The global number of entity inserts."
+      EntityLoadCount:
+        description: "The global number of entity loads."
+      EntityNames:
+        description: "The names of all entities."
+      EntityUpdateCount:
+        description: "The global number of entity updates."
+      FlushCount:
+        description: "The global number of flush operations executed, including automatic (either manual or automatic)."
+      NaturalIdCacheHitCount:
+        description: "The global number of cached natural id lookups successfully retrieved from the cache."
+      NaturalIdCacheMissCount:
+        description: "The global number of cached natural id lookups not found in the cache."
+      NaturalIdCachePutCount:
+        description: "The global number of cacheable natural id lookups put in cache."
+      NaturalIdQueryExecutionCount:
+        description: "The global number of natural id queries executed against the database."
+      NaturalIdQueryExecutionMaxTime:
+        description: "The global maximum query time for natural id queries executed against the database."
+      NaturalIdQueryExecutionMaxTimeEntity:
+        description: "The entity name for the maximum natural id query time."
+      NaturalIdQueryExecutionMaxTimeRegion:
+        description: "The region for the maximum natural id query time."
+      OptimisticFailureCount:
+        description: "The number of Hibernate StaleObjectStateExceptions or JPA OptimisticLockExceptions that have occurred."
+      PrepareStatementCount:
+        description: "The number of prepared statements that were acquired."
+      Queries:
+        description: "All executed query strings. The maximum number of queries tracked by the Hibernate statistics is determined by the configuration property {@value org.hibernate.cfg.AvailableSettings#QUERY_STATISTICS_MAX_SIZE}."
+      QueryCacheHitCount:
+        description: "The global number of cached queries successfully retrieved from the cache."
+      QueryCacheMissCount:
+        description: "The global number of cached queries not not found in the cache."
+      QueryCachePutCount:
+        description: "The global number of cacheable queries put in cache."
+      QueryExecutionCount:
+        description: "The global number of executed queries."
+      QueryExecutionMaxTime:
+        description: "The time in milliseconds of the slowest query."
+      QueryExecutionMaxTimeQueryString:
+        description: "The query string for the slowest query."
+      QueryPlanCacheHitCount:
+        description: "The global number of query plans successfully retrieved from cache."
+      QueryPlanCacheMissCount:
+        description: "The global number of query plans lookups not found in cache."
+      SecondLevelCacheHitCount:
+        description: "The global number of cacheable entities and collections successfully retrieved from the cache."
+      SecondLevelCacheMissCount:
+        description: "The global number of cacheable entities collections not found in the cache and loaded from the database."
+      SecondLevelCachePutCount:
+        description: "The global number of cacheable entities and collections put in the cache."
+      SecondLevelCacheRegionNames:
+        description: "All second-level cache region names. For backwards compatibility, this method returns just the names of regions storing domain data, not query result cache regions."
+      SessionCloseCount:
+        description: "The global number of sessions closed."
+      SessionOpenCount:
+        description: "The global number of sessions opened."
+      SlowQueries:
+        description: "If {@value org.hibernate.cfg.AvailableSettings#LOG_SLOW_QUERY} is enabled, a map from the SQL query to the maximum execution time in milliseconds."
+      Start:
+        description: "The {@link Instant} at which this instance of Statistics was created, or since the last time {@link #clear()} was called."
+      StartTime:
+        description: "The {@linkplain Instant#toEpochMilli()} milliseconds since the initial creation of this instance, or since the last time {@link #clear()} was called."
+      StatisticsEnabled:
+        description: "Exposes statistics collected from all sessions belonging to a particular {@link org.hibernate.SessionFactory}. Collection of statistics is enabled if the configuration property {@value org.hibernate.cfg.AvailableSettings#GENERATE_STATISTICS} is set to true. It may be dynamically enabled or disabled at runtime by calling {@link #setStatisticsEnabled(boolean)}."
+      SuccessfulTransactionCount:
+        description: "The number of transactions we know to have been successful."
+      TransactionCount:
+        description: "The number of transactions we know to have completed."
+      UpdateTimestampsCacheHitCount:
+        description: "The global number of timestamps successfully retrieved from cache."
+      UpdateTimestampsCacheMissCount:
+        description: "The global number of timestamp requests that were not found in the cache."
+      UpdateTimestampsCachePutCount:
+        description: "The global number of timestamps put in cache."
+    operations:
+      "clear()":
+        description: "Reset all statistics."
+      "getCacheRegionStatistics(java.lang.String)":
+        description: "Obtain the statistics for either a domain data or query result cache region. This method checks both, preferring the domain data region if there is one. Think of it as a cascading check to: {@link #getDomainDataRegionStatistics} {@link #getQueryRegionStatistics} Note that null is returned instead of throwing an exception when no region exists with the given name."
+        return: "Return type: CacheRegionStatistics."
+        params:
+          - name: regionName
+            type: java.lang.String
+      "getCollectionStatistics(java.lang.String)":
+        description: "Obtain the statistics for the collection with the given role."
+        return: "Return type: CollectionStatistics."
+        params:
+          - name: role
+            type: java.lang.String
+      "getDomainDataRegionStatistics(java.lang.String)":
+        description: "Obtain the second-level cache statistics for the given cache region."
+        return: "Return type: CacheRegionStatistics."
+        params:
+          - name: regionName
+            type: java.lang.String
+      "getEntityStatistics(java.lang.String)":
+        description: "Obtain the statistics for the entity with the given name."
+        return: "Return type: EntityStatistics."
+        params:
+          - name: entityName
+            type: java.lang.String
+      "getNaturalIdStatistics(java.lang.String)":
+        description: "Obtain the natural id resolution statistics for the entity type with the given name."
+        return: "Return type: NaturalIdStatistics."
+        params:
+          - name: entityName
+            type: java.lang.String
+      "getQueryRegionStatistics(java.lang.String)":
+        description: "Obtain the second-level cache statistics for the given query cache region."
+        return: "Return type: CacheRegionStatistics."
+        params:
+          - name: regionName
+            type: java.lang.String
+      "getQueryStatistics(java.lang.String)":
+        description: "Obtain the query statistics for the given query string."
+        return: "Return type: QueryStatistics."
+        params:
+          - name: queryString
+            type: java.lang.String
+      "logSummary()":
+        description: "Log the main statistics at level INFO."
+      "setStatisticsEnabled(boolean)":
+        description: "Enable or disable statistics collection."
+        params:
+          - name: enabled
+            type: boolean

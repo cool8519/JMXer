@@ -6,6 +6,10 @@ import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxSettings;
 
+/**
+ * JMXer SET 명령(JMX·Thread·Record 설정)
+ *
+ */
 public class JmxSettingCommand extends SettingCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(JmxSettingCommand.class, "SET");
@@ -25,7 +29,7 @@ public class JmxSettingCommand extends SettingCommand {
 		if(JMXControl.isOfflineSession) {
 	        logln("");
 	        logln(" Following is the list of available record variable.");
-	        logln("     RECORD_VIEW_MODE - record view mode (NO_REQUEST_WAIT, FULL)");
+	        logln("     DUMP_STACK_FILTER - dump stack filter for RECORD VIEW (NO_REQUEST_WAIT, FULL)");
 	        logln("     SHOW_EMPTY_THREAD - show empty thread in record view (ON, OFF)");
 			return;
 		}
@@ -38,7 +42,7 @@ public class JmxSettingCommand extends SettingCommand {
         logln("     STACKTRACE_TARGET - thread stacktrace target (SELECTED, ACTIVE)");
         logln("");
         logln(" Following is the list of available record variable.");
-        logln("     RECORD_VIEW_MODE - record view mode (NO_REQUEST_WAIT, FULL)");
+        logln("     DUMP_STACK_FILTER - dump stack filter for RECORD VIEW (NO_REQUEST_WAIT, FULL)");
         logln("     SHOW_EMPTY_THREAD - show empty thread in record view (ON, OFF)");
 	}
 
@@ -65,8 +69,8 @@ public class JmxSettingCommand extends SettingCommand {
             	}
             } else if(variable.equalsIgnoreCase("pretty_print")) {
             	settings.setPrettyPrintInResult(value);
-            } else if(variable.equalsIgnoreCase("record_view_mode")) {
-            	settings.setRecordViewMode(value);
+            } else if(variable.equalsIgnoreCase("dump_stack_filter")) {
+            	settings.setDumpStackFilter(value);
             } else if(variable.equalsIgnoreCase("show_empty_thread")) {
             	settings.setShowEmptyThreadInRecordView(value);
             } else if(variable.equalsIgnoreCase("stacktrace_target")) {

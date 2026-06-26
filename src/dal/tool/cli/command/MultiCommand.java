@@ -6,6 +6,11 @@ import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Logger.Level;
 import dal.tool.util.StringUtil;
 
+/**
+ * 세미콜론으로 연결된 다중 명령 실행
+ * @author 권영달
+ *
+ */
 public class MultiCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(MultiCommand.class);

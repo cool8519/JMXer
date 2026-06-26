@@ -7,7 +7,8 @@ import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.ThreadRowState;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.ThreadSnapshotEntry;
 
 /**
- * Column layout for the Thread UI mode list pane ({@code TID | STATE | CPU | MEM/s | NAME}).
+ * Thread UI 모드 목록 패널 열 배치(TID | STATE | CPU | MEM/s | NAME).
+ *
  */
 public final class ThreadPaneTableFormat {
 
@@ -17,6 +18,7 @@ public final class ThreadPaneTableFormat {
 	public static final String HEADER_STATE = "STATE";
 	public static final String HEADER_CPU = "CPU";
 	public static final String HEADER_MEM = "MEM/s";
+	public static final String HEADER_MEM_TOTAL = "MEM";
 	public static final String HEADER_NAME = "NAME";
 
 	public static final String CPU_UNAVAILABLE = "-1";
@@ -24,31 +26,17 @@ public final class ThreadPaneTableFormat {
 
 	public static final String CPU_DESTROYED_MARKER = "-";
 
-	/** Thread list row prefix width (cursor / created markers); must match renderer. */
 	public static final int HEADER_ROW_PREFIX_COLS = 3;
 
 	public static final String THREAD_ROW_PREFIX_NORMAL = "   ";
-	public static final String THREAD_ROW_PREFIX_CURSOR = "\u25b6  ";
-	/** Two spaces + {@code +}; exactly {@link #HEADER_ROW_PREFIX_COLS} terminal columns. */
+	public static final String THREAD_ROW_PREFIX_CURSOR = TuiListArrowPrefix.THREAD_CURSOR;
 	public static final String THREAD_ROW_PREFIX_CREATED = "  +";
-	public static final String THREAD_ROW_PREFIX_CREATED_CURSOR = "\u25b6 +";
+	public static final String THREAD_ROW_PREFIX_CREATED_CURSOR = TuiListArrowPrefix.THREAD_CREATED_CURSOR;
 
 	private static final String CPU_CORE_SUFFIX = "c";
 
-	/**
-	 * Fixed CPU column width.
-	 * <p>
-	 * Display is average logical-core usage over the refresh interval, with {@code c} suffix
-	 * (e.g. {@code 0c}, {@code 0.85c}, {@code 12c}). Unavailable values stay {@code -1} without suffix.
-	 */
 	public static final int CPU_COL_WIDTH = 5;
 
-	/**
-	 * Fixed MEM column width.
-	 * <p>
-	 * Display is binary (1024-based) rate using B/K/M/G/T as an integer (rounded),
-	 * and the formatted output is clamped to fit {@link #MEM_COL_WIDTH}.
-	 */
 	public static final int MEM_COL_WIDTH = 5;
 
 	public static final int STATE_COL_WIDTH = 5;
@@ -99,7 +87,6 @@ public final class ThreadPaneTableFormat {
 			return CPU_UNAVAILABLE;
 		}
 
-		// Keep within 5 columns: "X.XXc" below 10 cores, else up to "9999c".
 		if(cpuCores >= 9999.5d) {
 			return "9999" + CPU_CORE_SUFFIX;
 		}
@@ -110,31 +97,66 @@ public final class ThreadPaneTableFormat {
 			}
 			return String.valueOf(rounded) + CPU_CORE_SUFFIX;
 		}
-		// Rounds to 0.00 at two decimals (e.g. idle thread) → compact "0c".
 		if(cpuCores < 0.005d) {
 			return "0" + CPU_CORE_SUFFIX;
 		}
 		return String.format("%.2f", cpuCores) + CPU_CORE_SUFFIX;
 	}
 
+	public static String formatDumpCpuDisplay(boolean cpuValid, double totalCpuNanos) {
+		if(!cpuValid) {
+			return CPU_UNAVAILABLE;
+		}
+		if(Double.isNaN(totalCpuNanos) || Double.isInfinite(totalCpuNanos) || totalCpuNanos < 0d) {
+			return CPU_UNAVAILABLE;
+		}
+
+		String[] units = new String[] { "n", "u", "m", "s" };
+		double[] thresholds = new double[] { 1d, 1000d, 1000000d, 1000000000d };
+		int unitIdx = units.length - 1;
+		double v = totalCpuNanos;
+		for(int i = thresholds.length - 1; i >= 0; i--) {
+			if(totalCpuNanos >= thresholds[i]) {
+				unitIdx = i;
+				v = totalCpuNanos / thresholds[i];
+				break;
+			}
+		}
+
+		long rounded = Math.round(v);
+		if(rounded > 9999L) {
+			rounded = 9999L;
+		}
+		if(rounded < 0L) {
+			rounded = 0L;
+		}
+		return String.valueOf(rounded) + units[unitIdx];
+	}
+
+	public static String formatDumpMemDisplay(boolean memValid, double totalAllocatedBytes) {
+		return formatBinaryMagnitudeDisplay(memValid, totalAllocatedBytes);
+	}
+
 	public static String formatMemDisplay(boolean memValid, double memBytesPerSec) {
-		if(!memValid) {
+		return formatBinaryMagnitudeDisplay(memValid, memBytesPerSec);
+	}
+
+	private static String formatBinaryMagnitudeDisplay(boolean valid, double value) {
+		if(!valid) {
 			return MEM_UNAVAILABLE;
 		}
-		if(Double.isNaN(memBytesPerSec) || Double.isInfinite(memBytesPerSec) || memBytesPerSec < 0d) {
+		if(Double.isNaN(value) || Double.isInfinite(value) || value < 0d) {
 			return MEM_UNAVAILABLE;
 		}
 
-		// Binary (1024-based) rate units.
 		String[] units = new String[] { "B", "K", "M", "G", "T", "P", "E" };
 		int unitIdx = 0;
-		double v = memBytesPerSec;
+		double v = value;
 		while(v >= 1024d && unitIdx < units.length - 1) {
 			v /= 1024d;
 			unitIdx++;
 		}
 
-		// Keep within 5 columns: up to 4 digits + unit (e.g. "9999K").
 		long rounded = Math.round(v);
 		if(rounded > 9999L) {
 			rounded = 9999L;
@@ -164,25 +186,32 @@ public final class ThreadPaneTableFormat {
 	}
 
 	public static int computeCpuWidth(List<ThreadSnapshotEntry> entries) {
-		// Fixed to prevent CPU from expanding the pane.
 		return MIN_CPU_COL_WIDTH;
 	}
 
 	public static int computeMemWidth(List<ThreadSnapshotEntry> entries) {
-		// Fixed to prevent MEM from expanding the pane.
 		return MIN_MEM_COL_WIDTH;
 	}
 
 	public static String buildHeaderLine(int tidWidth, int cpuWidth, int memWidth) {
+		return buildHeaderLine(tidWidth, cpuWidth, memWidth, false);
+	}
+
+	public static String buildHeaderLine(int tidWidth, int cpuWidth, int memWidth, boolean dumpView) {
 		StringBuilder pad = new StringBuilder(HEADER_ROW_PREFIX_COLS);
 		for(int i = 0; i < HEADER_ROW_PREFIX_COLS; i++) {
 			pad.append(' ');
 		}
+		String memHeader = dumpView ? HEADER_MEM_TOTAL : HEADER_MEM;
 		return pad.toString() + formatColumns(
-			HEADER_TID, HEADER_STATE, HEADER_CPU, HEADER_MEM, HEADER_NAME, tidWidth, cpuWidth, memWidth);
+			HEADER_TID, HEADER_STATE, HEADER_CPU, memHeader, HEADER_NAME, tidWidth, cpuWidth, memWidth);
 	}
 
 	public static String buildRowLine(ThreadSnapshotEntry entry, int tidWidth, int cpuWidth, int memWidth) {
+		return buildRowLine(entry, tidWidth, cpuWidth, memWidth, false);
+	}
+
+	public static String buildRowLine(ThreadSnapshotEntry entry, int tidWidth, int cpuWidth, int memWidth, boolean dumpView) {
 		if(entry == null) {
 			return formatDataRow(0L, "?", CPU_UNAVAILABLE, MEM_UNAVAILABLE, "", tidWidth, cpuWidth, memWidth);
 		}
@@ -190,8 +219,15 @@ public final class ThreadPaneTableFormat {
 		if(state == null || state.length() == 0) {
 			state = "?";
 		}
-		String cpu = formatCpuCell(entry);
-		String mem = formatMemDisplay(entry.isMemValid(), entry.getMemBytesPerSec());
+		String cpu;
+		String mem;
+		if(dumpView) {
+			cpu = formatDumpCpuDisplay(entry.isCpuValid(), entry.getCpuCores());
+			mem = formatDumpMemDisplay(entry.isMemValid(), entry.getMemBytesPerSec());
+		} else {
+			cpu = formatCpuCell(entry);
+			mem = formatMemDisplay(entry.isMemValid(), entry.getMemBytesPerSec());
+		}
 		String name = entry.getThreadName() == null ? "" : entry.getThreadName();
 		return formatDataRow(entry.getThreadId(), state, cpu, mem, name, tidWidth, cpuWidth, memWidth);
 	}

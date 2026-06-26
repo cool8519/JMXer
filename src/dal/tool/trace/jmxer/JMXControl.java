@@ -94,7 +94,6 @@ public class JMXControl {
     	String[] auth = null;
     	
     	if(connectType == ConnectType.ATTACH_BY_PID || connectType == ConnectType.ATTACH_BY_NAME || connectType == ConnectType.RMI_BY_ADDRESS) {
-    		// online session
     		int idxOffset = 0;
     		if(args.length > 1 && (args[1].startsWith("AUTH=") || args[1].startsWith("auth="))) {
     			auth = args[1].substring(5).split("/");
@@ -109,20 +108,16 @@ public class JMXControl {
     		promptString = JMXerConstant.JMXER_PROMPT_STRING;
 			isPromptMode = (args.length == 1+idxOffset); 
     	} else if(connectType == ConnectType.NOT_SET && isOfflineSession) {
-    		// offline session
     		for(int i = 1; i < args.length; i++) {
     			commandLine += args[i] + " ";
     		}
     		promptString = JMXerConstant.JMXER_PROMPT_NOT_CONNECTED_STRING;
     		isPromptMode = (args.length == 1);
     	} else {
-    		// unknown
 			Logger.logln(Logger.Level.ERROR, "Invalid argument '" + target[0] + "'");
 			System.exit(-1);
     	}
     	
-    	// Guard: Interface Mode flags and inline command (CommandLine_To_Execute) are mutually exclusive.
-    	// `isPromptMode == false` means user provided inline commands after the session target.
     	if(useTui && useCli) {
     		Logger.logln(Logger.Level.ERROR, "Invalid arguments: '--cli' and '--tui' cannot be used together.");
     		printUsageAndExit(true, args);
@@ -182,14 +177,6 @@ public class JMXControl {
     	}
     }
 
-	
-	/**
-     * 명령어를 수행한다.
-	 * @param mbeanConnector 접속된 JVM의 MBeanConnector 객체
-	 * @param prompt 프롬프트 문자열
-	 * @param commandLine 수행할 명령어 문자열 
-     * @throws Exception 수행 과정에서 발생한 모든 Exception
-	 */
 	private static void executeCommand(MBeanConnector mbeanConnector, String prompt, String commandLine) throws Exception {
 		JmxCommandExecutor executor = new JmxCommandExecutor(mbeanConnector);
 		executor.setPrompt(prompt);
@@ -197,13 +184,6 @@ public class JMXControl {
 	}
 
 
-	/**
-     * 대화형 모드를 수행한다. 
-	 * @param mbeanConnector 접속된 JVM의 MBeanConnector 객체 
-	 * @param prompt 프롬프트 문자열
-	 * @param commandLine 프롬프트 기동 전에 미리 수행할 명령어 문자열 
-     * @throws Exception 수행 과정에서 발생한 모든 Exception
-	 */
 	private static void executeCommandInPrompt(MBeanConnector mbeanConnector, String prompt, String commandLine) throws Exception {
 		JmxCommandExecutor executor = new JmxCommandExecutor(mbeanConnector);
 		executor.setPrompt(prompt);
@@ -211,13 +191,6 @@ public class JMXControl {
 		executor.startPrompt();
 	}
 
-	
-	/**
-     * 대화형 모드를 수행한다.
-	 * @param mbeanConnector 접속된 JVM의 MBeanConnector 객체 
-	 * @param prompt 프롬프트 문자열
-     * @throws Exception 수행 과정에서 발생한 모든 Exception
-	 */
 	private static void executeCommandInPrompt(MBeanConnector mbeanConnector, String prompt) throws Exception {
 		JmxCommandExecutor executor = new JmxCommandExecutor(mbeanConnector);
 		executor.setPrompt(prompt);
@@ -225,11 +198,6 @@ public class JMXControl {
 	}
 
 
-    /**
-     * Usage를 출력하고 프로세스를 종료한다.
-     * @param isError 에러 여부
-     * @param args 메인메소드에서 전달받은 argument 배열
-     */
 	private static void printUsageAndExit(boolean isError, String[] args) {
     	if(isError) {
     		Logger.logln(Logger.Level.ERROR, "Invalid Arguments : size=" + args.length);

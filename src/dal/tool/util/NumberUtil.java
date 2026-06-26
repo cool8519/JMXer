@@ -4,6 +4,11 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Random;
 
+/**
+ * 숫자 포맷 및 변환을 위한 Util 클래스
+ * @author 권영달
+ *
+ */
 public class NumberUtil {
 
 	public static DecimalFormat DF_NO_DOT = new DecimalFormat("#");

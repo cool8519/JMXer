@@ -1,0 +1,319 @@
+entries:
+  - match:
+      objectName: "quartz:type=QuartzScheduler,name=*,instanceId=*"
+      className: "org.quartz.core.jmx.QuartzSchedulerMBean"
+    description: "Quartz scheduler management interface."
+    attributes:
+      AllJobDetails:
+        description: "Returns the allJobDetails."
+      AllTriggers:
+        description: "Returns the allTriggers."
+      CalendarNames:
+        description: "Returns the calendarNames."
+      CurrentlyExecutingJobs:
+        description: "Returns the currentlyExecutingJobs."
+      JobGroupNames:
+        description: "Returns the jobGroupNames."
+      JobStoreClassName:
+        description: "Returns the jobStoreClassName."
+      JobsCompletedMostRecentSample:
+        description: "Returns the jobsCompletedMostRecentSample."
+      JobsExecutedMostRecentSample:
+        description: "Returns the jobsExecutedMostRecentSample."
+      JobsScheduledMostRecentSample:
+        description: "Returns the jobsScheduledMostRecentSample."
+      PausedTriggerGroups:
+        description: "Returns the pausedTriggerGroups."
+      PerformanceMetrics:
+        description: "Returns the performanceMetrics."
+      SampledStatisticsEnabled:
+        description: "Tests whether sampledStatisticsEnabled."
+      SchedulerInstanceId:
+        description: "Returns the schedulerInstanceId."
+      SchedulerName:
+        description: "Returns the schedulerName."
+      Shutdown:
+        description: "Tests whether shutdown."
+      StandbyMode:
+        description: "Tests whether standbyMode."
+      Started:
+        description: "Tests whether started."
+      ThreadPoolClassName:
+        description: "Returns the threadPoolClassName."
+      ThreadPoolSize:
+        description: "Returns the threadPoolSize."
+      TriggerGroupNames:
+        description: "Returns the triggerGroupNames."
+      Version:
+        description: "Returns the version."
+    operations:
+      "addJob(java.lang.Map,boolean)":
+        description: "Adds a durable job described by abstractJobInfo, which must contain the fully-qualified JobDetail class name under the key 'jobDetailClass."
+        params:
+          - name: abstractJobInfo
+            type: java.lang.Map
+          - name: replace
+            type: boolean
+      "addJob(javax.management.openmbean.CompositeData,boolean)":
+        description: "Invokes addJob."
+        params:
+          - name: jobDetail
+            type: javax.management.openmbean.CompositeData
+          - name: replace
+            type: boolean
+      "clear()":
+        description: "Invokes clear."
+      "deleteCalendar(java.lang.String)":
+        description: "Invokes deleteCalendar."
+        params:
+          - name: name
+            type: java.lang.String
+      "deleteJob(java.lang.String,java.lang.String)":
+        description: "Invokes deleteJob."
+        return: "Return type: boolean."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroupName
+            type: java.lang.String
+      "getJobDetail(java.lang.String,java.lang.String)":
+        description: "Invokes getJobDetail."
+        return: "Return type: CompositeData."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroupName
+            type: java.lang.String
+      "getJobNames(java.lang.String)":
+        description: "Invokes getJobNames."
+        return: "Return type: List ."
+        params:
+          - name: groupName
+            type: java.lang.String
+      "getTrigger(java.lang.String,java.lang.String)":
+        description: "Invokes getTrigger."
+        return: "Return type: CompositeData."
+        params:
+          - name: triggerName
+            type: java.lang.String
+          - name: triggerGroupName
+            type: java.lang.String
+      "getTriggerNames(java.lang.String)":
+        description: "Invokes getTriggerNames."
+        return: "Return type: List ."
+        params:
+          - name: triggerGroupName
+            type: java.lang.String
+      "getTriggerState(java.lang.String,java.lang.String)":
+        description: "Invokes getTriggerState."
+        return: "Return type: String."
+        params:
+          - name: triggerName
+            type: java.lang.String
+          - name: triggerGroupName
+            type: java.lang.String
+      "getTriggersOfJob(java.lang.String,java.lang.String)":
+        description: "Invokes getTriggersOfJob."
+        return: "Return type: List ."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroupName
+            type: java.lang.String
+      "interruptJob(java.lang.String)":
+        description: "Invokes interruptJob."
+        return: "Return type: boolean."
+        params:
+          - name: fireInstanceId
+            type: java.lang.String
+      "interruptJob(java.lang.String,java.lang.String)":
+        description: "Invokes interruptJob."
+        return: "Return type: boolean."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroupName
+            type: java.lang.String
+      "pauseAllTriggers()":
+        description: "Invokes pauseAllTriggers."
+      "pauseJob(java.lang.String,java.lang.String)":
+        description: "Invokes pauseJob."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: groupName
+            type: java.lang.String
+      "pauseJobGroup(java.lang.String)":
+        description: "Invokes pauseJobGroup."
+        params:
+          - name: jobGroup
+            type: java.lang.String
+      "pauseJobsAll()":
+        description: "Pause all jobs whose group is anything."
+      "pauseJobsContaining(java.lang.String)":
+        description: "Pause all jobs whose group contains jobGroupToken."
+        params:
+          - name: jobGroupToken
+            type: java.lang.String
+      "pauseJobsEndingWith(java.lang.String)":
+        description: "Pause all jobs whose group ends with jobGroupSuffix."
+        params:
+          - name: jobGroupSuffix
+            type: java.lang.String
+      "pauseJobsStartingWith(java.lang.String)":
+        description: "Pause all jobs whose group starts with jobGroupPrefix."
+        params:
+          - name: jobGroupPrefix
+            type: java.lang.String
+      "pauseTrigger(java.lang.String,java.lang.String)":
+        description: "Invokes pauseTrigger."
+        params:
+          - name: triggerName
+            type: java.lang.String
+          - name: triggerGroupName
+            type: java.lang.String
+      "pauseTriggerGroup(java.lang.String)":
+        description: "Invokes pauseTriggerGroup."
+        params:
+          - name: triggerGroup
+            type: java.lang.String
+      "pauseTriggersAll()":
+        description: "Pause all triggers whose group is anything."
+      "pauseTriggersContaining(java.lang.String)":
+        description: "Pause all triggers whose group contains triggerGroupToken."
+        params:
+          - name: triggerGroupToken
+            type: java.lang.String
+      "pauseTriggersEndingWith(java.lang.String)":
+        description: "Pause all triggers whose group ends with triggerGroupSuffix."
+        params:
+          - name: suffix
+            type: java.lang.String
+      "pauseTriggersStartingWith(java.lang.String)":
+        description: "Pause all triggers whose group starts with triggerGroupPrefix."
+        params:
+          - name: triggerGroupPrefix
+            type: java.lang.String
+      "resumeAllTriggers()":
+        description: "Invokes resumeAllTriggers."
+      "resumeJob(java.lang.String,java.lang.String)":
+        description: "Invokes resumeJob."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroupName
+            type: java.lang.String
+      "resumeJobGroup(java.lang.String)":
+        description: "Resume all jobs in the given group."
+        params:
+          - name: jobGroup
+            type: java.lang.String
+      "resumeJobsAll()":
+        description: "Resume all jobs whose group is anything."
+      "resumeJobsContaining(java.lang.String)":
+        description: "Resume all jobs whose group contains jobGroupToken."
+        params:
+          - name: jobGroupToken
+            type: java.lang.String
+      "resumeJobsEndingWith(java.lang.String)":
+        description: "Resume all jobs whose group ends with jobGroupSuffix."
+        params:
+          - name: jobGroupSuffix
+            type: java.lang.String
+      "resumeJobsStartingWith(java.lang.String)":
+        description: "Resume all jobs whose group starts with jobGroupPrefix."
+        params:
+          - name: jobGroupPrefix
+            type: java.lang.String
+      "resumeTrigger(java.lang.String,java.lang.String)":
+        description: "Invokes resumeTrigger."
+        params:
+          - name: triggerName
+            type: java.lang.String
+          - name: triggerGroupName
+            type: java.lang.String
+      "resumeTriggerGroup(java.lang.String)":
+        description: "Invokes resumeTriggerGroup."
+        params:
+          - name: triggerGroup
+            type: java.lang.String
+      "resumeTriggersAll()":
+        description: "Resume all triggers whose group is anything."
+      "resumeTriggersContaining(java.lang.String)":
+        description: "Resume all triggers whose group contains triggerGroupToken."
+        params:
+          - name: triggerGroupToken
+            type: java.lang.String
+      "resumeTriggersEndingWith(java.lang.String)":
+        description: "Resume all triggers whose group ends with triggerGroupSuffix."
+        params:
+          - name: triggerGroupSuffix
+            type: java.lang.String
+      "resumeTriggersStartingWith(java.lang.String)":
+        description: "Resume all triggers whose group starts with triggerGroupPrefix."
+        params:
+          - name: triggerGroupPrefix
+            type: java.lang.String
+      "scheduleBasicJob(java.lang.Map,java.lang.Map)":
+        description: "Schedules a job using the given Cron/Simple triggerInfo. The triggerInfo and jobDetailInfo must contain well-known attribute values. TriggerInfo attributes: name, group, description, calendarName, priority, CronExpression | (startTime, endTime, repeatCount, repeatInterval) JobDetailInfo attributes: name, group, description, jobClass, jobDataMap, durability, shouldRecover."
+        params:
+          - name: jobDetailInfo
+            type: java.lang.Map
+          - name: triggerInfo
+            type: java.lang.Map
+      "scheduleJob(java.lang.Map,java.lang.Map)":
+        description: "Schedules an arbitrary job described by abstractJobInfo using a trigger specified by abstractTriggerInfo."
+        params:
+          - name: abstractJobInfo
+            type: java.lang.Map
+          - name: abstractTriggerInfo
+            type: java.lang.Map
+      "scheduleJob(java.lang.String,java.lang.String,java.lang.Map)":
+        description: "Schedules the specified job using a trigger described by abstractTriggerInfo, which must contain the fully-qualified trigger class name under the key 'triggerClass."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroup
+            type: java.lang.String
+          - name: abstractTriggerInfo
+            type: java.lang.Map
+      "scheduleJob(java.lang.String,java.lang.String,java.lang.String,java.lang.String)":
+        description: "Schedule an existing job with an existing trigger."
+        return: "Return type: Date."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroup
+            type: java.lang.String
+          - name: triggerName
+            type: java.lang.String
+          - name: triggerGroup
+            type: java.lang.String
+      "setSampledStatisticsEnabled(boolean)":
+        description: "Sets the sampledStatisticsEnabled."
+        params:
+          - name: enabled
+            type: boolean
+      "shutdown()":
+        description: "Invokes shutdown."
+      "standby()":
+        description: "Invokes standby."
+      "start()":
+        description: "Invokes start."
+      "triggerJob(java.lang.String,java.lang.String,java.lang.Map)":
+        description: "Invokes triggerJob."
+        params:
+          - name: jobName
+            type: java.lang.String
+          - name: jobGroupName
+            type: java.lang.String
+          - name: jobDataMap
+            type: java.lang.Map
+      "unscheduleJob(java.lang.String,java.lang.String)":
+        description: "Invokes unscheduleJob."
+        return: "Return type: boolean."
+        params:
+          - name: triggerName
+            type: java.lang.String
+          - name: triggerGroup
+            type: java.lang.String

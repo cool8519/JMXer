@@ -1,0 +1,166 @@
+entries:
+  - match:
+      objectName: "org.apache.logging.log4j2:type=StatusLogger"
+      className: "org.apache.logging.log4j.core.jmx.StatusLoggerAdminMBean"
+    description: "Log4j 2 status logger administration MBean."
+    attributes:
+      ContextName:
+        description: "Returns the name of the LoggerContext that the StatusLogger is associated with."
+      Level:
+        description: "Returns the StatusLogger level as a String."
+      ObjectName:
+        description: "The MBean interface for monitoring and managing the StatusLogger."
+      StatusData:
+        description: "Returns a list with the most recent StatusData objects in the status history."
+      StatusDataHistory:
+        description: "Returns a string array with the most recent messages in the status history. The list has up to 200 entries by default but the length can be configured with system property 'log4j2.status.entries'."
+    operations:
+      "setLevel(java.lang.String)":
+        description: "Sets the StatusLogger level to the specified value."
+        params:
+          - name: level
+            type: java.lang.String
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=ContextSelector"
+      className: "org.apache.logging.log4j.core.jmx.ContextSelectorAdminMBean"
+    description: "Log4j 2 context selector administration MBean."
+    attributes:
+      ImplementationClassName:
+        description: "The MBean interface for monitoring and managing the ContextSelector."
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=*,component=Contexts,name=*"
+      className: "org.apache.logging.log4j.core.jmx.LoggerContextAdminMBean"
+    description: "Log4j 2 logger context administration MBean."
+    attributes:
+      ConfigClassName:
+        description: "Returns the class name of the Configuration of the instrumented LoggerContext."
+      ConfigFilter:
+        description: "Returns a string description of all Filters configured in the Configuration of the instrumented LoggerContext."
+      ConfigLocationUri:
+        description: "Returns the configuration location URI as a String."
+      ConfigName:
+        description: "Returns the name of the Configuration of the instrumented LoggerContext."
+      ConfigProperties:
+        description: "Returns a map with configured properties."
+      ConfigText:
+        description: "Returns the configuration text, which may be the contents of the configuration file or the text that was last set with a call to setConfigText. If reading a file, this method assumes the file's character encoding is UTF-8."
+      Name:
+        description: "Returns the name of the instrumented LoggerContext."
+      ObjectName:
+        description: "The MBean interface for monitoring and managing a LoggerContext."
+      Status:
+        description: "Returns the status of the instrumented LoggerContext."
+    operations:
+      "getConfigText(java.lang.String)":
+        description: "Returns the configuration text, which may be the contents of the configuration file or the text that was last set with a call to setConfigText."
+        return: "Return type: String."
+        params:
+          - name: charsetName
+            type: java.lang.String
+      "setConfigLocationUri(java.lang.String)":
+        description: "Sets the configuration location to the specified URI. This will cause the instrumented LoggerContext to reconfigure."
+        params:
+          - name: configLocation
+            type: java.lang.String
+      "setConfigText(java.lang.String,java.lang.String)":
+        description: "Sets the configuration text. This does not replace the contents of the configuration file, but does cause the instrumented LoggerContext to be reconfigured with the specified text."
+        params:
+          - name: configText
+            type: java.lang.String
+          - name: charsetName
+            type: java.lang.String
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=*,component=Loggers,name=*"
+      className: "org.apache.logging.log4j.core.jmx.LoggerConfigAdminMBean"
+    description: "Log4j 2 logger configuration administration MBean."
+    attributes:
+      Additive:
+        description: "Returns whether the instrumented LoggerConfig is additive."
+      AppenderRefs:
+        description: "Returns a String array with the appender refs configured for the instrumented LoggerConfig."
+      Filter:
+        description: "Returns a string description of all filters configured for the instrumented LoggerConfig."
+      IncludeLocation:
+        description: "Returns whether the instrumented LoggerConfig is configured to include location."
+      Level:
+        description: "Returns the LoggerConfig level as a String."
+      Name:
+        description: "The MBean interface for monitoring and managing a LoggerConfig."
+    operations:
+      "setAdditive(boolean)":
+        description: "Sets whether the instrumented LoggerConfig should be additive."
+        params:
+          - name: additive
+            type: boolean
+      "setLevel(java.lang.String)":
+        description: "Sets the LoggerConfig level to the specified value."
+        params:
+          - name: level
+            type: java.lang.String
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=*,component=Appenders,name=*"
+      className: "org.apache.logging.log4j.core.jmx.AppenderAdminMBean"
+    description: "Log4j 2 appender administration MBean."
+    attributes:
+      ErrorHandler:
+        description: "Returns the result of calling toString on the error handler of this appender, or 'null' if no error handler was set."
+      Filter:
+        description: "Returns a string description of all filters configured for the instrumented Appender."
+      IgnoreExceptions:
+        description: "Returns how exceptions thrown on the instrumented Appender are handled."
+      Layout:
+        description: "Returns the result of calling toString on the Layout object of the instrumented Appender."
+      Name:
+        description: "The MBean interface for monitoring and managing an Appender."
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=*,component=AsyncAppenders,name=*"
+      className: "org.apache.logging.log4j.core.jmx.AsyncAppenderAdminMBean"
+    description: "Log4j 2 async appender administration MBean."
+    attributes:
+      AppenderRefs:
+        description: "Returns a String array with the appender refs configured for the instrumented AsyncAppender."
+      Blocking:
+        description: "Returns true if this AsyncAppender will block when the queue is full, or false if events are dropped when the queue is full."
+      ErrorHandler:
+        description: "Returns the result of calling toString on the error handler of this appender, or 'null' if no error handler was set."
+      ErrorRef:
+        description: "Returns the name of the appender that any errors are logged to or null."
+      Filter:
+        description: "Returns a string description of all filters configured for the instrumented Appender."
+      IgnoreExceptions:
+        description: "Returns how exceptions thrown on the instrumented Appender are handled."
+      IncludeLocation:
+        description: "Returns true if this AsyncAppender will take a snapshot of the stack with every log event to determine the class and method where the logging call was made."
+      Layout:
+        description: "Returns the result of calling toString on the Layout object of the instrumented Appender."
+      Name:
+        description: "The MBean interface for monitoring and managing an Appender."
+      QueueCapacity:
+        description: "Returns the queueCapacity."
+      QueueRemainingCapacity:
+        description: "Returns the queueRemainingCapacity."
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=*,component=AsyncLoggerRingBuffer"
+      className: "org.apache.logging.log4j.core.jmx.RingBufferAdminMBean"
+    description: "Log4j 2 async logger ring buffer administration MBean."
+    attributes:
+      BufferSize:
+        description: "The MBean interface for monitoring and managing an LMAX Disruptor ring buffer."
+      RemainingCapacity:
+        description: "Returns the number of available slots in the ring buffer. May vary wildly between invocations."
+
+  - match:
+      objectName: "org.apache.logging.log4j2:type=*,component=AsyncLoggerConfigRingBuffer,name=*"
+      className: "org.apache.logging.log4j.core.jmx.RingBufferAdminMBean"
+    description: "Log4j 2 async logger ring buffer administration MBean."
+    attributes:
+      BufferSize:
+        description: "The MBean interface for monitoring and managing an LMAX Disruptor ring buffer."
+      RemainingCapacity:
+        description: "Returns the number of available slots in the ring buffer. May vary wildly between invocations."

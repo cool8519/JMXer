@@ -4,13 +4,19 @@ import dal.tool.cli.Logger;
 import dal.tool.cli.Settings;
 import dal.tool.trace.jmxer.JMXControl;
 
+/**
+ * JMXer CLI/TUI 세션 설정(MBean ObjectName, RECORD VIEW 필터 등)
+ *
+ */
 public class JmxSettings extends Settings {
 
-	public static enum RecordViewMode {
+	/** RECORD VIEW 스택 덤프 필터 모드 */
+	public static enum DumpStackFilter {
 		NO_REQUEST_WAIT,
 		FULL
 	}
 
+	/** THREAD STACKTRACE 대상(선택 스레드 / 활성 스레드) */
 	public static enum StacktraceTarget {
 		SELECTED,
 		ACTIVE
@@ -18,7 +24,7 @@ public class JmxSettings extends Settings {
 
 	protected String setOName = null;
 	protected boolean prettyPrint = true;	
-	protected RecordViewMode recordViewMode = RecordViewMode.NO_REQUEST_WAIT;
+	protected DumpStackFilter dumpStackFilter = DumpStackFilter.NO_REQUEST_WAIT;
 	protected boolean showEmptyThreadInRecordView = true;
 	protected StacktraceTarget stacktraceTarget = StacktraceTarget.SELECTED;
 	protected String reqEntryFile = ".jmxer/request-entries.txt";
@@ -53,28 +59,34 @@ public class JmxSettings extends Settings {
         }
 	}
 
-	/** Toggles {@code PRETTY_PRINT}; same field updated by {@code SET PRETTY_PRINT ON|OFF}. */
 	public boolean togglePrettyPrintInResult() {
 		prettyPrint = !prettyPrint;
 		return prettyPrint;
 	}
 
-	public RecordViewMode getRecordViewMode() {
-		return recordViewMode;
+	public DumpStackFilter getDumpStackFilter() {
+		return dumpStackFilter;
 	}
 
-	public boolean setRecordViewMode(String value) {
+	public boolean setDumpStackFilter(String value) {
 		if(value == null) {
 			Logger.logln("The value must be one of \"NO_REQUEST_WAIT,FULL\"");
 			return false;
 		}
 		try {
-			recordViewMode = RecordViewMode.valueOf(value.trim().toUpperCase());
+			dumpStackFilter = DumpStackFilter.valueOf(value.trim().toUpperCase());
 			return true;
 		} catch(IllegalArgumentException iae) {
 			Logger.logln("The value must be one of \"NO_REQUEST_WAIT,FULL\"");
 			return false;
 		}
+	}
+
+	public DumpStackFilter toggleDumpStackFilter() {
+		dumpStackFilter = (dumpStackFilter == DumpStackFilter.NO_REQUEST_WAIT)
+			? DumpStackFilter.FULL
+			: DumpStackFilter.NO_REQUEST_WAIT;
+		return dumpStackFilter;
 	}
 
 	public boolean showEmptyThreadInRecordView() {
@@ -88,6 +100,11 @@ public class JmxSettings extends Settings {
 		}
 		showEmptyThreadInRecordView = value.trim().equalsIgnoreCase("on");
 		return true;
+	}
+
+	public boolean toggleShowEmptyThreadInRecordView() {
+		showEmptyThreadInRecordView = !showEmptyThreadInRecordView;
+		return showEmptyThreadInRecordView;
 	}
 
 	public StacktraceTarget getStacktraceTarget() {
@@ -108,7 +125,6 @@ public class JmxSettings extends Settings {
 		}
 	}
 
-	/** Toggles {@code STACKTRACE_TARGET}; same field updated by {@code SET STACKTRACE_TARGET SELECTED|ACTIVE}. */
 	public StacktraceTarget toggleStacktraceTarget() {
 		stacktraceTarget = (stacktraceTarget == StacktraceTarget.SELECTED)
 			? StacktraceTarget.ACTIVE
@@ -120,7 +136,6 @@ public class JmxSettings extends Settings {
 		return reqEntryFile;
 	}
 
-	/** @see #reqEntryFile Empty value disables user-defined request-entry loading. */
 	public boolean setReqEntryFile(String value) {
 		if(value == null || value.trim().isEmpty()) {
 			reqEntryFile = "";
@@ -130,13 +145,12 @@ public class JmxSettings extends Settings {
 		return true;
 	}
 
-	
 	public void printSettings() {
 		super.printSettings();
 		Logger.logln("   - REQUEST_ENTRY_FILE\t" + reqEntryFile);
 		if(JMXControl.isOfflineSession) {
 			Logger.logln(" Record");
-			Logger.logln("   - RECORD_VIEW_MODE\t" + recordViewMode.name());
+			Logger.logln("   - DUMP_STACK_FILTER\t" + dumpStackFilter.name());
 			Logger.logln("   - SHOW_EMPTY_THREAD\t" + (showEmptyThreadInRecordView?"ON":"OFF"));
 			return;
 		}
@@ -146,7 +160,7 @@ public class JmxSettings extends Settings {
 		Logger.logln(" Thread");
 		Logger.logln("   - STACKTRACE_TARGET\t" + stacktraceTarget.name());
 		Logger.logln(" Record");
-		Logger.logln("   - RECORD_VIEW_MODE\t" + recordViewMode.name());
+		Logger.logln("   - DUMP_STACK_FILTER\t" + dumpStackFilter.name());
 		Logger.logln("   - SHOW_EMPTY_THREAD\t" + (showEmptyThreadInRecordView?"ON":"OFF"));
 	}
 

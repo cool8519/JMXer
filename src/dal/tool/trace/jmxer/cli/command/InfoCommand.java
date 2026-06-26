@@ -20,6 +20,10 @@ import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.util.DateUtil;
 import dal.tool.util.jmx.JMXUtil;
 
+/**
+ * JMXer INFO 명령(도구·대상 JVM 상태 출력)
+ *
+ */
 public class InfoCommand extends JmxCommand {
 
 	public static final CommandMeta commandMeta = new CommandMeta(InfoCommand.class, "INFO");

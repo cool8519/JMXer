@@ -3,17 +3,18 @@ package dal.tool.trace.jmxer.tui.output;
 import com.googlecode.lanterna.TerminalTextUtils;
 
 /**
- * Normalizes CLI-style output text for Lanterna TextBox display.
- * Terminals expand tab stops (typically every 8 columns); Lanterna treats {@code \t} as a single column.
+ * CLI 스타일 출력 텍스트를 Lanterna TextBox 표시에 맞게 정규화한다.
+ * 터미널은 탭 정지(보통 8열)를 확장하지만 Lanterna는 탭을 한 열로 취급한다.
+ *
  */
 public final class OutputTextFormat {
-	/** Same default tab width as typical POSIX/Windows consoles. */
+	/** 일반 POSIX/Windows 콘솔과 같은 기본 탭 너비. */
 	static final int TAB_STOP_WIDTH = 8;
 
 	private OutputTextFormat() {}
 
 	/**
-	 * Expands {@code \t} to spaces up to the next tab stop, using terminal column width for wide characters.
+	 * 탭을 다음 탭 정지까지 공백으로 확장한다. 넓은 문자는 터미널 열 너비로 계산한다.
 	 */
 	public static String expandTabs(String line) {
 		if(line == null || line.isEmpty()) {

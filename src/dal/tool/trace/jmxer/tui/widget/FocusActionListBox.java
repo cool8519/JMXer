@@ -10,10 +10,13 @@ import com.googlecode.lanterna.input.KeyType;
 import dal.tool.trace.jmxer.tui.support.BoxFocusManager;
 import dal.tool.trace.jmxer.tui.support.JmxTuiKeys;
 import dal.tool.trace.jmxer.tui.support.TuiF2Handler;
+import dal.tool.trace.jmxer.tui.support.TuiKeyAction;
+import dal.tool.trace.jmxer.tui.support.TuiKeyBindings;
 import dal.tool.trace.jmxer.tui.dialog.TuiDetailDialog;
 
 /**
- * MBeans/Features list with pane focus styling, F2 detail dialog (via {@link TuiF2Handler}), and selection-change hook.
+ * MBeans/Features 목록. 패널 포커스 스타일, Info 상세 대화상자, 선택 변경 훅을 제공한다.
+ *
  */
 public final class FocusActionListBox extends ActionListBox implements TuiF2Handler {
 	private final WindowBasedTextGUI gui;
@@ -22,6 +25,7 @@ public final class FocusActionListBox extends ActionListBox implements TuiF2Hand
 	private final String dialogTitle;
 	private volatile Runnable selectionChanged;
 	private volatile ListKeyHandler keyHandler;
+	private volatile TuiKeyAction activateKeyAction;
 
 	public FocusActionListBox(WindowBasedTextGUI gui, BoxFocusManager mgr, Panel pane, String dialogTitle) {
 		this.gui = gui;
@@ -36,6 +40,10 @@ public final class FocusActionListBox extends ActionListBox implements TuiF2Hand
 
 	public void setKeyHandler(ListKeyHandler handler) {
 		this.keyHandler = handler;
+	}
+
+	public void setActivateKeyAction(TuiKeyAction activateKeyAction) {
+		this.activateKeyAction = activateKeyAction;
 	}
 
 	@Override
@@ -67,18 +75,31 @@ public final class FocusActionListBox extends ActionListBox implements TuiF2Hand
 		if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
 			return Interactable.Result.HANDLED;
 		}
-		if(JmxTuiKeys.isCtrlSaveOutput(keyStroke) || JmxTuiKeys.isCtrlToggleOutputWrap(keyStroke)
+		if(JmxTuiKeys.isSaveOutputKey(keyStroke) || JmxTuiKeys.isCtrlToggleOutputWrap(keyStroke)
 				|| JmxTuiKeys.isCtrlTogglePrettyPrint(keyStroke)
 				|| JmxTuiKeys.isCtrlToggleThreadRefresh(keyStroke)) {
-			// Output-only shortcuts must not type 's'/'l' into other panes.
+			// Output 전용 단축키가 다른 패널에 문자로 입력되지 않도록 소비한다.
 			return Interactable.Result.HANDLED;
 		}
 		ListKeyHandler listKeyHandler = keyHandler;
 		if(listKeyHandler != null && listKeyHandler.handle(keyStroke)) {
 			return Interactable.Result.HANDLED;
 		}
-		if(JmxTuiKeys.isPlainSpaceKey(keyStroke)) {
-			// ActionListBox activates items on Space as well as Enter; only Enter may run the row action.
+		TuiKeyAction activateAction = activateKeyAction;
+		if(activateAction != null) {
+			if(TuiKeyBindings.current().matches(activateAction, keyStroke)) {
+				Runnable selected = getSelectedItem();
+				if(selected != null) {
+					selected.run();
+				}
+				return Interactable.Result.HANDLED;
+			}
+			if(keyStroke != null && keyStroke.getKeyType() == KeyType.Enter) {
+				return Interactable.Result.HANDLED;
+			}
+		}
+		if(JmxTuiKeys.isPlainSpaceKey(keyStroke) || JmxTuiKeys.isThreadToggleCurrentKey(keyStroke)) {
+			// Space로도 항목이 활성화되므로 바인딩된 동작 키 외 Enter·Space 기본 활성화를 막는다.
 			return Interactable.Result.HANDLED;
 		}
 		Interactable.Result r = super.handleKeyStroke(keyStroke);

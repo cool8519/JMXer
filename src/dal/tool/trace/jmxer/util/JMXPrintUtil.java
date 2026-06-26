@@ -23,6 +23,7 @@ import javax.management.remote.JMXConnector;
 
 import dal.tool.cli.Logger;
 import dal.tool.cli.util.PrintUtil;
+import dal.tool.trace.jmxer.knowledge.MBeanKnowledgeResolver;
 import dal.tool.trace.jmxer.cli.helper.RecordRequestWaitClassifier;
 import dal.tool.trace.jmxer.cli.helper.RequestEntryUserSignatures;
 import dal.tool.util.ObjectDataUtil;
@@ -45,9 +46,6 @@ public class JMXPrintUtil {
 
 	private static final String MBEAN_LIST_INDEX_PREFIX = " #";
 
-	/**
-	 * Width of the numeric index field for MBean list lines (1-based {@code maxIndex}).
-	 */
 	public static int mbeanListIndexFieldWidth(int maxIndex) {
 		if(maxIndex < 1) {
 			return 1;
@@ -56,8 +54,12 @@ public class JMXPrintUtil {
 	}
 
 	/**
-	 * One indexed MBean ObjectName line for the TUI MBean pane:
-	 * {@code " #<index> <objectName>"} with index width fixed from {@code maxIndex} (no {@code " - "} suffix).
+	 * TUI MBean 목록 한 줄을 인덱스와 함께 포맷한다.<br>
+	 * 예) maxIndex=99, index=3 → " # 3 java.lang:type=Runtime"
+	 * @param index 1부터 시작하는 목록 인덱스
+	 * @param maxIndex 목록 최대 인덱스(인덱스 필드 너비 결정)
+	 * @param objectName ObjectName 문자열
+	 * @return 포맷된 한 줄
 	 */
 	public static String formatMbeanListPaneLine(int index, int maxIndex, String objectName) {
 		int width = mbeanListIndexFieldWidth(maxIndex);
@@ -138,28 +140,25 @@ public class JMXPrintUtil {
 			Logger.logln("ObjectName : " + oName);
 			Logger.logln("");
 			if(target_name == null || "??".equals(target_name)) {
-				// print all info
 				printMBeanInfo(mbeanConn, null, null);
 			} else if("?".equals(target_name)) {
 				if(target_values != null) {
 					throw new Exception("To view all info, argument should be null. To invoke a operation, select a name of Operation or Attribute.");
 				}
-				// print all attributes and operations
 				printAttributeAndOperationList(mbeanConn, oName, null);
 			} else if("#".equals(target_name)) {
 				if(target_values != null) {
 					throw new Exception("To view all of attribute values, argument should be null. To invoke a operation, select a name of Operation or Attribute.");
 				}
-				// print all value
 				printAttributeValue(mbeanConn, oName, null);
 			} else {
 				if(inputOName == null) {
 					throw new Exception("To invoke a operation, select an ObjectName.");
 				}
-				// get attribute or invoke operation
 				Object opRet = JMXUtil.invokeAttributeOrOperation(mbeanConn, oName, target_name, target_values);
-				if(opRet != null) {
-					Logger.logln(ObjectDataUtil.toString(opRet, prettyPrint));
+				String output = JMXUtil.formatInvokeOutput(mbeanConn, oName, target_name, target_values, opRet, prettyPrint);
+				if(output != null) {
+					Logger.logln(output);
 				}
 			}
 			if(it.hasNext()) {
@@ -225,12 +224,16 @@ public class JMXPrintUtil {
 	}
 
 	/**
-	 * MBean ObjectName, description, and descriptor only (no attributes, operations, or other features).
+	 * MBean ObjectName·description·descriptor만 출력한다(attribute·operation 등은 제외).
+	 * @param mbeanConn MBeanServerConnection
+	 * @param oName MBean ObjectName
+	 * @throws Exception 수행 과정에서 발생한 모든 Exception
 	 */
 	public static void printMBeanOverview(MBeanServerConnection mbeanConn, ObjectName oName) throws Exception {
 		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
+		MBeanKnowledgeResolver resolver = MBeanKnowledgeResolver.getInstance();
 		Logger.logln("Name : " + oName);
-		Logger.logln("Description : " + mbeanInfo.getDescription());
+		Logger.logln("Description : " + resolver.resolveMBeanDescription(oName, mbeanInfo));
 		StringBuffer desc = new StringBuffer();
 		Descriptor mbeanDesc = mbeanInfo.getDescriptor();
 		for(String descName : mbeanDesc.getFieldNames()) {
@@ -241,29 +244,47 @@ public class JMXPrintUtil {
 	}
 
 	/**
-	 * Prints detail for a single attribute or operation only (no other feature sections).
+	 * 단일 attribute 또는 operation 상세만 출력한다.
+	 * @param mbeanConn MBeanServerConnection
+	 * @param oName MBean ObjectName
+	 * @param feature 출력할 feature
+	 * @throws Exception 수행 과정에서 발생한 모든 Exception
 	 */
 	public static void printMBeanFeatureDetail(MBeanServerConnection mbeanConn, ObjectName oName, MBeanFeatureInfo feature) throws Exception {
 		if(feature == null) {
 			Logger.logln("No feature selected.");
 			return;
 		}
+		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
+		MBeanKnowledgeResolver resolver = MBeanKnowledgeResolver.getInstance();
 		if(feature instanceof MBeanAttributeInfo) {
 			MBeanAttributeInfo info = (MBeanAttributeInfo) feature;
 			StringBuffer attrs = new StringBuffer();
 			attrs.append("\n - " + info.getName());
-			attrs.append("\n   . Description : " + info.getDescription());
+			attrs.append("\n   . Description : " + resolver.resolveAttributeDescription(oName, mbeanInfo, info));
 			attrs.append("\n   . Type        : " + JMXHelper.toTypeString(info.getType()));
 			attrs.append("\n   . Permission  : " + JMXHelper.getPermissionString(info));
+			String example = resolver.resolveAttributeExample(oName, mbeanInfo, info);
+			if(example != null && example.trim().length() > 0) {
+				attrs.append("\n   . Example     : " + example);
+			}
 			Logger.logln("Attributes : " + attrs);
 		} else if(feature instanceof MBeanOperationInfo) {
 			MBeanOperationInfo info = (MBeanOperationInfo) feature;
 			StringBuffer opers = new StringBuffer();
 			opers.append("\n - " + info.getName());
-			opers.append("\n   . Description : " + info.getDescription());
-			opers.append("\n   . Parameters  : " + JMXHelper.toNameAndTypeString(info.getSignature()));
+			opers.append("\n   . Description : " + resolver.resolveOperationDescription(oName, mbeanInfo, info));
+			opers.append("\n   . Parameters  : " + resolver.formatParametersLine(oName, mbeanInfo, info));
 			opers.append("\n   . Return      : " + JMXHelper.toTypeString(info.getReturnType()));
+			String returnNote = resolver.resolveOperationReturnDescription(oName, mbeanInfo, info);
+			if(returnNote != null && returnNote.trim().length() > 0) {
+				opers.append("\n   . Return note : " + returnNote);
+			}
 			opers.append("\n   . Impact      : " + JMXHelper.getOperationImpactString(info.getImpact()));
+			String paramDetails = resolver.formatParameterDetailsBlock(oName, mbeanInfo, info);
+			if(paramDetails != null) {
+				opers.append("\n   . Parameter details :").append(paramDetails);
+			}
 			Logger.logln("Operations : " + opers);
 		} else {
 			Logger.logln("Unsupported feature type: " + feature.getClass().getName());
@@ -279,9 +300,10 @@ public class JMXPrintUtil {
 	 */
 	public static void printMBeanInfo(MBeanServerConnection mbeanConn, ObjectName oName, String name) throws Exception {
 		MBeanInfo mbeanInfo = mbeanConn.getMBeanInfo(oName);
+		MBeanKnowledgeResolver resolver = MBeanKnowledgeResolver.getInstance();
 
 		if(name == null) {
-			Logger.logln("Description : " + mbeanInfo.getDescription());
+			Logger.logln("Description : " + resolver.resolveMBeanDescription(oName, mbeanInfo));
 
 			StringBuffer desc = new StringBuffer();
 			Descriptor mbeanDesc = mbeanInfo.getDescriptor();
@@ -311,9 +333,13 @@ public class JMXPrintUtil {
 			for(MBeanAttributeInfo info : mbeanInfo.getAttributes()) {
 				if(name == null || name.equals(info.getName())) {
 					attrs.append("\n - " + info.getName());
-					attrs.append("\n   . Description : " + info.getDescription());
+					attrs.append("\n   . Description : " + resolver.resolveAttributeDescription(oName, mbeanInfo, info));
 					attrs.append("\n   . Type        : " + JMXHelper.toTypeString(info.getType()));
 					attrs.append("\n   . Permission  : " + JMXHelper.getPermissionString(info));
+					String example = resolver.resolveAttributeExample(oName, mbeanInfo, info);
+					if(example != null && example.trim().length() > 0) {
+						attrs.append("\n   . Example     : " + example);
+					}
 				}
 			}
 			if(attrs.length() > 0) {
@@ -326,10 +352,18 @@ public class JMXPrintUtil {
 			for(MBeanOperationInfo info : mbeanInfo.getOperations()) {
 				if(name == null || name.equals(info.getName())) {
 					opers.append("\n - " + info.getName());
-					opers.append("\n   . Description : " + info.getDescription());
-					opers.append("\n   . Parameters  : " + JMXHelper.toNameAndTypeString(info.getSignature()));
+					opers.append("\n   . Description : " + resolver.resolveOperationDescription(oName, mbeanInfo, info));
+					opers.append("\n   . Parameters  : " + resolver.formatParametersLine(oName, mbeanInfo, info));
 					opers.append("\n   . Return      : " + JMXHelper.toTypeString(info.getReturnType()));
+					String returnNote = resolver.resolveOperationReturnDescription(oName, mbeanInfo, info);
+					if(returnNote != null && returnNote.trim().length() > 0) {
+						opers.append("\n   . Return note : " + returnNote);
+					}
 					opers.append("\n   . Impact      : " + JMXHelper.getOperationImpactString(info.getImpact()));
+					String paramDetails = resolver.formatParameterDetailsBlock(oName, mbeanInfo, info);
+					if(paramDetails != null) {
+						opers.append("\n   . Parameter details :").append(paramDetails);
+					}
 				}
 			}
 			if(opers.length() > 0) {

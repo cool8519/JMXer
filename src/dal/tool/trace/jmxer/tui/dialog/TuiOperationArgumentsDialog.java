@@ -5,7 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.Button;
@@ -21,14 +25,19 @@ import com.googlecode.lanterna.gui2.dialogs.DialogWindow;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialogButton;
 import com.googlecode.lanterna.screen.Screen;
 
+import dal.tool.trace.jmxer.knowledge.KnowledgeConstant;
+import dal.tool.trace.jmxer.knowledge.MBeanKnowledgeResolver;
 import dal.tool.trace.jmxer.tui.support.TuiJmxInputValidator;
+import dal.tool.trace.jmxer.tui.widget.TuiDialogInputBox;
 import dal.tool.util.jmx.JMXHelper;
 
 /**
- * Operation argument input dialog: one field per MBean parameter.
+ * MBean 오퍼레이션 인자 입력 다이얼로그. 파라미터마다 입력 필드를 제공한다.
+ *
  */
 public final class TuiOperationArgumentsDialog extends DialogWindow {
 
+	private static final String DIALOG_BASE_TITLE = "Arguments";
 	private static final String VALIDATION_TITLE = "Validation";
 
 	static final int MAX_WIDTH_PERCENT = 80;
@@ -42,14 +51,17 @@ public final class TuiOperationArgumentsDialog extends DialogWindow {
 	private final WindowBasedTextGUI gui;
 	private final MBeanParameterInfo[] signature;
 
-	private TuiOperationArgumentsDialog(WindowBasedTextGUI gui, String operationName, MBeanParameterInfo[] signature) {
-		super("Arguments");
-		this.gui = gui;
+	private TuiOperationArgumentsDialog(WindowBasedTextGUI textGUI, String objectName, MBeanInfo mbeanInfo,
+			MBeanOperationInfo operation, MBeanParameterInfo[] signature) {
+		super(resolveDialogTitle(objectName, mbeanInfo, operation));
+		this.gui = textGUI;
 		this.signature = signature;
 		enableCenteredHint();
 
-		int inputCols = resolveInputColumns(gui);
-		String description = buildDescription(operationName);
+		int inputCols = resolveInputColumns(textGUI);
+		String description = buildDescription(operation);
+		MBeanKnowledgeResolver resolver = MBeanKnowledgeResolver.getInstance();
+		ObjectName oName = parseObjectName(objectName);
 
 		Panel fieldsPanel = new Panel();
 		fieldsPanel.setLayoutManager(new GridLayout(1).setLeftMarginSize(1).setRightMarginSize(1));
@@ -57,20 +69,32 @@ public final class TuiOperationArgumentsDialog extends DialogWindow {
 
 		for(int i = 0; i < signature.length; i++) {
 			MBeanParameterInfo param = signature[i];
-			String paramLabel = formatParameterLabel(param, i);
+			String paramLabel = formatParameterLabel(resolver, oName, mbeanInfo, operation, param, i);
 			fieldsPanel.addComponent(new Label(paramLabel));
-			TextBox input = new TextBox(new TerminalSize(inputCols, 1));
+			String paramDescription = resolver.resolveKnowledgeParamDescription(oName, mbeanInfo, operation, i);
+			if(hasText(paramDescription)) {
+				TuiDialogLayout.addFormFieldHint(fieldsPanel, paramDescription);
+			}
+			String example = resolver.resolveParamExample(oName, mbeanInfo, operation, i);
+			if(hasText(example)) {
+				TuiDialogLayout.addFormFieldHint(fieldsPanel, "Example: " + example);
+			}
+			TextBox input = new TuiDialogInputBox(new TerminalSize(inputCols, 1));
+			if(hasText(example)) {
+				input.setText(example);
+			}
 			inputs.add(input);
 			fieldsPanel.addComponent(input);
+			TuiDialogLayout.addFormFieldGap(fieldsPanel);
 		}
 
 		Button okButton = new Button(MessageDialogButton.OK.toString(), new Runnable() {
 			@Override
 			public void run() {
 				String[] values = collectValues();
-				String validationError = TuiJmxInputValidator.validateOperationArguments(signature, values);
+				String validationError = TuiJmxInputValidator.validateOperationArguments(TuiOperationArgumentsDialog.this.signature, values);
 				if(validationError != null) {
-					TuiDialogs.showMessageDialog(gui, VALIDATION_TITLE, validationError, MessageDialogButton.OK);
+					TuiDialogs.showMessageDialog(TuiOperationArgumentsDialog.this.gui, VALIDATION_TITLE, validationError, MessageDialogButton.OK);
 					return;
 				}
 				result = values;
@@ -100,11 +124,23 @@ public final class TuiOperationArgumentsDialog extends DialogWindow {
 		TuiDialogEscFocus.install(this);
 	}
 
-	public static String[] show(WindowBasedTextGUI gui, String operationName, MBeanParameterInfo[] signature) {
-		if(gui == null || signature == null || signature.length == 0) {
+	public static String[] show(WindowBasedTextGUI gui, MBeanServerConnection mbeanConn, String objectName, MBeanOperationInfo operation) {
+		if(gui == null || operation == null) {
 			return null;
 		}
-		TuiOperationArgumentsDialog dialog = new TuiOperationArgumentsDialog(gui, operationName, signature);
+		MBeanParameterInfo[] signature = operation.getSignature();
+		if(signature == null || signature.length == 0) {
+			return null;
+		}
+		MBeanInfo mbeanInfo = null;
+		if(mbeanConn != null && objectName != null) {
+			try {
+				mbeanInfo = mbeanConn.getMBeanInfo(new ObjectName(objectName));
+			} catch(Exception e) {
+				mbeanInfo = null;
+			}
+		}
+		TuiOperationArgumentsDialog dialog = new TuiOperationArgumentsDialog(gui, objectName, mbeanInfo, operation, signature);
 		dialog.showDialog(gui);
 		return dialog.result;
 	}
@@ -138,23 +174,51 @@ public final class TuiOperationArgumentsDialog extends DialogWindow {
 		return values;
 	}
 
-	private static String buildDescription(String operationName) {
-		String name = operationName == null ? "" : operationName.trim();
-		if(name.length() == 0) {
+	private static String resolveDialogTitle(String objectName, MBeanInfo mbeanInfo, MBeanOperationInfo operation) {
+		ObjectName oName = parseObjectName(objectName);
+		boolean knowledgeUsed = false;
+		if(oName != null && operation != null) {
+			knowledgeUsed = MBeanKnowledgeResolver.getInstance().hasKnowledgeContributionForFeature(oName, mbeanInfo, operation);
+		}
+		return KnowledgeConstant.formatTuiDetailTitle(DIALOG_BASE_TITLE, knowledgeUsed);
+	}
+
+	private static String buildDescription(MBeanOperationInfo operation) {
+		if(operation == null) {
+			return "Input operation arguments:";
+		}
+		String name = operation.getName();
+		if(name == null || name.trim().length() == 0) {
 			return "Input operation arguments:";
 		}
 		return "Input arguments for " + name + ":";
 	}
 
-	private static String formatParameterLabel(MBeanParameterInfo param, int index) {
+	private static String formatParameterLabel(MBeanKnowledgeResolver resolver, ObjectName objectName, MBeanInfo mbeanInfo,
+			MBeanOperationInfo operation, MBeanParameterInfo param, int index) {
 		if(param == null) {
 			return "Argument " + (index + 1) + ":";
 		}
-		String name = param.getName();
+		String name = resolver.resolveParamName(objectName, mbeanInfo, operation, index);
 		if(name == null || name.trim().length() == 0) {
 			name = "arg" + (index + 1);
 		}
 		return name + " (" + JMXHelper.toTypeString(param.getType()) + "):";
+	}
+
+	private static ObjectName parseObjectName(String objectName) {
+		if(objectName == null || objectName.trim().length() == 0) {
+			return null;
+		}
+		try {
+			return new ObjectName(objectName.trim());
+		} catch(Exception e) {
+			return null;
+		}
+	}
+
+	private static boolean hasText(String value) {
+		return value != null && value.trim().length() > 0;
 	}
 
 	private static int resolveInputColumns(WindowBasedTextGUI gui) {

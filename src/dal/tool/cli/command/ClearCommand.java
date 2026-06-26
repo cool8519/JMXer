@@ -3,6 +3,11 @@ package dal.tool.cli.command;
 import dal.tool.cli.CommandExecutor;
 import dal.tool.cli.Logger;
 
+/**
+ * 화면을 지우는 CLEAR/CLS 명령
+ * @author 권영달
+ *
+ */
 public class ClearCommand extends Command {
 
 	public static final CommandMeta commandMeta = new CommandMeta(ClearCommand.class, "CLEAR", "CLS");
