@@ -25,10 +25,10 @@ public final class TuiHelpSectionBuilder {
 	public static final KeyStroke KEY_FOCUS_TAB = new KeyStroke(KeyType.Tab);
 	public static final KeyStroke KEY_EXIT = new KeyStroke(Character.valueOf('c'), true, false);
 	public static final KeyStroke KEY_REMAP_DIALOG = new KeyStroke(KeyType.F12);
-	public static final KeyStroke KEY_RESIZE_HORIZONTAL = new KeyStroke(KeyType.ArrowLeft, false, true, false);
+	public static final KeyStroke KEY_RESIZE_HORIZONTAL = new KeyStroke(KeyType.ArrowLeft, false, false, true);
 	public static final KeyStroke KEY_CTRL_P = new KeyStroke(Character.valueOf('p'), true, false);
-	public static final KeyStroke KEY_SHIFT_TAB = new KeyStroke(KeyType.Tab, false, true, false);
-	public static final KeyStroke KEY_RESIZE_VERTICAL = new KeyStroke(KeyType.ArrowUp, false, true, false);
+	public static final KeyStroke KEY_SHIFT_TAB = new KeyStroke(KeyType.Tab, false, false, true);
+	public static final KeyStroke KEY_RESIZE_VERTICAL = new KeyStroke(KeyType.ArrowUp, false, false, true);
 
 	private final String sectionTitle;
 	private final List<Entry> entries = new ArrayList<Entry>();
@@ -50,6 +50,22 @@ public final class TuiHelpSectionBuilder {
 		}
 		KeyStroke sortKey = bindings == null ? action.getDefaultKeyStroke() : bindings.getBinding(action);
 		addKeyLine(sortKey, TuiKeyBindings.label(action) + ": " + description);
+	}
+
+	public void addHorizontalResizeLine(TuiKeyBindings bindings, String description) {
+		if(description == null) {
+			return;
+		}
+		TuiKeyBindings active = bindings == null ? TuiKeyBindings.current() : bindings;
+		addKeyLine(active.getHorizontalResizeSortKey(), active.getHorizontalResizeLabel() + ": " + description);
+	}
+
+	public void addVerticalResizeLine(TuiKeyBindings bindings, String description) {
+		if(description == null) {
+			return;
+		}
+		TuiKeyBindings active = bindings == null ? TuiKeyBindings.current() : bindings;
+		addKeyLine(active.getVerticalResizeSortKey(), active.getVerticalResizeLabel() + ": " + description);
 	}
 
 	public void addPaneLine(int paneOrder, String line) {

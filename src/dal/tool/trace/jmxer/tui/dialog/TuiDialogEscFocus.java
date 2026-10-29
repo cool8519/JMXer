@@ -40,6 +40,9 @@ final class TuiDialogEscFocus {
 		window.addWindowListener(new WindowListener() {
 			@Override
 			public void onInput(Window pane, KeyStroke keyStroke, AtomicBoolean deliverEvent) {
+				if(deliverEvent != null && !deliverEvent.get()) {
+					return;
+				}
 				if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
 					deliverEvent.set(false);
 					return;

@@ -23,7 +23,8 @@ public final class TuiKeyBindings {
 	public enum RebindResult {
 		OK,
 		RESERVED,
-		CONFLICT
+		CONFLICT,
+		INVALID_RESIZE_KEY
 	}
 
 	private static volatile TuiKeyBindings current;
@@ -57,6 +58,9 @@ public final class TuiKeyBindings {
 			return false;
 		}
 		KeyStroke bound = bindings.get(action);
+		if(action == TuiKeyAction.PANE_RESIZE) {
+			return TuiKeyStrokeFormat.matchesArrowGroup(bound, keyStroke);
+		}
 		return TuiKeyStrokeFormat.matches(bound, keyStroke);
 	}
 
@@ -65,6 +69,9 @@ public final class TuiKeyBindings {
 			return "";
 		}
 		KeyStroke bound = bindings.get(action);
+		if(action == TuiKeyAction.PANE_RESIZE) {
+			return TuiKeyStrokeFormat.formatArrowGroupLabel(bound);
+		}
 		return TuiKeyStrokeFormat.formatLabel(bound);
 	}
 
@@ -72,11 +79,42 @@ public final class TuiKeyBindings {
 		return action == null ? null : bindings.get(action);
 	}
 
+	public KeyStroke getHorizontalResizeSortKey() {
+		KeyStroke bound = bindings.get(TuiKeyAction.PANE_RESIZE);
+		if(bound == null) {
+			bound = TuiKeyAction.PANE_RESIZE.getDefaultKeyStroke();
+		}
+		return new KeyStroke(KeyType.ArrowLeft, bound.isCtrlDown(), bound.isAltDown(), bound.isShiftDown());
+	}
+
+	public KeyStroke getVerticalResizeSortKey() {
+		KeyStroke bound = bindings.get(TuiKeyAction.PANE_RESIZE);
+		if(bound == null) {
+			bound = TuiKeyAction.PANE_RESIZE.getDefaultKeyStroke();
+		}
+		return new KeyStroke(KeyType.ArrowUp, bound.isCtrlDown(), bound.isAltDown(), bound.isShiftDown());
+	}
+
+	public String getHorizontalResizeLabel() {
+		KeyStroke bound = bindings.get(TuiKeyAction.PANE_RESIZE);
+		return TuiKeyStrokeFormat.formatHorizontalArrowsLabel(
+			bound == null ? TuiKeyAction.PANE_RESIZE.getDefaultKeyStroke() : bound);
+	}
+
+	public String getVerticalResizeLabel() {
+		KeyStroke bound = bindings.get(TuiKeyAction.PANE_RESIZE);
+		return TuiKeyStrokeFormat.formatVerticalArrowsLabel(
+			bound == null ? TuiKeyAction.PANE_RESIZE.getDefaultKeyStroke() : bound);
+	}
+
 	public boolean isRemappedFromDefault(TuiKeyAction action) {
 		if(action == null) {
 			return false;
 		}
 		KeyStroke bound = bindings.get(action);
+		if(action == TuiKeyAction.PANE_RESIZE) {
+			return !TuiKeyStrokeFormat.matchesArrowGroup(bound, action.getDefaultKeyStroke());
+		}
 		return !TuiKeyStrokeFormat.matches(bound, action.getDefaultKeyStroke());
 	}
 
@@ -87,6 +125,37 @@ public final class TuiKeyBindings {
 	public RebindResult rebind(TuiKeyAction action, KeyStroke keyStroke, String uiModeId) {
 		if(action == null || keyStroke == null) {
 			return RebindResult.RESERVED;
+		}
+		if(action == TuiKeyAction.PANE_RESIZE) {
+			if(!TuiKeyStrokeFormat.isArrowKeyType(keyStroke.getKeyType())) {
+				if(TuiKeyStrokeFormat.isReservedForRemap(keyStroke)) {
+					return RebindResult.RESERVED;
+				}
+				return RebindResult.INVALID_RESIZE_KEY;
+			}
+			if(!TuiKeyStrokeFormat.hasAnyModifier(keyStroke)) {
+				return RebindResult.INVALID_RESIZE_KEY;
+			}
+			KeyStroke normalized = new KeyStroke(
+				KeyType.ArrowLeft,
+				keyStroke.isCtrlDown(),
+				keyStroke.isAltDown(),
+				keyStroke.isShiftDown());
+			TuiKeyRemapScope scope = action.getScope();
+			for(TuiKeyAction other : TuiKeyAction.values()) {
+				if(other == action || !TuiKeyActionUiMode.shareActiveUiMode(uiModeId, action, other)) {
+					continue;
+				}
+				if(!scopesConflict(scope, other.getScope())) {
+					continue;
+				}
+				if(matches(other, normalized)) {
+					return RebindResult.CONFLICT;
+				}
+			}
+			bindings.put(action, normalized);
+			notifyChanged();
+			return RebindResult.OK;
 		}
 		if(TuiKeyStrokeFormat.isReservedForRemap(keyStroke)) {
 			return RebindResult.RESERVED;
@@ -99,8 +168,7 @@ public final class TuiKeyBindings {
 			if(!scopesConflict(scope, other.getScope())) {
 				continue;
 			}
-			KeyStroke otherStroke = bindings.get(other);
-			if(TuiKeyStrokeFormat.matches(otherStroke, keyStroke)) {
+			if(matches(other, keyStroke)) {
 				return RebindResult.CONFLICT;
 			}
 		}

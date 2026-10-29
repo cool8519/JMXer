@@ -292,8 +292,17 @@ public class RecordResultViewer {
 						Logger.logln("The order(" + expStr + ") is out of range. It must be 1 to " + result.sampleCount);
 						return;
 					}
-					from = result.recordData.get(targetThreads[0]).get(fromIdx - 1).recordStartTime;
-					to = result.recordData.get(targetThreads[0]).get(toIdx - 1).recordEndTime;
+					if(fromIdx > toIdx) {
+						Logger.logln("Invalid argument for RangeExpression. See the help of record command.");
+						return;
+					}
+					long[] sampleRange = resolveSampleOrderTimeRange(fromIdx, toIdx);
+					if(sampleRange == null) {
+						Logger.logln("The order(" + expStr + ") is out of range. It must be 1 to " + result.sampleCount);
+						return;
+					}
+					from = sampleRange[0];
+					to = sampleRange[1];
 				} else {
 					Date fromDt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, fromStr);
 					Date toDt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, toStr);
@@ -371,8 +380,17 @@ public class RecordResultViewer {
 						Logger.logln("The order(" + expStr + ") is out of range. It must be 1 to " + result.sampleCount);
 						return;
 					}
-					from = result.recordData.get(targetThreads[0]).get(fromIdx - 1).recordStartTime;
-					to = result.recordData.get(targetThreads[0]).get(toIdx - 1).recordEndTime;
+					if(fromIdx > toIdx) {
+						Logger.logln("Invalid argument for RangeExpression. See the help of record command.");
+						return;
+					}
+					long[] sampleRange = resolveSampleOrderTimeRange(fromIdx, toIdx);
+					if(sampleRange == null) {
+						Logger.logln("The order(" + expStr + ") is out of range. It must be 1 to " + result.sampleCount);
+						return;
+					}
+					from = sampleRange[0];
+					to = sampleRange[1];
 				} else {
 					Date fromDt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, fromStr);
 					Date toDt = DateUtil.stringToDate(DateUtil.FORMAT_DATETIME_SEC, toStr);
@@ -555,13 +573,14 @@ public class RecordResultViewer {
 				}
 				if(targetTime >= recThrInfo.recordStartTime && targetTime <= recThrInfo.recordEndTime) {
 					str = getStackString(new RecordThreadInfo[]{recThrInfo});
-				} else {
+				} else if(i + 1 < recThrInfoList.size()) {
 					str = getStackString(new RecordThreadInfo[]{recThrInfo, recThrInfoList.get(i+1)});
+				} else if(!hasGlobalSampleBetween(recThrInfo.recordEndTime, targetTime)) {
+					str = getStackString(new RecordThreadInfo[]{recThrInfo});
 				}
 				break;
 			}
 			if(str == null) {
-				Logger.logln("Could not resolve stack at relative time " + expStr + " for thread id " + recThrInfoList.get(0).getThreadId() + ".");
 				return null;
 			}
 		} else if(NumberUtil.isNumber(expStr)) {
@@ -588,9 +607,79 @@ public class RecordResultViewer {
 					matchList.add(recThrInfo);
 				}
 			}
+			if(matchList.isEmpty()) {
+				return null;
+			}
 			str = getStackString(matchList.toArray(new RecordThreadInfo[]{}));
 		}
 		return str;
+	}
+
+	private long[] resolveSampleOrderTimeRange(int fromIdx, int toIdx) {
+		if(fromIdx < 1 || toIdx < fromIdx) {
+			return null;
+		}
+		if(result.sampleStartTimes != null && result.sampleEndTimes != null
+				&& fromIdx - 1 < result.sampleStartTimes.length
+				&& toIdx - 1 < result.sampleEndTimes.length) {
+			return new long[] { result.sampleStartTimes[fromIdx - 1], result.sampleEndTimes[toIdx - 1] };
+		}
+		List<long[]> windows = collectFallbackSampleWindows();
+		if(toIdx - 1 >= windows.size()) {
+			return null;
+		}
+		return new long[] { windows.get(fromIdx - 1)[0], windows.get(toIdx - 1)[1] };
+	}
+
+	private boolean hasGlobalSampleBetween(long afterTimeExclusive, long upToTimeInclusive) {
+		if(upToTimeInclusive <= afterTimeExclusive) {
+			return false;
+		}
+		if(result.sampleStartTimes != null && result.sampleStartTimes.length > 0) {
+			for(int i = 0; i < result.sampleStartTimes.length; i++) {
+				long s = result.sampleStartTimes[i];
+				if(s > afterTimeExclusive && s <= upToTimeInclusive) {
+					return true;
+				}
+			}
+			return false;
+		}
+		List<long[]> windows = collectFallbackSampleWindows();
+		for(int i = 0; i < windows.size(); i++) {
+			long s = windows.get(i)[0];
+			if(s > afterTimeExclusive && s <= upToTimeInclusive) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private List<long[]> collectFallbackSampleWindows() {
+		List<long[]> windows = new ArrayList<long[]>();
+		if(result == null || result.recordData == null || result.recordData.isEmpty()) {
+			return windows;
+		}
+		java.util.TreeMap<Long, Long> endByStart = new java.util.TreeMap<Long, Long>();
+		for(List<RecordThreadInfo> list : result.recordData.values()) {
+			if(list == null) {
+				continue;
+			}
+			for(int i = 0; i < list.size(); i++) {
+				RecordThreadInfo info = list.get(i);
+				if(info == null) {
+					continue;
+				}
+				Long startKey = Long.valueOf(info.recordStartTime);
+				Long prevEnd = endByStart.get(startKey);
+				if(prevEnd == null || info.recordEndTime > prevEnd.longValue()) {
+					endByStart.put(startKey, Long.valueOf(info.recordEndTime));
+				}
+			}
+		}
+		for(Map.Entry<Long, Long> entry : endByStart.entrySet()) {
+			windows.add(new long[] { entry.getKey().longValue(), entry.getValue().longValue() });
+		}
+		return windows;
 	}
 
 	private String formatOrderOutOfRangeForThread(int order, long threadId, int total) {
@@ -1163,13 +1252,11 @@ public class RecordResultViewer {
 			String cpuStr = "Unknown";
 			String memStr = "Unknown";
 			if(resourceUsage != null) {
-				long totalCpu = resourceUsage.currCpu - resourceUsage.startCpu;
-				long totalMem = resourceUsage.currMem - resourceUsage.startMem;
-				if(totalCpu > -1) {
-					cpuStr = String.valueOf(totalCpu);
+				if(resourceUsage.startCpu >= 0L && resourceUsage.currCpu >= resourceUsage.startCpu) {
+					cpuStr = String.valueOf(resourceUsage.currCpu - resourceUsage.startCpu);
 				}
-				if(totalMem > -1) {
-					memStr = String.valueOf(totalMem);
+				if(resourceUsage.startMem >= 0L && resourceUsage.currMem >= resourceUsage.startMem) {
+					memStr = String.valueOf(resourceUsage.currMem - resourceUsage.startMem);
 				}
 			}
 			sb.append(String.format("      . tid [%5d] : %-40s : CpuTime=%-12s, AllocatedBytes=%s", threadInfo.getThreadId(), thrStr, cpuStr, memStr) + "\n");

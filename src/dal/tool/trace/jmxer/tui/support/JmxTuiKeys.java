@@ -97,6 +97,9 @@ public final class JmxTuiKeys {
 		if(isCtrlToggleThreadRefresh(key)) {
 			return true;
 		}
+		if(isCtrlToggleSelectedTarget(key)) {
+			return true;
+		}
 		if(isExitKey(key)) {
 			return true;
 		}
@@ -116,16 +119,11 @@ public final class JmxTuiKeys {
 	}
 
 	public static boolean isPaneResizeKey(KeyStroke key) {
-		if(key == null || !key.isShiftDown()) {
-			return false;
-		}
-		KeyType type = key.getKeyType();
-		return type == KeyType.ArrowLeft || type == KeyType.ArrowRight
-			|| type == KeyType.ArrowUp || type == KeyType.ArrowDown;
+		return TuiKeyBindings.current().matches(TuiKeyAction.PANE_RESIZE, key);
 	}
 
 	public static boolean isPaneResizeHorizontal(KeyStroke key) {
-		if(key == null || !key.isShiftDown()) {
+		if(!isPaneResizeKey(key)) {
 			return false;
 		}
 		KeyType type = key.getKeyType();
@@ -133,7 +131,7 @@ public final class JmxTuiKeys {
 	}
 
 	public static boolean isPaneResizeVertical(KeyStroke key) {
-		if(key == null || !key.isShiftDown()) {
+		if(!isPaneResizeKey(key)) {
 			return false;
 		}
 		KeyType type = key.getKeyType();
@@ -238,6 +236,10 @@ public final class JmxTuiKeys {
 
 	public static boolean isCtrlToggleStacktraceTarget(KeyStroke key) {
 		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_STACKTRACE_TARGET, key);
+	}
+
+	public static boolean isCtrlToggleSelectedTarget(KeyStroke key) {
+		return TuiKeyBindings.current().matches(TuiKeyAction.THREAD_SELECTED_TARGET, key);
 	}
 
 	public static boolean isCtrlEditThreadSelection(KeyStroke key) {

@@ -28,6 +28,8 @@ public class RecordResult implements Serializable {
 	public long recordLimitMS = 0L;
 	public long recordIntervalMS = 0L;
 	public int sampleCount = 0;
+	public long[] sampleStartTimes;
+	public long[] sampleEndTimes;
 	public Map<String,String> toolInfo;
 	public Map<String,String> vmInfo;
 	public Map<Long,List<RecordThreadInfo>> recordData;

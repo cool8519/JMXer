@@ -22,6 +22,26 @@ public final class ThreadListExpressionBuilder {
 
 	private ThreadListExpressionBuilder() {}
 
+	public static String buildTidExpression(Set<Long> selectedIds) {
+		if(selectedIds == null || selectedIds.isEmpty()) {
+			return "";
+		}
+		List<Long> sorted = new ArrayList<Long>(selectedIds);
+		Collections.sort(sorted);
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < sorted.size(); i++) {
+			Long id = sorted.get(i);
+			if(id == null) {
+				continue;
+			}
+			if(sb.length() > 0) {
+				sb.append(',');
+			}
+			sb.append(id.longValue());
+		}
+		return sb.toString();
+	}
+
 	public static String build(Map<Long, String> threadMap, Set<Long> selectedIds) {
 		if(selectedIds == null || selectedIds.isEmpty()) {
 			return "";

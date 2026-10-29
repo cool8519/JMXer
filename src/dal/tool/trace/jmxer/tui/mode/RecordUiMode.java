@@ -12,6 +12,7 @@ import com.googlecode.lanterna.gui2.LinearLayout.Alignment;
 import com.googlecode.lanterna.gui2.LinearLayout.GrowPolicy;
 import com.googlecode.lanterna.gui2.Panel;
 
+import dal.tool.trace.jmxer.JMXControl;
 import dal.tool.trace.jmxer.cli.JmxSettings;
 import dal.tool.trace.jmxer.cli.command.JmxRecordCommand;
 import dal.tool.trace.jmxer.cli.data.RecordResult;
@@ -107,13 +108,11 @@ public final class RecordUiMode extends JmxTuiUiMode {
 				String.format(TuiRecordUiKeys.STATUS_SAMPLES_SEGMENT, resolveRecordSampleCount()),
 				null));
 		}
-		String tail = " | Selected(" + TuiKeyBindings.label(TuiKeyAction.THREAD_EDIT_SELECTION) + "):" + selected;
-		if(selected > 0) {
-			String expr = buildSelectedThreadsExpression(context);
-			if(expr != null && expr.length() > 0) {
-				tail += " [" + expr + "]";
-			}
-		}
+		String tail = TuiStatusText.appendBracketedExpression(
+			segments,
+			" | Selected(" + TuiKeyBindings.label(TuiKeyAction.THREAD_EDIT_SELECTION) + "):" + selected,
+			buildSelectedThreadsExpression(context),
+			statusInnerCols);
 		segments.add(new TuiStatusSegmentLabel.Segment(tail, null));
 
 		header2.setMaxColumns(statusInnerCols);
@@ -131,6 +130,10 @@ public final class RecordUiMode extends JmxTuiUiMode {
 			} else {
 				sb.append("REFRESH(").append(TuiKeyBindings.label(TuiKeyAction.THREAD_AUTO_REFRESH)).append("):MANUAL");
 			}
+			sb.append(", SELECTED_TARGET(")
+				.append(TuiKeyBindings.label(TuiKeyAction.THREAD_SELECTED_TARGET))
+				.append("):")
+				.append(context.getSelectedTarget().name());
 			detail = sb.toString();
 		} else {
 			detail = TuiStatusSettingLine.recordDetailLine(s);
@@ -196,6 +199,17 @@ public final class RecordUiMode extends JmxTuiUiMode {
 	public static String buildSelectedThreadsExpression(JmxTuiModeContext context) {
 		if(context == null || !context.hasThreadPane()) {
 			return "";
+		}
+		if(!JMXControl.isOfflineSession
+				&& context.getRecordViewState() == RecordViewState.LIVE
+				&& context.getSelectedTarget() == JmxTuiModeContext.SelectedTarget.TID) {
+			return ThreadListExpressionBuilder.buildTidExpression(context.getSelectedThreadIds());
+		}
+		if(context.isExplicitSelectedExpression()) {
+			String explicit = context.getSelectedExpression();
+			if(explicit != null && explicit.trim().length() > 0) {
+				return explicit.trim();
+			}
 		}
 		Set<Long> selected = context.getSelectedThreadIds();
 		if(selected.isEmpty()) {

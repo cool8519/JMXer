@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TerminalTextUtils;
 import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.EmptySpace;
 import com.googlecode.lanterna.gui2.GridLayout;
@@ -25,6 +28,7 @@ import dal.tool.trace.jmxer.cli.JmxSettings;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeFocusPane;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiUiMode;
+import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
 import dal.tool.trace.jmxer.tui.support.TuiKeyAction;
 import dal.tool.trace.jmxer.tui.support.TuiKeyActionUiMode;
 import dal.tool.trace.jmxer.tui.support.TuiKeyBindings;
@@ -43,11 +47,13 @@ import dal.tool.trace.jmxer.tui.widget.TuiDialogActionListBox;
 public final class TuiKeyRemapDialog extends DialogWindow {
 
 	private static final int CONTENT_HORIZONTAL_PADDING = 2;
-	private static final int MIN_CONTENT_COLUMNS = 62;
+	private static final int MIN_CONTENT_COLUMNS = 68;
 	private static final int DIALOG_HORIZONTAL_CHROME_COLUMNS = 6;
 
+	private final WindowBasedTextGUI gui;
 	private final TuiKeyBindings bindings;
 	private final String uiModeId;
+	private final int contentColumns;
 	private final List<TuiKeyAction> globalActions;
 	private final List<TuiKeyAction> windowActions;
 	private final TuiDialogActionListBox globalList;
@@ -58,12 +64,14 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 	private volatile boolean capturing;
 	private volatile TuiKeyAction captureTarget;
 
-	private TuiKeyRemapDialog(String title, String description, TuiKeyBindings bindings, String uiModeId,
-			List<TuiKeyAction> globalActions, List<TuiKeyAction> windowActions,
+	private TuiKeyRemapDialog(WindowBasedTextGUI gui, String title, String description, TuiKeyBindings bindings,
+			String uiModeId, List<TuiKeyAction> globalActions, List<TuiKeyAction> windowActions,
 			TuiKeyRemapScope windowScope, int contentColumns) {
 		super(title);
+		this.gui = gui;
 		this.bindings = bindings;
 		this.uiModeId = uiModeId;
+		this.contentColumns = contentColumns;
 		this.globalActions = globalActions == null ? new ArrayList<TuiKeyAction>() : globalActions;
 		this.windowActions = windowActions == null ? new ArrayList<TuiKeyAction>() : windowActions;
 		this.listRenderer = new KeyRemapListItemRenderer();
@@ -146,7 +154,7 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 		if(gui == null || bindings == null) {
 			return;
 		}
-		List<TuiKeyAction> globalActions = TuiKeyRemapCatalog.listGlobalActions(mode, ctx, bindings);
+		List<TuiKeyAction> globalActions = TuiKeyRemapCatalog.listGlobalActions(mode, ctx, settings, bindings);
 		List<TuiKeyAction> windowActions = TuiKeyRemapCatalog.listWindowActions(mode, ctx, focusedPane, settings, bindings);
 		if(globalActions.isEmpty() && windowActions.isEmpty()) {
 			return;
@@ -156,6 +164,7 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 		int columns = computeContentColumns(gui, bindings, globalActions, windowActions,
 			TuiKeyRemapUiKeys.DIALOG_DESCRIPTION);
 		TuiKeyRemapDialog dialog = new TuiKeyRemapDialog(
+			gui,
 			TuiKeyRemapUiKeys.DIALOG_TITLE,
 			TuiKeyRemapUiKeys.DIALOG_DESCRIPTION,
 			bindings,
@@ -299,6 +308,7 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 	}
 
 	private void clearStatus() {
+		resetStatusStyle();
 		statusSpacer.setVisible(false);
 		statusLabel.setText("");
 		statusLabel.setVisible(false);
@@ -309,10 +319,86 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 	}
 
 	private void setStatus(String text, boolean leadingBlankLine) {
+		resetStatusStyle();
 		boolean visible = text != null && text.length() > 0;
 		statusSpacer.setVisible(visible && leadingBlankLine);
 		statusLabel.setText(visible ? text : "");
 		statusLabel.setVisible(visible);
+	}
+
+	private void resetStatusStyle() {
+		statusLabel.setForegroundColor(null);
+		statusLabel.setBackgroundColor(null);
+		statusLabel.removeStyle(SGR.BOLD);
+	}
+
+	private void showCaptureErrorBanner(String reasonLine, String retryLine) {
+		statusLabel.setBackgroundColor(JmxTuiTheme.KEY_REMAP_ERROR_BG);
+		statusLabel.setForegroundColor(JmxTuiTheme.KEY_REMAP_ERROR_FG);
+		statusLabel.addStyle(SGR.BOLD);
+		statusSpacer.setVisible(true);
+		statusLabel.setText(formatErrorBanner(reasonLine, retryLine));
+		statusLabel.setVisible(true);
+		ringBellQuietly();
+	}
+
+	private String formatErrorBanner(String reasonLine, String retryLine) {
+		int targetWidth = Math.max(24, contentColumns);
+		int innerWidth = Math.max(20, targetWidth - 2);
+		List<String> wrappedLines = new ArrayList<String>();
+		appendWrappedBannerLine(wrappedLines, reasonLine, innerWidth);
+		appendWrappedBannerLine(wrappedLines, retryLine, innerWidth);
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < wrappedLines.size(); i++) {
+			if(i > 0) {
+				sb.append('\n');
+			}
+			String line = " " + wrappedLines.get(i);
+			int cols = TerminalTextUtils.getColumnWidth(line);
+			sb.append(line);
+			while(cols < targetWidth) {
+				sb.append(' ');
+				cols++;
+			}
+		}
+		return sb.toString();
+	}
+
+	private static void appendWrappedBannerLine(List<String> out, String text, int maxCols) {
+		if(text == null || text.length() == 0) {
+			return;
+		}
+		String remaining = text.trim();
+		while(remaining.length() > 0) {
+			if(TerminalTextUtils.getColumnWidth(remaining) <= maxCols) {
+				out.add(remaining);
+				return;
+			}
+			String fitted = TerminalTextUtils.fitString(remaining, maxCols);
+			int breakIdx = fitted.lastIndexOf(' ');
+			if(breakIdx > 0) {
+				out.add(fitted.substring(0, breakIdx));
+				remaining = remaining.substring(breakIdx + 1).trim();
+			} else {
+				if(fitted.length() == 0) {
+					fitted = remaining.substring(0, 1);
+				}
+				out.add(fitted);
+				remaining = remaining.substring(fitted.length()).trim();
+			}
+		}
+	}
+
+	private void ringBellQuietly() {
+		if(gui == null) {
+			return;
+		}
+		try {
+			Screen screen = gui.getScreen();
+			if(screen instanceof TerminalScreen) {
+				((TerminalScreen) screen).getTerminal().bell();
+			}
+		} catch(Exception e) {}
 	}
 
 	private void cancelCapture() {
@@ -354,17 +440,26 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 				if(result == RebindResult.OK) {
 					cancelCapture();
 					rebuildActionLists(target);
-					setStatus("Assigned " + TuiKeyStrokeFormat.formatLabel(keyStroke)
+					setStatus("Assigned " + bindings.getActionLabel(target)
 						+ " to " + target.getDisplayName() + ".");
 					return;
 				}
+				String pressedLabel = TuiKeyStrokeFormat.formatLabel(keyStroke);
 				if(result == RebindResult.RESERVED) {
-					cancelCapture();
-					setStatus(TuiKeyRemapUiKeys.RESERVED_MESSAGE, true);
+					showCaptureErrorBanner(
+						TuiKeyRemapUiKeys.formatReservedFailure(pressedLabel),
+						TuiKeyRemapUiKeys.RETRY_CAPTURE_HINT);
 					return;
 				}
-				cancelCapture();
-				setStatus(TuiKeyRemapUiKeys.CONFLICT_MESSAGE_PREFIX + findConflictAction(keyStroke, target), true);
+				if(result == RebindResult.INVALID_RESIZE_KEY) {
+					showCaptureErrorBanner(
+						TuiKeyRemapUiKeys.formatInvalidResizeFailure(pressedLabel),
+						TuiKeyRemapUiKeys.RETRY_RESIZE_CAPTURE_HINT);
+					return;
+				}
+				showCaptureErrorBanner(
+					TuiKeyRemapUiKeys.formatConflictFailure(pressedLabel, findConflictAction(keyStroke, target)),
+					TuiKeyRemapUiKeys.RETRY_CAPTURE_HINT);
 			}
 
 			@Override
@@ -393,7 +488,7 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 			if(!TuiKeyBindings.scopesConflict(scope, action.getScope())) {
 				continue;
 			}
-			if(TuiKeyStrokeFormat.matches(bindings.getBinding(action), keyStroke)) {
+			if(bindings.matches(action, keyStroke)) {
 				return formatConflictActionLabel(action);
 			}
 		}
@@ -429,6 +524,7 @@ public final class TuiKeyRemapDialog extends DialogWindow {
 		}
 		maxLen = Math.max(maxLen, TuiKeyRemapUiKeys.GLOBAL_SECTION_LABEL.length());
 		maxLen = Math.max(maxLen, TuiKeyRemapUiKeys.RESERVED_MESSAGE.length());
+		maxLen = Math.max(maxLen, TuiKeyRemapUiKeys.INVALID_RESIZE_KEY_MESSAGE.length());
 		maxLen = Math.max(maxLen, TuiKeyRemapUiKeys.CAPTURE_HINT.length());
 
 		int needed = maxLen + CONTENT_HORIZONTAL_PADDING;

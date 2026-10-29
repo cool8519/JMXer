@@ -3,6 +3,8 @@ package dal.tool.trace.jmxer.tui.support;
 import java.util.List;
 
 import dal.tool.trace.jmxer.JMXControl;
+import dal.tool.trace.jmxer.cli.JmxSettings;
+import dal.tool.trace.jmxer.cli.JmxSettings.StacktraceTarget;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.RecordViewState;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiUiMode;
@@ -84,9 +86,20 @@ public final class TuiGlobalKeysHint {
 			JmxTuiModeContext ctx,
 			boolean featuresAvailable,
 			boolean samplingInProgress) {
+		collectRemappableGlobalActions(out, mode, ctx, null, featuresAvailable, samplingInProgress);
+	}
+
+	public static void collectRemappableGlobalActions(
+			List<TuiKeyAction> out,
+			JmxTuiUiMode mode,
+			JmxTuiModeContext ctx,
+			JmxSettings settings,
+			boolean featuresAvailable,
+			boolean samplingInProgress) {
 		if(out == null || mode == null) {
 			return;
 		}
+		TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.PANE_RESIZE);
 		TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.OUTPUT_PANE_TOGGLE);
 		String modeId = mode.getId();
 		if(MBeanUiMode.ID.equals(modeId)) {
@@ -101,7 +114,12 @@ public final class TuiGlobalKeysHint {
 		if(ThreadUiMode.ID.equals(modeId)) {
 			TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_AUTO_REFRESH);
 			TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_STACKTRACE_TARGET);
-			TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_REQUEST_ENTRY_FILE);
+			if(settings == null || settings.getStacktraceTarget() != StacktraceTarget.ACTIVE) {
+				TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_SELECTED_TARGET);
+			}
+			if(settings == null || settings.getStacktraceTarget() == StacktraceTarget.ACTIVE) {
+				TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_REQUEST_ENTRY_FILE);
+			}
 			return;
 		}
 		if(RecordUiMode.ID.equals(modeId)) {
@@ -127,6 +145,7 @@ public final class TuiGlobalKeysHint {
 			}
 			if(liveView) {
 				TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_AUTO_REFRESH);
+				TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.THREAD_SELECTED_TARGET);
 			} else {
 				TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.FEATURES_PANE_TOGGLE);
 				TuiKeyRemapCatalog.addUnique(out, TuiKeyAction.RECORD_SHOW_EMPTY_THREAD_TOGGLE);
@@ -149,7 +168,9 @@ public final class TuiGlobalKeysHint {
 	}
 
 	private static void appendSharedTail(StringBuilder sb, boolean outputOn) {
-		sb.append(", F12:Remap Keys, Tab:Move Window, Shift+Arrows:Resize, Ctrl+C:Exit");
+		sb.append(", F12:Remap Keys, Tab:Move Window, ")
+			.append(TuiKeyBindings.label(TuiKeyAction.PANE_RESIZE))
+			.append(":Resize, Ctrl+C:Exit");
 		sb.append(", ").append(TuiKeyBindings.label(TuiKeyAction.OUTPUT_PANE_TOGGLE))
 			.append(":Output(").append(outputOn ? "ON" : "OFF").append(")");
 	}

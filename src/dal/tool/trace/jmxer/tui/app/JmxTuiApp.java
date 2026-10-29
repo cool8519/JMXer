@@ -63,6 +63,7 @@ import dal.tool.trace.jmxer.cli.data.ResourceUsage;
 import dal.tool.trace.jmxer.cli.helper.AbstractRecordThread;
 import dal.tool.trace.jmxer.cli.helper.RecordDumpThreadDetail;
 import dal.tool.trace.jmxer.cli.helper.StackRecordThread;
+import dal.tool.trace.jmxer.cli.helper.ThreadListExpressionBuilder;
 import dal.tool.cli.ScriptUiHooks;
 import dal.tool.trace.jmxer.cli.JmxCommandExecutor;
 import dal.tool.trace.jmxer.cli.JmxConnectionRecovery;
@@ -116,6 +117,7 @@ import dal.tool.trace.jmxer.tui.dialog.TuiThreadRefreshDialog;
 import dal.tool.trace.jmxer.tui.mode.RecordUiMode;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.RecordViewState;
+import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.SelectedTarget;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.ThreadRowState;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeContext.ThreadSnapshotEntry;
 import dal.tool.trace.jmxer.tui.mode.JmxTuiModeFocusPane;
@@ -942,6 +944,24 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			}
 			return false;
 		}
+		if(JmxTuiKeys.isCtrlToggleSelectedTarget(key)) {
+			if(currentMode != null && RecordUiMode.ID.equals(currentMode.getId())) {
+				JmxTuiModeContext recordCtx = ctx();
+				if(recordCtx != null && !JMXControl.isOfflineSession
+						&& recordCtx.getRecordViewState() == RecordViewState.LIVE
+						&& !recordCtx.isRecordSamplingInProgress()) {
+					toggleSelectedTargetPolicy(recordCtx);
+				}
+				return true;
+			}
+			if(currentMode != null && ThreadUiMode.ID.equals(currentMode.getId())) {
+				if(!isStacktraceTargetActive()) {
+					toggleSelectedTargetPolicy(ctx());
+				}
+				return true;
+			}
+			return false;
+		}
 		if(JmxTuiKeys.isCtrlToggleOutputPane(key)) {
 			toggleOutputPane();
 			return true;
@@ -963,7 +983,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			}
 		}
 		if(JmxTuiKeys.isPaneResizeKey(key)) {
-			return handlePaneResizeKey(key);
+			handlePaneResizeKey(key);
+			return true;
 		}
 		if(!JmxTuiKeys.isGlobalShortcut(key)) {
 			return false;
@@ -1053,6 +1074,7 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			ctx.stashThreadSelectionForActiveMode();
 			refreshThreadListView(ctx);
 		} else {
+			ctx.setExplicitSelectedExpression(ctx.isActiveModePreservedExplicitExpression());
 			ctx.setSelectedExpression(ctx.getActiveModePreservedExpression());
 			reapplyThreadSelectionAfterRefresh(ctx, new HashSet<Long>(ctx.getActiveModePreservedThreadIds()));
 			refreshThreadListView(ctx);
@@ -2536,14 +2558,12 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			if(result.resourceData != null) {
 				ResourceUsage usage = result.resourceData.get(threadId);
 				if(usage != null) {
-					long totalCpuNanos = usage.currCpu - usage.startCpu;
-					long totalMemBytes = usage.currMem - usage.startMem;
-					if(totalCpuNanos > -1L) {
-						cpuCores = (double) totalCpuNanos;
+					if(usage.startCpu >= 0L && usage.currCpu >= usage.startCpu) {
+						cpuCores = (double) (usage.currCpu - usage.startCpu);
 						cpuValid = true;
 					}
-					if(totalMemBytes > -1L) {
-						memBytesPerSec = (double) totalMemBytes;
+					if(usage.startMem >= 0L && usage.currMem >= usage.startMem) {
+						memBytesPerSec = (double) (usage.currMem - usage.startMem);
 						memValid = true;
 					}
 				}
@@ -2597,7 +2617,9 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		if(!canStartRecordSampleFromUi(ctx)) {
 			return;
 		}
-		if(ctx.getSelectedThreadIds().isEmpty()) {
+		final String threadExpr = RecordUiMode.buildSelectedThreadsExpression(ctx);
+		boolean dynamicExpr = JmxThreadCommand.isDynamicThreadExpression(threadExpr);
+		if(ctx.getSelectedThreadIds().isEmpty() && !dynamicExpr) {
 			TuiDialogs.showMessageDialog(
 				gui,
 				TuiRecordUiKeys.NO_SELECTION_TITLE,
@@ -2606,7 +2628,6 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			);
 			return;
 		}
-		final String threadExpr = RecordUiMode.buildSelectedThreadsExpression(ctx);
 		if(threadExpr == null || threadExpr.trim().length() == 0) {
 			return;
 		}
@@ -2633,7 +2654,11 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 	}
 
 	private void startRecordSampleFromUi(final JmxTuiModeContext ctx, final String threadExpr, final int threadCount) {
-		if(ctx == null || threadExpr == null || threadExpr.trim().length() == 0 || threadCount < 1) {
+		if(ctx == null || threadExpr == null || threadExpr.trim().length() == 0) {
+			return;
+		}
+		boolean dynamicExpr = JmxThreadCommand.isDynamicThreadExpression(threadExpr);
+		if(threadCount < 0 || (!dynamicExpr && threadCount < 1)) {
 			return;
 		}
 		final TuiRecordSampleTypeDialog.SampleType sampleType = TuiRecordSampleTypeDialog.show(gui);
@@ -2652,7 +2677,7 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		if(params == null) {
 			return;
 		}
-		if(!confirmRecordSampling(params, threadCount)) {
+		if(!confirmRecordSampling(params, threadCount, threadExpr)) {
 			return;
 		}
 		commandWorker.execute(new Runnable() {
@@ -2676,17 +2701,26 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		});
 	}
 
-	private boolean confirmRecordSampling(TuiRecordSamplingDialog.SamplingParams params, int threadCount) {
+	private boolean confirmRecordSampling(TuiRecordSamplingDialog.SamplingParams params, int threadCount, String threadExpr) {
 		StringBuilder message = new StringBuilder();
 		message.append(TuiRecordUiKeys.WARNING_SLOW);
 		if(params.timeMs == 0L) {
 			message.append('\n').append(TuiRecordUiKeys.WARNING_UNLIMITED);
 		}
-		message.append("\n\nSample stacktrace for ").append(threadCount).append(" thread");
-		if(threadCount != 1) {
-			message.append('s');
+		String trimmedExpr = threadExpr == null ? "" : threadExpr.trim();
+		if("*".equals(trimmedExpr)) {
+			message.append("\n\nSample stacktrace for all threads (currently ")
+				.append(threadCount).append(", including newly created)?");
+		} else if(JmxThreadCommand.isDynamicThreadExpression(trimmedExpr)) {
+			message.append("\n\nSample stacktrace for matching threads (currently ")
+				.append(threadCount).append(", including newly created)?");
+		} else {
+			message.append("\n\nSample stacktrace for ").append(threadCount).append(" thread");
+			if(threadCount != 1) {
+				message.append('s');
+			}
+			message.append('?');
 		}
-		message.append('?');
 		message.append("\n\n").append(TuiRecordUiKeys.CONFIRM_SAMPLE_CONTINUE)
 			.append(" to proceed or ").append(TuiRecordUiKeys.CONFIRM_SAMPLE_CANCEL).append(" to abort.");
 		MessageDialogButton chosen = TuiGuiThread.callOnGuiThread(gui, new TuiGuiThread.GuiCallable<MessageDialogButton>() {
@@ -3079,6 +3113,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		if(threadId == null) {
 			return;
 		}
+		ctx.clearRememberedSelectedExpression();
+		ctx.setExplicitSelectedExpression(false);
 		Set<Long> selected = ctx.getSelectedThreadIds();
 		if(selected.contains(threadId)) {
 			selected.remove(threadId);
@@ -3110,6 +3146,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 	}
 
 	private void selectAllDisplayedThreads(JmxTuiModeContext ctx) {
+		ctx.clearRememberedSelectedExpression();
+		ctx.setExplicitSelectedExpression(false);
 		List<Long> displayed = ctx.getDisplayedThreadIds();
 		Set<Long> selected = ctx.getSelectedThreadIds();
 		for(int i = 0; i < displayed.size(); i++) {
@@ -3122,6 +3160,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 	}
 
 	private void deselectDisplayedThreads(JmxTuiModeContext ctx) {
+		ctx.clearRememberedSelectedExpression();
+		ctx.setExplicitSelectedExpression(false);
 		List<Long> displayed = ctx.getDisplayedThreadIds();
 		Set<Long> selected = ctx.getSelectedThreadIds();
 		for(int i = 0; i < displayed.size(); i++) {
@@ -3131,6 +3171,9 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 	}
 
 	private void clearAllThreadSelections(JmxTuiModeContext ctx) {
+		ctx.clearRememberedSelectedExpression();
+		ctx.setExplicitSelectedExpression(false);
+		ctx.setSelectedExpression("");
 		ctx.getSelectedThreadIds().clear();
 		refreshThreadListView(ctx);
 	}
@@ -3168,6 +3211,9 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			initial
 		);
 		if(edited == null) {
+			return;
+		}
+		if(isSelectedTargetTidActive(ctx) && edited.trim().equals(initial.trim())) {
 			return;
 		}
 		applyThreadSelectionFromExpression(ctx, edited);
@@ -3223,10 +3269,159 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 				return;
 			}
 		}
+		boolean patternExpr = isSelectionPatternExpression(trimmed);
 		ctx.getSelectedThreadIds().clear();
 		ctx.getSelectedThreadIds().addAll(newSelection);
-		ctx.setSelectedExpression(trimmed.length() > 0 ? trimmed : "");
+		if(trimmed.length() == 0) {
+			ctx.clearRememberedSelectedExpression();
+			ctx.setExplicitSelectedExpression(false);
+			ctx.setSelectedExpression("");
+		} else if(isSelectedTargetTidActive(ctx)) {
+			if(!newSelection.isEmpty() || patternExpr) {
+				ctx.rememberSelectedExpressionForTidMode(trimmed, true);
+			} else {
+				ctx.clearRememberedSelectedExpression();
+			}
+			ctx.setExplicitSelectedExpression(false);
+			ctx.setSelectedExpression(ThreadListExpressionBuilder.buildTidExpression(ctx.getSelectedThreadIds()));
+		} else if(!newSelection.isEmpty() || patternExpr) {
+			ctx.clearRememberedSelectedExpression();
+			ctx.setExplicitSelectedExpression(true);
+			ctx.setSelectedExpression(trimmed);
+		} else {
+			ctx.clearRememberedSelectedExpression();
+			ctx.setExplicitSelectedExpression(false);
+			ctx.setSelectedExpression("");
+		}
 		refreshThreadListView(ctx);
+	}
+
+	private static boolean isSelectionPatternExpression(String expr) {
+		if(expr == null) {
+			return false;
+		}
+		String trimmed = expr.trim();
+		if(trimmed.length() == 0) {
+			return false;
+		}
+		if(JmxThreadCommand.isDynamicThreadExpression(trimmed)) {
+			return true;
+		}
+		String[] tokens = trimmed.split(",");
+		for(int i = 0; i < tokens.length; i++) {
+			String token = tokens[i].trim();
+			if(token.length() == 0) {
+				continue;
+			}
+			if(token.startsWith("\"") && token.endsWith("\"")) {
+				continue;
+			}
+			if(token.indexOf('-') > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isSelectedTargetApplicable(JmxTuiModeContext ctx) {
+		if(ctx == null || !ctx.hasThreadPane() || JMXControl.isOfflineSession) {
+			return false;
+		}
+		if(ctx.isThreadMode()) {
+			return !isStacktraceTargetActive();
+		}
+		return ctx.isRecordMode() && ctx.getRecordViewState() == RecordViewState.LIVE;
+	}
+
+	private boolean isSelectedTargetTidActive(JmxTuiModeContext ctx) {
+		return isSelectedTargetApplicable(ctx) && ctx.getSelectedTarget() == SelectedTarget.TID;
+	}
+
+	private void toggleSelectedTargetPolicy(JmxTuiModeContext ctx) {
+		if(!isSelectedTargetApplicable(ctx)) {
+			return;
+		}
+		Map<Long, String> threadMap = ctx.isRecordMode()
+			? RecordUiMode.buildThreadMap(ctx)
+			: ThreadUiMode.buildThreadMap(ctx);
+		if(ctx.getSelectedTarget() == SelectedTarget.EXPRESSION) {
+			String currentExpr = ctx.isRecordMode()
+				? RecordUiMode.buildSelectedThreadsExpression(ctx)
+				: ThreadUiMode.buildSelectedThreadsExpression(ctx);
+			boolean wasExplicit = ctx.isExplicitSelectedExpression();
+			ctx.rememberSelectedExpressionForTidMode(currentExpr, wasExplicit);
+			if(currentExpr != null && currentExpr.trim().length() > 0) {
+				Set<Long> matched = resolveThreadIdsQuietly(threadMap, currentExpr.trim(), ctx.getSelectedThreadIds());
+				ctx.getSelectedThreadIds().clear();
+				ctx.getSelectedThreadIds().addAll(matched);
+			}
+			ctx.setSelectedTarget(SelectedTarget.TID);
+			ctx.setExplicitSelectedExpression(false);
+			ctx.setSelectedExpression(ThreadListExpressionBuilder.buildTidExpression(ctx.getSelectedThreadIds()));
+			refreshThreadListView(ctx);
+			return;
+		}
+
+		ctx.setSelectedTarget(SelectedTarget.EXPRESSION);
+		if(ctx.hasRememberedSelectedExpression()) {
+			String restoredExpr = ctx.getRememberedSelectedExpression();
+			boolean restoredExplicit = ctx.isRememberedExplicitSelectedExpression();
+			ctx.clearRememberedSelectedExpression();
+			Set<Long> matched = resolveThreadIdsQuietly(threadMap, restoredExpr, ctx.getSelectedThreadIds());
+			ctx.getSelectedThreadIds().clear();
+			ctx.getSelectedThreadIds().addAll(matched);
+			boolean patternRestored = isSelectionPatternExpression(restoredExpr);
+			if(restoredExplicit) {
+				if(!matched.isEmpty() || patternRestored) {
+					ctx.setExplicitSelectedExpression(true);
+					ctx.setSelectedExpression(restoredExpr);
+				} else {
+					ctx.setExplicitSelectedExpression(false);
+					ctx.setSelectedExpression("");
+				}
+			} else if(patternRestored) {
+				String autoRebuilt = ThreadListExpressionBuilder.build(threadMap, matched);
+				if(restoredExpr.equals(autoRebuilt)) {
+					ctx.setExplicitSelectedExpression(false);
+					ctx.setSelectedExpression(restoredExpr);
+				} else {
+					ctx.setExplicitSelectedExpression(true);
+					ctx.setSelectedExpression(restoredExpr);
+				}
+			} else {
+				ctx.setExplicitSelectedExpression(false);
+				ctx.setSelectedExpression("");
+			}
+		} else {
+			ctx.setExplicitSelectedExpression(false);
+		}
+		refreshThreadListView(ctx);
+	}
+
+	private static Set<Long> resolveThreadIdsQuietly(
+			Map<Long, String> threadMap,
+			String expr,
+			Set<Long> fallbackSelection) {
+		Set<Long> result = new HashSet<Long>();
+		if(expr == null || expr.trim().length() == 0) {
+			return result;
+		}
+		try {
+			Long[] ids = JmxThreadCommand.getTargetThreadIds(threadMap, expr.trim());
+			if(ids != null) {
+				for(int i = 0; i < ids.length; i++) {
+					if(ids[i] != null) {
+						result.add(ids[i]);
+					}
+				}
+			}
+			return result;
+		} catch(Exception e) {
+			if(fallbackSelection != null) {
+				result.addAll(fallbackSelection);
+			}
+			return result;
+		}
 	}
 
 	private boolean confirmClearAllThreadSelections() {
@@ -3257,6 +3452,9 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 
 	private void syncSelectedExpression(JmxTuiModeContext ctx) {
 		if(ctx == null || !ctx.hasThreadPane()) {
+			return;
+		}
+		if(ctx.isExplicitSelectedExpression()) {
 			return;
 		}
 		String expr;
@@ -3647,6 +3845,33 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		if(ctx == null) {
 			return;
 		}
+		if(isSelectedTargetTidActive(ctx)) {
+			String pendingExpr = ctx.getSelectedExpression();
+			Map<Long, String> threadMap = ctx.isRecordMode()
+				? RecordUiMode.buildThreadMap(ctx)
+				: ThreadUiMode.buildThreadMap(ctx);
+			if(ctx.isExplicitSelectedExpression() || isSelectionPatternExpression(pendingExpr)) {
+				ctx.rememberSelectedExpressionForTidMode(pendingExpr, ctx.isExplicitSelectedExpression());
+				Set<Long> matched = resolveThreadIdsQuietly(threadMap, pendingExpr, preservedSelection);
+				ctx.getSelectedThreadIds().clear();
+				ctx.getSelectedThreadIds().addAll(matched);
+				ctx.setExplicitSelectedExpression(false);
+				ctx.setSelectedExpression(ThreadListExpressionBuilder.buildTidExpression(ctx.getSelectedThreadIds()));
+			} else if(pendingExpr != null && pendingExpr.trim().length() > 0) {
+				Set<Long> matched = resolveThreadIdsQuietly(threadMap, pendingExpr, preservedSelection);
+				ctx.getSelectedThreadIds().clear();
+				ctx.getSelectedThreadIds().addAll(matched);
+				if(!ctx.getAllThreadEntries().isEmpty()) {
+					ctx.setSelectedExpression(ThreadListExpressionBuilder.buildTidExpression(ctx.getSelectedThreadIds()));
+				}
+			} else {
+				preserveThreadSelection(ctx, preservedSelection);
+				if(!ctx.getAllThreadEntries().isEmpty()) {
+					ctx.setSelectedExpression(ThreadListExpressionBuilder.buildTidExpression(ctx.getSelectedThreadIds()));
+				}
+			}
+			return;
+		}
 		String expr = ctx.getSelectedExpression();
 		if(expr != null && expr.trim().length() > 0) {
 			Map<Long, String> threadMap = ctx.isRecordMode()
@@ -3701,10 +3926,12 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 			renderer.setSelectedThreadIds(ctx.getSelectedThreadIds());
 		}
 
-		Long previousCursorId = resolveCursorThreadId(ctx);
 		FocusActionListBox threadList = ctx.getMbeanList();
-		threadList.clearItems();
 		List<Long> displayedThreadIds = ctx.getDisplayedThreadIds();
+		boolean hadDisplayedThreads = !displayedThreadIds.isEmpty();
+		int previousCursorIndex = hadDisplayedThreads ? getSelectedIndexSafe(threadList) : -1;
+		int previousScrollTop = hadDisplayedThreads ? threadList.getScrollTopIndex() : 0;
+		threadList.clearItems();
 		displayedThreadIds.clear();
 
 		List<ThreadSnapshotEntry> allEntries = ctx.getAllThreadEntries();
@@ -3755,11 +3982,13 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 
 		if(displayedThreadIds.isEmpty()) {
 			threadList.addItem("(no matching threads)", NOOP_LIST_ACTION);
-		} else if(previousCursorId != null) {
-			int idx = displayedThreadIds.indexOf(previousCursorId);
-			if(idx >= 0) {
-				setSelectedIndexSafe(threadList, idx);
-			}
+		} else if(previousCursorIndex >= 0) {
+			int restoredIndex = resolveRestoredThreadCursorIndex(
+				threadList,
+				previousCursorIndex,
+				previousScrollTop,
+				displayedThreadIds.size());
+			setSelectedIndexSafe(threadList, restoredIndex);
 		}
 
 		if(renderer != null) {
@@ -3768,6 +3997,25 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		}
 		threadList.invalidate();
 		refreshHeader();
+	}
+
+	private static int resolveRestoredThreadCursorIndex(
+			FocusActionListBox threadList,
+			int previousCursorIndex,
+			int previousScrollTop,
+			int newItemCount) {
+		if(newItemCount <= 0 || previousCursorIndex < 0) {
+			return 0;
+		}
+		TerminalSize size = threadList == null ? null : threadList.getSize();
+		int viewportRows = size == null ? 0 : size.getRows();
+		if(viewportRows > 0 && previousScrollTop > 0 && previousCursorIndex >= previousScrollTop) {
+			// 스크롤된 상태에서 전체 스레드 수가 줄어들더라도 화면상 동일한 행 위치를 유지한다.
+			int visualRowOffset = previousCursorIndex - previousScrollTop;
+			int nextScrollTop = Math.max(0, Math.min(previousScrollTop, newItemCount - viewportRows));
+			return Math.max(0, Math.min(nextScrollTop + visualRowOffset, newItemCount - 1));
+		}
+		return Math.max(0, Math.min(previousCursorIndex, newItemCount - 1));
 	}
 
 	private static String buildThreadIdsArgument(List<Long> ids) {
@@ -3940,7 +4188,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 	private void showKeyRemapDialog() {
 		JmxTuiModeContext c = ctx();
 		JmxTuiModeFocusPane focusedPane = resolveCurrentFocusPane();
-		List<TuiKeyAction> globalActions = TuiKeyRemapCatalog.listGlobalActions(currentMode, c, keyBindings);
+		List<TuiKeyAction> globalActions = TuiKeyRemapCatalog.listGlobalActions(
+			currentMode, c, executor.getSettings(), keyBindings);
 		List<TuiKeyAction> windowActions = TuiKeyRemapCatalog.listWindowActions(
 			currentMode, c, focusedPane, executor.getSettings(), keyBindings);
 		if(globalActions.isEmpty() && windowActions.isEmpty()) {
@@ -3988,9 +4237,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_EXIT, "Ctrl+C: exit");
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_REMAP_DIALOG,
 			"F12: remap keys for current UI mode, view, and focused window (session only)");
-		global.addKeyLine(TuiHelpSectionBuilder.KEY_RESIZE_HORIZONTAL,
-			"Shift+Left/Right: resize Search/MBeans vs Features width");
-		global.addKeyLine(TuiHelpSectionBuilder.KEY_RESIZE_VERTICAL, "Shift+Up/Down: resize lists vs Output height");
+		global.addHorizontalResizeLine(bindings, "resize Search/MBeans vs Features width");
+		global.addVerticalResizeLine(bindings, "resize lists vs Output height");
 		global.appendTo(sb);
 		sb.append('\n');
 
@@ -4032,14 +4280,15 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		global.addActionLine(bindings, TuiKeyAction.THREAD_AUTO_REFRESH, "toggle auto/manual thread refresh");
 		global.addActionLine(bindings, TuiKeyAction.THREAD_STACKTRACE_TARGET,
 			"toggle STACKTRACE_TARGET (SELECTED / ACTIVE)");
+		global.addActionLine(bindings, TuiKeyAction.THREAD_SELECTED_TARGET,
+			"toggle SELECTED_TARGET (EXPRESSION / TID)");
 		global.addActionLine(bindings, TuiKeyAction.THREAD_REQUEST_ENTRY_FILE,
 			"edit REQUEST_ENTRY_FILE path");
 		global.addActionLine(bindings, TuiKeyAction.OUTPUT_PANE_TOGGLE, "toggle 'Output' window");
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_EXIT, "Ctrl+C: exit");
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_REMAP_DIALOG,
 			"F12: remap keys for current UI mode, view, and focused window (session only)");
-		global.addKeyLine(TuiHelpSectionBuilder.KEY_RESIZE_HORIZONTAL,
-			"Shift+Left/Right: resize Search/Thread vs Output width");
+		global.addHorizontalResizeLine(bindings, "resize Search/Thread vs Output width");
 		global.appendTo(sb);
 		sb.append('\n');
 
@@ -4091,6 +4340,8 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		global.addActionLine(bindings, TuiKeyAction.RECORD_VIEW_TYPE_TOGGLE, "toggle Live/Dump view type");
 		global.addActionLine(bindings, TuiKeyAction.THREAD_AUTO_REFRESH,
 			"toggle auto/manual thread refresh (Live view only)");
+		global.addActionLine(bindings, TuiKeyAction.THREAD_SELECTED_TARGET,
+			"toggle SELECTED_TARGET (EXPRESSION / TID, Live view only)");
 		global.addActionLine(bindings, TuiKeyAction.THREAD_EDIT_SELECTION, "edit thread selection");
 		global.addActionLine(bindings, TuiKeyAction.FEATURES_PANE_TOGGLE,
 			"toggle dump stack filter (Dump view only)");
@@ -4110,8 +4361,7 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_EXIT, "Ctrl+C: exit");
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_REMAP_DIALOG,
 			"F12: remap keys for current UI mode, view, and focused window (session only)");
-		global.addKeyLine(TuiHelpSectionBuilder.KEY_RESIZE_HORIZONTAL,
-			"Shift+Left/Right: resize Search/Thread vs Output width");
+		global.addHorizontalResizeLine(bindings, "resize Search/Thread vs Output width");
 		global.appendTo(sb);
 		sb.append('\n');
 
@@ -4181,8 +4431,7 @@ public class JmxTuiApp implements JmxTuiOutputHost {
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_EXIT, "Ctrl+C: exit");
 		global.addKeyLine(TuiHelpSectionBuilder.KEY_REMAP_DIALOG,
 			"F12: remap keys for current UI mode, view, and focused window (session only)");
-		global.addKeyLine(TuiHelpSectionBuilder.KEY_RESIZE_HORIZONTAL,
-			"Shift+Left/Right: resize Search/Thread vs Output width");
+		global.addHorizontalResizeLine(bindings, "resize Search/Thread vs Output width");
 		global.appendTo(sb);
 		sb.append('\n');
 

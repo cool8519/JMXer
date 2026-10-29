@@ -9,6 +9,7 @@ import com.googlecode.lanterna.input.KeyType;
  */
 public enum TuiKeyAction {
 	INFO(TuiKeyRemapScope.PANE, "Info", new KeyStroke(KeyType.F2)),
+	PANE_RESIZE(TuiKeyRemapScope.GLOBAL, "Resize", new KeyStroke(KeyType.ArrowLeft, false, false, true)),
 	OUTPUT_PANE_TOGGLE(TuiKeyRemapScope.GLOBAL, "Output Pane Toggle", new KeyStroke(Character.valueOf('o'), true, false)),
 	FEATURES_PANE_TOGGLE(TuiKeyRemapScope.GLOBAL, "Features Pane Toggle", new KeyStroke(Character.valueOf('f'), true, false)),
 	RECORD_SHOW_EMPTY_THREAD_TOGGLE(TuiKeyRemapScope.GLOBAL, "Show Empty Thread Toggle", new KeyStroke(Character.valueOf('y'), true, false)),
@@ -26,6 +27,7 @@ public enum TuiKeyAction {
 
 	THREAD_AUTO_REFRESH(TuiKeyRemapScope.GLOBAL, "Thread Auto Refresh Toggle", new KeyStroke(Character.valueOf('r'), true, false)),
 	THREAD_STACKTRACE_TARGET(TuiKeyRemapScope.GLOBAL, "Stacktrace Target Toggle", new KeyStroke(Character.valueOf('t'), true, false)),
+	THREAD_SELECTED_TARGET(TuiKeyRemapScope.GLOBAL, "Selected Target Toggle", new KeyStroke(Character.valueOf('g'), true, false)),
 	THREAD_EDIT_SELECTION(TuiKeyRemapScope.GLOBAL, "Edit Thread Selection", new KeyStroke(Character.valueOf('e'), true, false)),
 	THREAD_REQUEST_ENTRY_FILE(TuiKeyRemapScope.GLOBAL, "Request-Entry File", new KeyStroke(Character.valueOf('u'), true, false)),
 	OUTPUT_PRETTY_PRINT(TuiKeyRemapScope.GLOBAL, "Pretty Print Toggle", new KeyStroke(Character.valueOf('p'), true, false)),

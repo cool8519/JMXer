@@ -36,7 +36,26 @@ public final class TuiKeyStrokeFormat {
 		return true;
 	}
 
-	public static String formatLabel(KeyStroke keyStroke) {
+	public static boolean isArrowKeyType(KeyType type) {
+		return type == KeyType.ArrowLeft || type == KeyType.ArrowRight
+			|| type == KeyType.ArrowUp || type == KeyType.ArrowDown;
+	}
+
+	public static boolean hasAnyModifier(KeyStroke keyStroke) {
+		return keyStroke != null
+			&& (keyStroke.isCtrlDown() || keyStroke.isAltDown() || keyStroke.isShiftDown());
+	}
+
+	public static boolean matchesArrowGroup(KeyStroke bound, KeyStroke pressed) {
+		if(bound == null || pressed == null || !isArrowKeyType(pressed.getKeyType())) {
+			return false;
+		}
+		return bound.isCtrlDown() == pressed.isCtrlDown()
+			&& bound.isAltDown() == pressed.isAltDown()
+			&& bound.isShiftDown() == pressed.isShiftDown();
+	}
+
+	public static String formatModifierPrefix(KeyStroke keyStroke) {
 		if(keyStroke == null) {
 			return "";
 		}
@@ -50,7 +69,45 @@ public final class TuiKeyStrokeFormat {
 		if(keyStroke.isShiftDown()) {
 			sb.append("Shift+");
 		}
+		return sb.toString();
+	}
+
+	public static String formatArrowGroupLabel(KeyStroke keyStroke) {
+		if(keyStroke == null) {
+			return "";
+		}
+		return formatModifierPrefix(keyStroke) + "Arrows";
+	}
+
+	public static String formatHorizontalArrowsLabel(KeyStroke keyStroke) {
+		if(keyStroke == null) {
+			return "";
+		}
+		return formatModifierPrefix(keyStroke) + "Left/Right";
+	}
+
+	public static String formatVerticalArrowsLabel(KeyStroke keyStroke) {
+		if(keyStroke == null) {
+			return "";
+		}
+		return formatModifierPrefix(keyStroke) + "Up/Down";
+	}
+
+	public static String formatLabel(KeyStroke keyStroke) {
+		if(keyStroke == null) {
+			return "";
+		}
+		if(JmxTuiKeys.isExitKey(keyStroke)) {
+			return "Ctrl+C";
+		}
+		if(JmxTuiKeys.isCtrlSuspend(keyStroke)) {
+			return "Ctrl+Z";
+		}
 		KeyType type = keyStroke.getKeyType();
+		if(type == KeyType.ReverseTab && !keyStroke.isShiftDown()) {
+			return formatModifierPrefix(keyStroke) + "Shift+Tab";
+		}
+		StringBuilder sb = new StringBuilder(formatModifierPrefix(keyStroke));
 		if(type == KeyType.Character) {
 			Character ch = keyStroke.getCharacter();
 			if(ch != null) {
@@ -80,7 +137,7 @@ public final class TuiKeyStrokeFormat {
 			return true;
 		}
 		KeyType type = keyStroke.getKeyType();
-		if(type == KeyType.Escape || type == KeyType.Tab) {
+		if(type == KeyType.Escape || type == KeyType.Tab || type == KeyType.ReverseTab) {
 			return true;
 		}
 		if(type == KeyType.ArrowUp || type == KeyType.ArrowDown
@@ -125,6 +182,21 @@ public final class TuiKeyStrokeFormat {
 		}
 		if(type == KeyType.Delete) {
 			return "Delete";
+		}
+		if(type == KeyType.ReverseTab) {
+			return "Tab";
+		}
+		if(type == KeyType.ArrowLeft) {
+			return "Left";
+		}
+		if(type == KeyType.ArrowRight) {
+			return "Right";
+		}
+		if(type == KeyType.ArrowUp) {
+			return "Up";
+		}
+		if(type == KeyType.ArrowDown) {
+			return "Down";
 		}
 		return name;
 	}

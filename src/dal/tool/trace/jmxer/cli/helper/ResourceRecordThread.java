@@ -1,6 +1,11 @@
 package dal.tool.trace.jmxer.cli.helper;
 
 import java.lang.management.ThreadInfo;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -16,11 +21,10 @@ import dal.tool.util.jmx.JMXUtil;
  */
 public class ResourceRecordThread extends AbstractRecordThread {
 
-	private static final long INVALID_THREAD_COUNTER = -1L;
 	private static final String TERMINATED_DURING_RECORDING = "Terminated during recording";
 	private static final String TERMINATED_TID_REUSED_SUFFIX = " (tid reused by \"%s\")";
 
-	protected ResourceUsage[] recordData;
+	protected Map<Long, ResourceUsage> recordData;
 	protected boolean threadCpuTimeEnabled;
 	protected boolean threadAllocatedMemoryEnabled;
 
@@ -28,83 +32,140 @@ public class ResourceRecordThread extends AbstractRecordThread {
 		super("ResourceRecorder", mbeanConnection, threadIds);
 	}
 
+	public ResourceRecordThread(MBeanServerConnection mbeanConnection, String[] threadIds, String threadExpression) throws Exception {
+		super("ResourceRecorder", mbeanConnection, threadIds, threadExpression);
+	}
+
 	protected void afterInit() throws Exception {
-		recordData = new ResourceUsage[threadIds.length];
+		recordData = new TreeMap<Long, ResourceUsage>();
 		threadCpuTimeEnabled = (Boolean)JMXUtil.getJMXResult(mbeanConnection, "java.lang:type=Threading", "ThreadCpuTimeEnabled", null);
 		threadAllocatedMemoryEnabled = (Boolean)JMXUtil.getJMXResult(mbeanConnection, "java.lang:type=Threading", "ThreadAllocatedMemoryEnabled", null);
 		if(!threadCpuTimeEnabled && !threadAllocatedMemoryEnabled) {
 			throw new Exception("Neither ThreadCpuTime nor ThreadAllocatedMemory are enabled.");
-			
 		}
 	}
 
 	protected void beforeStartRecording() {
 		markActiveRecording();
 		try {
-			startTimeMS = collectResourceData();
+			captureInitialAllThreadIds();
+			startTimeMS = collectInitialResourceData();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected void afterStopRecording() {
 		try {
-			endTimeMS = collectResourceData();
+			if(dynamicTarget) {
+				discoverNewTargetThreads();
+			}
+			endTimeMS = collectFinalResourceData();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		clearActiveRecording();
 	}
-	
+
 	protected long collectData() throws Exception {
+		if(dynamicTarget) {
+			discoverNewTargetThreads();
+		}
 		return System.currentTimeMillis();
 	}
-	
-	private long collectResourceData() throws Exception {
-		ObjectName objectName = new ObjectName("java.lang:type=Threading");
-		long[] threadCpus = null;
-		long[] threadMems = null;
-		if(threadCpuTimeEnabled) {
-			threadCpus = (long[])JMXUtil.invokeAttributeOrOperation(mbeanConnection, objectName, "getThreadCpuTime", new String[]{threadIdsString});
+
+	private long collectInitialResourceData() throws Exception {
+		Map<Long, String> initialTargets = resolveCurrentTargetThreads();
+		registerQueriedBaselines(initialTargets);
+		return System.currentTimeMillis();
+	}
+
+	private void discoverNewTargetThreads() throws Exception {
+		Map<Long, String> currentTargets = resolveCurrentTargetThreads();
+		if(currentTargets.isEmpty()) {
+			return;
 		}
-		if(threadAllocatedMemoryEnabled) {
-			threadMems = (long[])JMXUtil.invokeAttributeOrOperation(mbeanConnection, objectName, "getThreadAllocatedBytes", new String[]{threadIdsString});
-		}
-		long end = System.currentTimeMillis();
-		for(int i = 0; i < threadIds.length; i++) {
-			ResourceUsage usage = recordData[i];
-			if(usage == null) {
-				usage = new ResourceUsage(threadNames[i], threadCpus[i], threadMems[i]);
-			} else {
-				usage.update(threadCpus[i], threadMems[i]);
+		Map<Long, String> newlyMatchedPreExisting = null;
+		for(Map.Entry<Long, String> entry : currentTargets.entrySet()) {
+			Long tid = entry.getKey();
+			if(tid == null || recordData.containsKey(tid)) {
+				continue;
 			}
-			recordData[i] = usage;
+			String tName = entry.getValue();
+			if(!initialAllThreadIds.contains(tid)) {
+				long startCpu = threadCpuTimeEnabled ? 0L : -1L;
+				long startMem = threadAllocatedMemoryEnabled ? 0L : -1L;
+				recordData.put(tid, new ResourceUsage(tName, startCpu, startMem));
+			} else {
+				if(newlyMatchedPreExisting == null) {
+					newlyMatchedPreExisting = new LinkedHashMap<Long, String>();
+				}
+				newlyMatchedPreExisting.put(tid, tName);
+			}
+		}
+		if(newlyMatchedPreExisting != null && !newlyMatchedPreExisting.isEmpty()) {
+			registerQueriedBaselines(newlyMatchedPreExisting);
+		}
+	}
+
+	private void registerQueriedBaselines(Map<Long, String> targetsById) throws Exception {
+		if(targetsById == null || targetsById.isEmpty()) {
+			return;
+		}
+		List<Long> tids = new ArrayList<Long>(targetsById.keySet());
+		long[] threadCpus = threadCpuTimeEnabled ? fetchThreadCpuTimes(tids) : null;
+		long[] threadMems = threadAllocatedMemoryEnabled ? fetchThreadAllocatedBytes(tids) : null;
+		for(int i = 0; i < tids.size(); i++) {
+			Long tid = tids.get(i);
+			long cpu = (threadCpuTimeEnabled && threadCpus != null && i < threadCpus.length) ? threadCpus[i] : -1L;
+			long mem = (threadAllocatedMemoryEnabled && threadMems != null && i < threadMems.length) ? threadMems[i] : -1L;
+			recordData.put(tid, new ResourceUsage(targetsById.get(tid), cpu, mem));
+		}
+	}
+
+	private long collectFinalResourceData() throws Exception {
+		if(recordData.isEmpty()) {
+			return System.currentTimeMillis();
+		}
+		List<Long> tids = new ArrayList<Long>(recordData.keySet());
+		long[] threadCpus = threadCpuTimeEnabled ? fetchThreadCpuTimes(tids) : null;
+		long[] threadMems = threadAllocatedMemoryEnabled ? fetchThreadAllocatedBytes(tids) : null;
+		long end = System.currentTimeMillis();
+		for(int i = 0; i < tids.size(); i++) {
+			Long tid = tids.get(i);
+			ResourceUsage usage = recordData.get(tid);
+			if(usage != null) {
+				long cpu = (threadCpuTimeEnabled && threadCpus != null && i < threadCpus.length) ? threadCpus[i] : -1L;
+				long mem = (threadAllocatedMemoryEnabled && threadMems != null && i < threadMems.length) ? threadMems[i] : -1L;
+				usage.update(cpu, mem);
+			}
 		}
 		return end;
 	}
 
 	public void printResult() {
-		if(endTimeMS-startTimeMS < recordIntervalMS) {
+		if(endTimeMS-startTimeMS < recordIntervalMS || recordData == null || recordData.isEmpty()) {
 			Logger.logln("No data collected.");
 			return;
 		}
 		Logger.logln("Recorded for " + (endTimeMS-startTimeMS) + "ms");
 		Logger.logln("");
-		for(int i = 0; i < recordData.length; i++) {
-			ResourceUsage usage = recordData[i];
+		for(Map.Entry<Long, ResourceUsage> entry : recordData.entrySet()) {
+			long tid = entry.getKey().longValue();
+			ResourceUsage usage = entry.getValue();
 			String thrStr = formatQuotedThreadName(usage.threadName);
 			long cpuStr = (usage.currCpu - usage.startCpu) / 1000000;
 			long memStr = (usage.currMem - usage.startMem);
 			if(isThreadGoneDuringRecording(usage)) {
-				Logger.logln(formatTerminatedDuringRecordingLine(usage, i, thrStr));
+				Logger.logln(formatTerminatedDuringRecordingLine(usage, tid, thrStr));
 				continue;
 			}
 			if(!threadCpuTimeEnabled) {
-				Logger.logln(String.format(" - tid [%5d] %-40s : AllocatedBytes=%d", Long.parseLong(threadIds[i]), thrStr, memStr));
+				Logger.logln(String.format(" - tid [%5d] %-40s : AllocatedBytes=%d", tid, thrStr, memStr));
 			} else if(!threadAllocatedMemoryEnabled) {
-				Logger.logln(String.format(" - tid [%5d] %-40s : CpuTime=%d", Long.parseLong(threadIds[i]), thrStr, cpuStr));
+				Logger.logln(String.format(" - tid [%5d] %-40s : CpuTime=%d", tid, thrStr, cpuStr));
 			} else {
-				Logger.logln(String.format(" - tid [%5d] %-40s : CpuTime=%-10d, AllocatedBytes=%d", Long.parseLong(threadIds[i]), thrStr, cpuStr, memStr));
+				Logger.logln(String.format(" - tid [%5d] %-40s : CpuTime=%-10d, AllocatedBytes=%d", tid, thrStr, cpuStr, memStr));
 			}
 		}
 	}
@@ -123,20 +184,20 @@ public class ResourceRecordThread extends AbstractRecordThread {
 		return start > current;
 	}
 
-	private String formatTerminatedDuringRecordingLine(ResourceUsage usage, int index, String thrStr) {
+	private String formatTerminatedDuringRecordingLine(ResourceUsage usage, long tid, String thrStr) {
 		StringBuilder detail = new StringBuilder(TERMINATED_DURING_RECORDING);
-		String reuseName = resolveCurrentThreadName(index);
+		String reuseName = resolveCurrentThreadName(tid);
 		if(reuseName != null && !reuseName.equals(normalizeThreadName(usage.threadName))) {
 			detail.append(String.format(TERMINATED_TID_REUSED_SUFFIX, reuseName));
 		}
-		return String.format(" - tid [%5d] %-40s : %s", Long.parseLong(threadIds[index]), thrStr, detail.toString());
+		return String.format(" - tid [%5d] %-40s : %s", tid, thrStr, detail.toString());
 	}
 
-	private String resolveCurrentThreadName(int index) {
+	private String resolveCurrentThreadName(long tid) {
 		try {
 			ObjectName objectName = new ObjectName("java.lang:type=Threading");
 			Object resultData = JMXUtil.invokeAttributeOrOperation(
-				mbeanConnection, objectName, "getThreadInfo(long[])", new String[] { threadIds[index] });
+				mbeanConnection, objectName, "getThreadInfo(long[])", new String[] { String.valueOf(tid) });
 			if(!(resultData instanceof CompositeData[])) {
 				return null;
 			}

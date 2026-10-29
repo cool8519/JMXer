@@ -2,7 +2,9 @@ package dal.tool.trace.jmxer.tui.widget;
 
 import com.googlecode.lanterna.gui2.ActionListBox;
 import com.googlecode.lanterna.gui2.Interactable;
+import com.googlecode.lanterna.gui2.InteractableRenderer;
 import com.googlecode.lanterna.gui2.Panel;
+import com.googlecode.lanterna.gui2.TextGUIGraphics;
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
@@ -44,6 +46,30 @@ public final class FocusActionListBox extends ActionListBox implements TuiF2Hand
 
 	public void setActivateKeyAction(TuiKeyAction activateKeyAction) {
 		this.activateKeyAction = activateKeyAction;
+	}
+
+	public int getScrollTopIndex() {
+		return scrollOffset == null ? 0 : Math.max(0, -scrollOffset.getRow());
+	}
+
+	@Override
+	protected InteractableRenderer<ActionListBox> createDefaultRenderer() {
+		return new DefaultListBoxRenderer<Runnable, ActionListBox>() {
+			@Override
+			public void drawComponent(TextGUIGraphics graphics, ActionListBox listBox) {
+				int rows = graphics.getSize().getRows();
+				if(rows > 0 && listBox.getItemCount() <= rows && getScrollTopIndex() > 0) {
+					// 항목 수가 화면 행 수 이하로 줄어들었을 때 이전 스크롤 위치가 남지 않도록 상단 기준을 초기화한다.
+					int savedSelectedIndex = listBox.getSelectedIndex();
+					if(savedSelectedIndex > 0) {
+						listBox.setSelectedIndex(0);
+						super.drawComponent(graphics, listBox);
+						listBox.setSelectedIndex(savedSelectedIndex);
+					}
+				}
+				super.drawComponent(graphics, listBox);
+			}
+		};
 	}
 
 	@Override

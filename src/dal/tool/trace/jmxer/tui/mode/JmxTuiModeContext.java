@@ -77,8 +77,14 @@ public final class JmxTuiModeContext {
 	private long prevSnapshotWallNanos;
 	private boolean hasPreviousThreadSnapshot;
 	private String selectedExpression = "";
+	private boolean explicitSelectedExpression;
+	private SelectedTarget selectedTarget = SelectedTarget.EXPRESSION;
+	private String rememberedSelectedExpression = "";
+	private boolean rememberedExplicitSelectedExpression;
+	private boolean hasRememberedSelectedExpression;
 	private final Set<Long> activeModePreservedThreadIds = new HashSet<Long>();
 	private String activeModePreservedExpression = "";
+	private boolean activeModePreservedExplicitExpression;
 	private int lastCreatedThreadCount;
 	private int lastDestroyedThreadCount;
 	private boolean threadAutoRefreshEnabled = true;
@@ -358,10 +364,57 @@ public final class JmxTuiModeContext {
 		this.selectedExpression = selectedExpression == null ? "" : selectedExpression;
 	}
 
+	public boolean isExplicitSelectedExpression() {
+		return explicitSelectedExpression;
+	}
+
+	public void setExplicitSelectedExpression(boolean explicitSelectedExpression) {
+		this.explicitSelectedExpression = explicitSelectedExpression;
+	}
+
+	public SelectedTarget getSelectedTarget() {
+		return selectedTarget == null ? SelectedTarget.EXPRESSION : selectedTarget;
+	}
+
+	public void setSelectedTarget(SelectedTarget selectedTarget) {
+		this.selectedTarget = selectedTarget == null ? SelectedTarget.EXPRESSION : selectedTarget;
+	}
+
+	public void rememberSelectedExpressionForTidMode(String expression, boolean explicit) {
+		String normalized = expression == null ? "" : expression.trim();
+		if(normalized.length() == 0) {
+			clearRememberedSelectedExpression();
+			return;
+		}
+		this.rememberedSelectedExpression = normalized;
+		this.rememberedExplicitSelectedExpression = explicit;
+		this.hasRememberedSelectedExpression = true;
+	}
+
+	public void clearRememberedSelectedExpression() {
+		this.rememberedSelectedExpression = "";
+		this.rememberedExplicitSelectedExpression = false;
+		this.hasRememberedSelectedExpression = false;
+	}
+
+	public boolean hasRememberedSelectedExpression() {
+		return hasRememberedSelectedExpression;
+	}
+
+	public String getRememberedSelectedExpression() {
+		return rememberedSelectedExpression == null ? "" : rememberedSelectedExpression;
+	}
+
+	public boolean isRememberedExplicitSelectedExpression() {
+		return rememberedExplicitSelectedExpression;
+	}
+
 	public void stashThreadSelectionForActiveMode() {
 		activeModePreservedThreadIds.clear();
 		activeModePreservedThreadIds.addAll(selectedThreadIds);
 		activeModePreservedExpression = selectedExpression == null ? "" : selectedExpression;
+		activeModePreservedExplicitExpression = explicitSelectedExpression;
+		explicitSelectedExpression = false;
 		selectedThreadIds.clear();
 	}
 
@@ -371,6 +424,10 @@ public final class JmxTuiModeContext {
 
 	public String getActiveModePreservedExpression() {
 		return activeModePreservedExpression == null ? "" : activeModePreservedExpression;
+	}
+
+	public boolean isActiveModePreservedExplicitExpression() {
+		return activeModePreservedExplicitExpression;
 	}
 
 	public int getLastCreatedThreadCount() {
@@ -453,6 +510,12 @@ public final class JmxTuiModeContext {
 
 	public void setMbeansListBordered(Component bordered) {
 		this.mbeansListBordered = bordered;
+	}
+
+	/** 선택 스레드 대상 표현 모드 */
+	public enum SelectedTarget {
+		EXPRESSION,
+		TID
 	}
 
 	public enum RecordViewState {

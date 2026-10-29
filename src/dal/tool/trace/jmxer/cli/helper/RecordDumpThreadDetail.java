@@ -105,8 +105,8 @@ public final class RecordDumpThreadDetail {
 			sb.append(SUB_BULLET).append("AllocatedBytes : Unknown\n");
 			return;
 		}
-		long totalCpu = usage.currCpu - usage.startCpu;
-		long totalMem = usage.currMem - usage.startMem;
+		long totalCpu = (usage.startCpu >= 0L && usage.currCpu >= usage.startCpu) ? (usage.currCpu - usage.startCpu) : -1L;
+		long totalMem = (usage.startMem >= 0L && usage.currMem >= usage.startMem) ? (usage.currMem - usage.startMem) : -1L;
 		sb.append(SUB_BULLET).append("CpuTime(ns)    : ").append(formatResourceValue(totalCpu)).append("\n");
 		sb.append(SUB_BULLET).append("AllocatedBytes : ").append(formatResourceValue(totalMem)).append("\n");
 	}

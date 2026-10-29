@@ -7,6 +7,7 @@ package dal.tool.trace.jmxer.tui.support;
 public final class TuiThreadUiKeys {
 	public static final String EDIT_SELECTION_KEY_LABEL = "Ctrl+E";
 	public static final String STACKTRACE_TARGET_TOGGLE_KEY_LABEL = "Ctrl+T";
+	public static final String SELECTED_TARGET_TOGGLE_KEY_LABEL = "Ctrl+G";
 	public static final String REFRESH_TOGGLE_KEY_LABEL = "Ctrl+R";
 	public static final String FORCE_REFRESH_KEY_LABEL = "F5";
 	public static final String SORT_KEY_LABEL = "F6";

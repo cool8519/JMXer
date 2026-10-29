@@ -122,9 +122,17 @@ public final class TuiKeyBindingSort {
 		if(type == KeyType.Escape) {
 			return ORDER_SPECIAL_KEY_BASE + 20;
 		}
-		if(type == KeyType.ArrowLeft || type == KeyType.ArrowRight
-				|| type == KeyType.ArrowUp || type == KeyType.ArrowDown) {
-			return ORDER_OTHER_KEY_BASE + type.ordinal();
+		if(type == KeyType.ArrowLeft) {
+			return ORDER_OTHER_KEY_BASE;
+		}
+		if(type == KeyType.ArrowRight) {
+			return ORDER_OTHER_KEY_BASE + 1;
+		}
+		if(type == KeyType.ArrowUp) {
+			return ORDER_OTHER_KEY_BASE + 2;
+		}
+		if(type == KeyType.ArrowDown) {
+			return ORDER_OTHER_KEY_BASE + 3;
 		}
 		return ORDER_OTHER_KEY_BASE + 100 + (type == null ? 0 : type.ordinal());
 	}

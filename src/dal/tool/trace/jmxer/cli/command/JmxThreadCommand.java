@@ -181,6 +181,35 @@ public class JmxThreadCommand extends JmxCommand {
 	}
 
 
+	/**
+	 * ThreadList 표현식이 동적 재탐색 대상(단독 '*' 또는 따옴표 스레드 이름·패턴 포함)인지 여부를 리턴한다.
+	 * @param args ThreadList 표현식 문자열
+	 * @return 동적 재탐색 대상이면 true, 순수 숫자 ID·범위만 있으면 false
+	 */
+	public static boolean isDynamicThreadExpression(String args) {
+		if(args == null) {
+			return false;
+		}
+		String trimmed = args.trim();
+		if(trimmed.length() == 0) {
+			return false;
+		}
+		if("*".equals(trimmed)) {
+			return true;
+		}
+		String[] tokens = trimmed.split(",");
+		for(int i = 0; i < tokens.length; i++) {
+			String token = tokens[i].trim();
+			if(token.length() == 0) {
+				continue;
+			}
+			if(token.startsWith("\"") && token.length() > 1 && token.endsWith("\"")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static String[] getTargetThreads(MBeanServerConnection mbeanServerConnection, String args) throws Exception {
 		if(args == null || args.equals("")) {
 			return null;
@@ -258,7 +287,7 @@ public class JmxThreadCommand extends JmxCommand {
 							Long id = iter.next();
 							String name = threadMap.get(id);
 							if(target.indexOf('*') < 0 && target.indexOf('?') < 0) {
-								if(name.equals(target)) {
+								if(name != null && name.equals(target)) {
 									thrSet.add(id);
 								}
 							} else {

@@ -83,6 +83,8 @@ public class JmxRecordCommand extends JmxCommand {
         logln("      You can use the '*' and '?' as a pattern character. ex) WorkerThread-*");
         logln("   'ThreadIds' and 'ThreadNames' could be array type. ex) 1,3,21-30 or \"main\",\"Thread-*\",\"pool-1-thread-*\"");
         logln("   'ThreadIds' and 'ThreadNames' could also be used in combination. ex) 1,3-5,\"Thread-*\"");
+        logln("   In RESOURCE and STACKTRACE, '*' and 'ThreadNames' re-evaluate matching threads on each sample");
+        logln("   and automatically include threads newly created during recording.");
         logln("");
         logln(" ViewType : {INFO|METHOD|THREAD|STACK|SEARCH}");
         logln("   'INFO' means to show the information of the last recorded stacktrace sample.");
@@ -128,9 +130,12 @@ public class JmxRecordCommand extends JmxCommand {
 				}
 				return;
 			}
+			String threadArgs = null;
 			String[] threadIds = null;
+			boolean dynamicTarget = false;
 			try {
-				String threadArgs = commandArgs.nextArgument().trim();
+				threadArgs = commandArgs.nextArgument().trim();
+				dynamicTarget = JmxThreadCommand.isDynamicThreadExpression(threadArgs);
 				threadIds = JmxThreadCommand.getTargetThreads(getMBeanConnection(), threadArgs);
 				if(!threadArgs.equals("*") && threadIds != null && threadIds.length > 0) {
 					logln(Level.DEBUG, "List of Thread ID : Count=" + threadIds.length + ", List=[" + StringUtil.arrayToString(threadIds, ",") + "]");
@@ -140,7 +145,7 @@ public class JmxRecordCommand extends JmxCommand {
 				return;
 			}
 			if(IOUtil.isIncludeEqualsIgnoreCase(arg, "res", "ource")) {
-		    	if(threadIds == null || threadIds.length < 1) {
+		    	if(!dynamicTarget && (threadIds == null || threadIds.length < 1)) {
 		    		logln("No target thread(s) specified.");
 		    		return;
 		    	}
@@ -154,16 +159,17 @@ public class JmxRecordCommand extends JmxCommand {
 					logln("Invalid value for time. The default of 0 will be applied.");
 					return;
 				}				
+				String targetLabel = formatTargetPromptLabel(threadArgs, threadIds, dynamicTarget);
 				String yn = null;
 				while(true) {
-					yn = IOUtil.readLine("Do you want to monitor resource usage of " + ("*".equals(threadIds[0])?"all":threadIds.length) + " threads(Y/N)? ", Logger.Level.RESULT);
+					yn = IOUtil.readLine("Do you want to monitor resource usage of " + targetLabel + " threads(Y/N)? ", Logger.Level.RESULT);
 					yn = yn.trim().toUpperCase();
 					if("Y".equals(yn) || "N".equals(yn)) {
 						break;
 					}
 				}
 				if("Y".equals(yn)) {
-					ResourceRecordThread recordThread = new ResourceRecordThread(getMBeanConnection(), threadIds);
+					ResourceRecordThread recordThread = new ResourceRecordThread(getMBeanConnection(), threadIds, threadArgs);
 					recordThread.startRecording(interval_ms, time_ms);
 					if(time_ms == 0) {
 						IOUtil.readLine("Press enter key to stop recording\n", Logger.Level.RESULT);
@@ -172,7 +178,7 @@ public class JmxRecordCommand extends JmxCommand {
 					recordThread.printResult();
 				}
 			} else if(IOUtil.isIncludeEqualsIgnoreCase(arg, "stack", "trace")) {
-		    	if(threadIds == null || threadIds.length < 1) {
+		    	if(!dynamicTarget && (threadIds == null || threadIds.length < 1)) {
 		    		logln("No target thread(s) specified.");
 		    		return;
 		    	}
@@ -201,23 +207,24 @@ public class JmxRecordCommand extends JmxCommand {
 					logln(" - Do not record for too long. Recording will continue until you press the enter key.");
 				}
 				logln("");
+				String targetLabel = formatTargetPromptLabel(threadArgs, threadIds, dynamicTarget);
 				String yn = null;
 				while(true) {
-					yn = IOUtil.readLine("Do you want to sample stacktrace for " + ("*".equals(threadIds[0])?"all":threadIds.length) + " threads(Y/N)? ", Logger.Level.RESULT);
+					yn = IOUtil.readLine("Do you want to sample stacktrace for " + targetLabel + " threads(Y/N)? ", Logger.Level.RESULT);
 					yn = yn.trim().toUpperCase();
 					if("Y".equals(yn) || "N".equals(yn)) {
 						break;
 					}
 				}
 				if("Y".equals(yn)) {
-					StackRecordThread recordThread = new StackRecordThread(getMBeanConnection(), threadIds);
+					StackRecordThread recordThread = new StackRecordThread(getMBeanConnection(), threadIds, threadArgs);
 					recordThread.startRecording(interval_ms, time_ms);
 					if(time_ms == 0) {
 						IOUtil.readLine("Press enter key to stop recording\n", Logger.Level.RESULT);
 						recordThread.stopRecording();
 					}
 					recordThread.printResult();
-					if(recordThread.getSampleCount() > 0) {
+					if(recordThread.hasCollectedData()) {
 						lastRecordResult = recordThread.getRecordResult();
 						lastRecordResult.vmInfo = InfoCommand.getTargetVMInfo(getMBeanConnection());
 						lastRecordResult.toolInfo = InfoCommand.getToolInfo();
@@ -316,6 +323,17 @@ public class JmxRecordCommand extends JmxCommand {
 				logln("Invalid argument for record command.");
 			}
 		}
+	}
+
+	private static String formatTargetPromptLabel(String threadArgs, String[] threadIds, boolean dynamicTarget) {
+		if("*".equals(threadArgs) || (threadIds != null && threadIds.length == 1 && "*".equals(threadIds[0]))) {
+			return "all";
+		}
+		int count = (threadIds == null) ? 0 : threadIds.length;
+		if(dynamicTarget) {
+			return "matching (currently " + count + ")";
+		}
+		return String.valueOf(count);
 	}
 
 }

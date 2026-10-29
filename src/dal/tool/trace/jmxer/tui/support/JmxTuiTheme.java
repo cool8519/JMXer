@@ -13,6 +13,8 @@ public final class JmxTuiTheme {
 	public static final TextColor SELECTED_ROW_FG = TextColor.ANSI.WHITE;
 	public static final TextColor KEY_REMAP_CAPTURE_BG = TextColor.ANSI.YELLOW;
 	public static final TextColor KEY_REMAP_CAPTURE_FG = TextColor.ANSI.BLACK;
+	public static final TextColor KEY_REMAP_ERROR_BG = TextColor.ANSI.RED;
+	public static final TextColor KEY_REMAP_ERROR_FG = TextColor.ANSI.WHITE_BRIGHT;
 	public static final TextColor SEARCH_MATCH_BG = TextColor.ANSI.YELLOW;
 	public static final TextColor SEARCH_MATCH_FG = TextColor.ANSI.BLACK;
 	public static final TextColor THREAD_SELECTED_BG = TextColor.ANSI.CYAN;

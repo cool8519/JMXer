@@ -15,6 +15,7 @@ import dal.tool.trace.jmxer.tui.mode.ThreadUiMode;
 public final class TuiKeyActionUiMode {
 
 	private static final Set<TuiKeyAction> ALL_UI_MODES = EnumSet.of(
+		TuiKeyAction.PANE_RESIZE,
 		TuiKeyAction.OUTPUT_PANE_TOGGLE,
 		TuiKeyAction.OUTPUT_SAVE,
 		TuiKeyAction.OUTPUT_WRAP,
@@ -32,6 +33,7 @@ public final class TuiKeyActionUiMode {
 	private static final Set<TuiKeyAction> THREAD_UI_MODE = EnumSet.of(
 		TuiKeyAction.THREAD_AUTO_REFRESH,
 		TuiKeyAction.THREAD_STACKTRACE_TARGET,
+		TuiKeyAction.THREAD_SELECTED_TARGET,
 		TuiKeyAction.THREAD_EDIT_SELECTION,
 		TuiKeyAction.THREAD_REQUEST_ENTRY_FILE,
 		TuiKeyAction.THREAD_FORCE_REFRESH,
@@ -58,6 +60,7 @@ public final class TuiKeyActionUiMode {
 		TuiKeyAction.FEATURES_PANE_TOGGLE,
 		TuiKeyAction.RECORD_SHOW_EMPTY_THREAD_TOGGLE,
 		TuiKeyAction.THREAD_AUTO_REFRESH,
+		TuiKeyAction.THREAD_SELECTED_TARGET,
 		TuiKeyAction.THREAD_EDIT_SELECTION,
 		TuiKeyAction.THREAD_FORCE_REFRESH,
 		TuiKeyAction.THREAD_PRIMARY_ACTION,

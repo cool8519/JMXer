@@ -16,6 +16,7 @@ import com.googlecode.lanterna.gui2.dialogs.DialogWindow;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialogButton;
 import com.googlecode.lanterna.screen.Screen;
 
+import dal.tool.trace.jmxer.cli.command.JmxThreadCommand;
 import dal.tool.trace.jmxer.tui.support.TuiRecordUiKeys;
 import dal.tool.trace.jmxer.tui.widget.TuiDialogInputBox;
 import dal.tool.util.NumberUtil;
@@ -41,7 +42,7 @@ public final class TuiRecordResourceDurationDialog extends DialogWindow {
 		int inputCols = resolveInputColumns(gui);
 		Panel fieldsPanel = new Panel();
 		fieldsPanel.setLayoutManager(new GridLayout(1).setLeftMarginSize(1).setRightMarginSize(1));
-		TuiDialogLayout.addFormDescription(fieldsPanel, TuiRecordUiKeys.formatSamplingTargetLine(threadCount));
+		TuiDialogLayout.addFormDescription(fieldsPanel, TuiRecordUiKeys.formatSamplingTargetLine(threadCount, threadExpr));
 		TuiDialogLayout.addFormFieldTitle(fieldsPanel, TuiRecordUiKeys.SAMPLING_TIME_DESCRIPTION);
 		timeInput = new TuiDialogInputBox(new TerminalSize(inputCols, 1));
 		timeInput.setText(String.valueOf(DEFAULT_TIME_MS));
@@ -82,7 +83,11 @@ public final class TuiRecordResourceDurationDialog extends DialogWindow {
 	}
 
 	public static Long show(WindowBasedTextGUI gui, int threadCount, String threadExpr) {
-		if(gui == null || threadCount < 1 || threadExpr == null || threadExpr.trim().length() == 0) {
+		if(gui == null || threadExpr == null || threadExpr.trim().length() == 0) {
+			return null;
+		}
+		boolean dynamicTarget = JmxThreadCommand.isDynamicThreadExpression(threadExpr);
+		if(threadCount < 0 || (!dynamicTarget && threadCount < 1)) {
 			return null;
 		}
 		TuiRecordResourceDurationDialog dialog = new TuiRecordResourceDurationDialog(gui, threadCount, threadExpr);

@@ -18,14 +18,42 @@ public final class TuiKeyRemapUiKeys {
 	public static final String WINDOW_SECTION_LABEL_PREFIX = "[Window - ";
 	public static final String WINDOW_SECTION_LABEL_SUFFIX = "]";
 	public static final String CAPTURE_HINT = "Press a new key combination (Esc to cancel).";
+	public static final String RETRY_CAPTURE_HINT = "Press another key combination (Esc to cancel).";
+	public static final String RETRY_RESIZE_CAPTURE_HINT =
+		"Press Shift/Ctrl/Alt + Arrow key (Esc to cancel).";
 	public static final String RESET_LABEL = "Reset Listed Keys";
 	public static final String CLOSE_LABEL = "Close";
 	public static final String RESERVED_MESSAGE = "[!] That key cannot be assigned because it is reserved.";
+	public static final String INVALID_RESIZE_KEY_MESSAGE =
+		"[!] Resize requires a modifier (Shift, Ctrl, or Alt) + Arrow key.";
 	public static final String CONFLICT_MESSAGE_PREFIX = "[!] That key is already assigned to: ";
+	public static final String FAILED_PREFIX = "[FAILED] Cannot assign [";
+	public static final String FAILED_RESERVED_SUFFIX = "]: reserved shortcut.";
+	public static final String FAILED_INVALID_RESIZE_SUFFIX = "]: requires Shift/Ctrl/Alt + Arrow.";
+	public static final String FAILED_CONFLICT_INFIX = "]: already assigned to ";
 	public static final String NO_KEYS_TITLE = "Key Remap";
 	public static final String NO_KEYS_MESSAGE =
 		"No remappable keys for the current UI mode, view, and window focus.\n"
 		+ "Switch UI mode or focus Thread, Output, or Command and press F12.";
+
+	public static String formatReservedFailure(String keyLabel) {
+		return FAILED_PREFIX + safeKeyLabel(keyLabel) + FAILED_RESERVED_SUFFIX;
+	}
+
+	public static String formatInvalidResizeFailure(String keyLabel) {
+		return FAILED_PREFIX + safeKeyLabel(keyLabel) + FAILED_INVALID_RESIZE_SUFFIX;
+	}
+
+	public static String formatConflictFailure(String keyLabel, String conflictActionLabel) {
+		String target = (conflictActionLabel == null || conflictActionLabel.length() == 0)
+			? "another action"
+			: conflictActionLabel;
+		return FAILED_PREFIX + safeKeyLabel(keyLabel) + FAILED_CONFLICT_INFIX + target + ".";
+	}
+
+	private static String safeKeyLabel(String keyLabel) {
+		return (keyLabel == null || keyLabel.length() == 0) ? "Key" : keyLabel;
+	}
 
 	public static String indentKeyListLabel(String label) {
 		return indentKeyListLabel(label, false);

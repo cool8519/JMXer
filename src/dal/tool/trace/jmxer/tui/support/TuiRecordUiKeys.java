@@ -1,5 +1,7 @@
 package dal.tool.trace.jmxer.tui.support;
 
+import dal.tool.trace.jmxer.cli.command.JmxThreadCommand;
+
 /**
  * Record UI 모드 전역 키 라벨과 대화상자 문구.
  *
@@ -52,6 +54,19 @@ public final class TuiRecordUiKeys {
 		"Sampling time in milliseconds (0 = until stopped, default 0):";
 
 	public static String formatSamplingTargetLine(int threadCount) {
+		return formatSamplingTargetLine(threadCount, null);
+	}
+
+	public static String formatSamplingTargetLine(int threadCount, String threadExpr) {
+		if(threadExpr != null) {
+			String trimmed = threadExpr.trim();
+			if("*".equals(trimmed)) {
+				return "Target: all threads (currently " + threadCount + ", includes newly created)";
+			}
+			if(JmxThreadCommand.isDynamicThreadExpression(trimmed)) {
+				return "Target: " + trimmed + " (currently " + threadCount + " thread(s), includes newly created)";
+			}
+		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("Target: ").append(threadCount).append(" thread(s)");
 		return sb.toString();

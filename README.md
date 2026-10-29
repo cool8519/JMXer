@@ -375,3 +375,10 @@ JMXer> REC[ORD] VIEW ViewType [ViewTypeArgs...]
  - Active Thread 판별시 사용자 정의 Request Entry 등록 기능 추가
  - MBean Knowledge Base 추가
  - Attribute 조회 및 Operation 호출 가독성 개선
+
+### v2.1.0
+ - (Bug) TUI 쓰레드 목록 리프레시 시 커서 위치가 이동하던 현상 수정
+ - 레코드 수행 시 패턴 표현식 대상에 대해 중간 생성 쓰레드 동적 포함 지원
+ - TUI Status에 SELECTED_TARGET 설정 추가
+ - TUI 창 크기 조절 단축키 리매핑 지원
+ - TUI 키 리매핑 실패 시 하단 경고 방식 개선

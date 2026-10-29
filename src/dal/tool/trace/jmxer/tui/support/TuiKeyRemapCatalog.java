@@ -17,13 +17,21 @@ public final class TuiKeyRemapCatalog {
 	private TuiKeyRemapCatalog() {}
 
 	public static List<TuiKeyAction> listGlobalActions(JmxTuiUiMode mode, JmxTuiModeContext ctx, TuiKeyBindings bindings) {
+		return listGlobalActions(mode, ctx, null, bindings);
+	}
+
+	public static List<TuiKeyAction> listGlobalActions(
+			JmxTuiUiMode mode,
+			JmxTuiModeContext ctx,
+			JmxSettings settings,
+			TuiKeyBindings bindings) {
 		List<TuiKeyAction> actions = new ArrayList<TuiKeyAction>();
 		if(mode == null) {
 			return actions;
 		}
 		boolean featuresAvailable = mode.isFeaturesPaneAvailable();
 		boolean samplingInProgress = ctx != null && ctx.isRecordSamplingInProgress();
-		TuiGlobalKeysHint.collectRemappableGlobalActions(actions, mode, ctx, featuresAvailable, samplingInProgress);
+		TuiGlobalKeysHint.collectRemappableGlobalActions(actions, mode, ctx, settings, featuresAvailable, samplingInProgress);
 		TuiKeyBindingSort.sortByBinding(actions, bindings == null ? TuiKeyBindings.current() : bindings);
 		return actions;
 	}

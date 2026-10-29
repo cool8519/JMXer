@@ -12,7 +12,7 @@ import dal.tool.trace.jmxer.tui.support.JmxTuiTheme;
 import dal.tool.trace.jmxer.tui.support.TuiKeyAction;
 
 /**
- * 키 리매핑 다이얼로그 목록 행 렌더러. 포커스된 행은 파란색, 키 캡처 대기 중인 행은 별도 색으로 강조한다.
+ * 키 리매핑 다이얼로그 목록 행 렌더러. 포커스 행은 파란색, 캡처 대기 행은 노란색으로 강조한다.
  *
  */
 public final class KeyRemapListItemRenderer extends AbstractListBox.ListItemRenderer<Runnable, ActionListBox> {

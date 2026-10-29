@@ -82,6 +82,9 @@ public final class RecordViewExpressionHelper {
 			if(fromMs < 0L || fromMs > maxMs || toMs < 0L || toMs > maxMs) {
 				return String.format(TuiRecordUiKeys.VIEW_RANGE_RELATIVE_OUT_OF_RANGE_MESSAGE, Long.valueOf(maxMs));
 			}
+			if(fromMs > toMs) {
+				return TuiRecordUiKeys.VIEW_RANGE_INVALID_FORMAT_MESSAGE;
+			}
 			return null;
 		}
 		if(NumberUtil.isNumber(fromStr) && NumberUtil.isNumber(toStr)) {
@@ -90,6 +93,9 @@ public final class RecordViewExpressionHelper {
 			int sampleCount = getSampleCount();
 			if(fromIdx < 1 || fromIdx > sampleCount || toIdx < 1 || toIdx > sampleCount) {
 				return String.format(TuiRecordUiKeys.VIEW_RANGE_SAMPLE_OUT_OF_RANGE_MESSAGE, Integer.valueOf(sampleCount));
+			}
+			if(fromIdx > toIdx) {
+				return TuiRecordUiKeys.VIEW_RANGE_INVALID_FORMAT_MESSAGE;
 			}
 			return null;
 		}
@@ -104,6 +110,9 @@ public final class RecordViewExpressionHelper {
 			long to = toDt.getTime() + 999L;
 			if(from < startTime || from > endTime || to < startTime || to > endTime) {
 				return String.format(TuiRecordUiKeys.VIEW_RANGE_ABSOLUTE_OUT_OF_RANGE_MESSAGE, startTimeStr, endTimeStr);
+			}
+			if(from > to) {
+				return TuiRecordUiKeys.VIEW_RANGE_INVALID_FORMAT_MESSAGE;
 			}
 			return null;
 		}

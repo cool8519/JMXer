@@ -94,13 +94,11 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 		segments.add(new TuiStatusSegmentLabel.Segment("   - Threads:" + total, null));
 		appendDeltaSegments(segments, created, destroyed);
 		if(s == null || s.getStacktraceTarget() != StacktraceTarget.ACTIVE) {
-			String tail = " | Selected(" + TuiKeyBindings.label(TuiKeyAction.THREAD_EDIT_SELECTION) + "):" + selected;
-			if(selected > 0) {
-				String expr = buildSelectedThreadsExpression(context);
-				if(expr != null && expr.length() > 0) {
-					tail += " [" + expr + "]";
-				}
-			}
+			String tail = TuiStatusText.appendBracketedExpression(
+				segments,
+				" | Selected(" + TuiKeyBindings.label(TuiKeyAction.THREAD_EDIT_SELECTION) + "):" + selected,
+				buildSelectedThreadsExpression(context),
+				statusInnerCols);
 			segments.add(new TuiStatusSegmentLabel.Segment(tail, null));
 		}
 
@@ -128,6 +126,13 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 			detail += ", REQUEST_ENTRY_FILE("
 				+ TuiKeyBindings.label(TuiKeyAction.THREAD_REQUEST_ENTRY_FILE) + "):\""
 				+ reqEntryFile + "\"";
+		} else {
+			JmxTuiModeContext.SelectedTarget selectedTarget = context == null
+				? JmxTuiModeContext.SelectedTarget.EXPRESSION
+				: context.getSelectedTarget();
+			detail += ", SELECTED_TARGET("
+				+ TuiKeyBindings.label(TuiKeyAction.THREAD_SELECTED_TARGET) + "):"
+				+ selectedTarget.name();
 		}
 		header3.setText(TuiStatusText.fitSingleLine(detail, statusInnerCols));
 	}
@@ -206,6 +211,15 @@ public final class ThreadUiMode extends JmxTuiUiMode {
 	public static String buildSelectedThreadsExpression(JmxTuiModeContext context) {
 		if(context == null || !context.hasThreadPane() || context.isRecordMode()) {
 			return "";
+		}
+		if(context.getSelectedTarget() == JmxTuiModeContext.SelectedTarget.TID) {
+			return ThreadListExpressionBuilder.buildTidExpression(context.getSelectedThreadIds());
+		}
+		if(context.isExplicitSelectedExpression()) {
+			String explicit = context.getSelectedExpression();
+			if(explicit != null && explicit.trim().length() > 0) {
+				return explicit.trim();
+			}
 		}
 		Set<Long> selected = context.getSelectedThreadIds();
 		if(selected.isEmpty()) {
